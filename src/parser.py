@@ -5,8 +5,8 @@ Then calling get_token returns new token or None if EOF.
 """
 
 import re
-from tokens import TokenEnum, TokenType
-import error
+from src.tokens import TokenEnum, TokenType
+import src.error
 
 
 class Parser:
