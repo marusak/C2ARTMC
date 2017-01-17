@@ -12,6 +12,16 @@ class TokenEnum:
     KWWhile, XEOF = range(56)  # noqa: E122
 
 
+class TokenGroups:
+    """Groups of tokens, that any of them can be used in some context."""
+
+    DataTypes = [TokenEnum.KWChar,
+                 TokenEnum.KWDouble,
+                 TokenEnum.KWFloat,
+                 TokenEnum.KWInt,
+                 TokenEnum.KWVoid,
+                 ]
+
 TokenType = {
         '+':       TokenEnum.TAdd,
         '-':       TokenEnum.TSub,
