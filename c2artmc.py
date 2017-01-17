@@ -3,8 +3,7 @@
 
 import argparse
 
-from src.scanner import Scanner
-from src.tokens import TokenEnum, TokenType
+from src.parser import Parser
 
 
 def parse_arguments():
@@ -24,6 +23,9 @@ def parse_arguments():
 def main():
     """The main function."""
     args = parse_arguments()
+    p = Parser(args.INPUT_FILE)
+    p.run()
+    p.get_artmc()
 
 
 if __name__ == "__main__":
