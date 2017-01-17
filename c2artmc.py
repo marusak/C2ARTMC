@@ -3,7 +3,7 @@
 
 import argparse
 
-from src.parser import Parser
+from src.scanner import Scanner
 from src.tokens import TokenEnum, TokenType
 
 

@@ -9,8 +9,8 @@ from src.tokens import TokenEnum, TokenType
 import src.error
 
 
-class Parser:
-    """The lexical parser."""
+class Scanner:
+    """The lexical scanner."""
 
     def __init__(self, file_name):
         """The init."""
