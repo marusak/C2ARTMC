@@ -23,6 +23,10 @@ class Scanner:
         # Keep the line number for better error messages
         self.line_number = 1
 
+    def get_current_line(self):
+        """Return current line for error printing pursposes."""
+        return self.line_number
+
     def get_value(self):
         """Return last parsed value."""
         return self.last_value
