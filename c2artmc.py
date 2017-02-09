@@ -26,6 +26,8 @@ def main():
     p = Parser(args.INPUT_FILE)
     p.run()
     p.get_artmc()
+    # Get string with information about structure
+    p.get_output_structure_info()
 
 
 if __name__ == "__main__":
