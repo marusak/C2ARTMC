@@ -6,7 +6,7 @@ Then calling get_token returns new token or None if EOF.
 
 import re
 from src.tokens import TokenEnum, TokenType
-import src.error
+from src.error import FatalError
 
 
 class Scanner:
@@ -66,8 +66,8 @@ class Scanner:
         # Check for ||
         elif first_char == '|':
             if self.source[1] != first_char:
-                src.error.FatalError("No support for bitwise operators at {0]."
-                                     .format(self.line_number))
+                FatalError("No support for bitwise operators at {0]."
+                           .format(self.line_number))
             else:
                 self.source = self.source[2:]
                 return TokenType[first_char+first_char]
@@ -131,8 +131,8 @@ class Scanner:
             return TokenEnum.TStr
 
         else:
-            src.error.FatalError("Unknown character in file: '{0}' on {1}."
-                                 .format(first_char, self.line_number))
+            FatalError("Unknown character in file: '{0}' on {1}."
+                       .format(first_char, self.line_number))
 
 
 def preprocess(file_name):

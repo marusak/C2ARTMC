@@ -5,7 +5,7 @@ Parse the whole file and return writable structure of ARTMC instructions.
 
 from src.tokens import TokenEnum, TokenGroups
 from src.scanner import Scanner
-import src.error
+from src.error import FatalError
 
 
 class Parser:
@@ -27,8 +27,8 @@ class Parser:
             elif (t in TokenGroups.DataTypes):
                 pass
             else:
-                src.error.FatalError("Unknown construction on line {0}."
-                                     .format(self.s.get_current_line()))
+                FatalError("Unknown construction on line {0}."
+                           .format(self.s.get_current_line()))
             t = self.s.get_token()
 
     def get_artmc(self):
