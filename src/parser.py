@@ -15,11 +15,16 @@ class Parser:
         """The init."""
         self.s = Scanner(file_name)
         self.instructions = []
-        # All items of the main data structure
+
+        # All items of the main data structure and it's instances
         self.structure_pointers = {}
         self.structure_data = {}
-        # A counter of items in structure
+        self.variables = {}
+
+        # A counter of unique ids
         self.pointer_counter = 0
+        self.variables_counter = 0
+
         # The name of the structure
         self.structure_name = ""
 
@@ -58,6 +63,15 @@ class Parser:
         self.structure_data[data_name] = self.pointer_counter
         self.pointer_counter += 1
 
+    def save_new_variable(self, variable_name):
+        """Add new variable and generate it's unique ID."""
+        if (variable_name in self.variables.keys()):
+            FatalError("Duplicity variable on line {0}."
+                       .format(self.s.get_current_line()))
+        # Save new item
+        self.variables[variable_name] = self.variables_counter
+        self.variables_counter += 1
+
     def parse_typedef(self):
         """Parse one typedef."""
         self.verify_token(TokenEnum.KWStruct)
@@ -93,9 +107,40 @@ class Parser:
         self.structure_name = self.s.get_value()
         self.verify_token(TokenEnum.TS)
 
+    def parse_function(self):
+        """Parse function. It is already read for the first '('."""
+        t = self.s.get_token()
+
+        # parse function arguments
+        while (t != TokenEnum.TPZ):
+            # argument of the main structure
+            if (t == TokenEnum.TIden and
+               self.s.get_value() == self.structure_name):
+                self.verify_token(TokenEnum.TIden)
+                self.save_new_variable(self.s.get_value())
+
+            # argument of other types
+            elif (t in TokenGroups.DataTypes):
+                self.verify_token(TokenEnum.TIden)
+
+            else:
+                FatalError("Unknown argument type on line {0}."
+                           .format(self.s.get_current_line()))
+
+            t = self.s.get_token()
+            if (t == TokenEnum.TC):
+                t = self.s.get_token()
+
+        self.verify_token(TokenEnum.TLZZ)
+        # TODO Now parse the functions body
+
     def get_output_structure_info(self):
         """Return string to be written into header of program.py."""
-        output = "# next pointers are : "
+        output = "# pointer variables are : "
+        output += ", ".join('{0}={1}'
+                            .format(key, val)
+                            for key, val in self.variables.items())
+        output += "\n# next pointers are : "
         output += ", ".join('{0}={1}'
                             .format(key, val)
                             for key, val in self.structure_pointers.items())
@@ -113,10 +158,40 @@ class Parser:
         """Parse the file and convert to ARTMC instructions."""
         t = self.s.get_token()
         while (t != TokenEnum.XEOF):
+            # a typedef
             if (t == TokenEnum.KWTypedef):
                 self.parse_typedef()
+
+            # a function on variable of the main strucutre
+            elif (t == TokenEnum.TIden and
+                  self.s.get_value() == self.structure_name):
+                self.verify_token(TokenEnum.TIden)
+                name = self.s.get_value()
+                t = self.s.get_token()
+
+                # variable declaration(s)
+                if (t in [TokenEnum.TC, TokenEnum.TS]):
+                    self.save_new_variable(name)
+                    while (t != TokenEnum.TS):
+                        self.verify_token(TokenEnum.TIden)
+                        self.save_new_variable(self.s.get_value())
+                        t = self.s.get_token()
+
+                # a function
+                elif (t == TokenEnum.TLZ):
+                    self.parse_function()
+
+                else:
+                    FatalError("Unsupported construction on line {0}."
+                               .format(self.s.get_current_line()))
+
+            # a function
             elif (t in TokenGroups.DataTypes):
-                pass
+                self.verify_token(TokenEnum.TIden)
+                name = self.s.get_value()
+                self.verify_token(TokenEnum.TLZ)
+                self.parse_function()
+
             else:
                 FatalError("Unknown construction on line {0}."
                            .format(self.s.get_current_line()))
