@@ -118,8 +118,16 @@ class Parser:
 
         Expects that the variables are of the structure type.
         """
-        pass
-        # TODO
+        self.verify_token(TokenEnum.TIden)
+        self.save_new_variable(self.s.get_value())
+
+        t = self.s.get_token()
+
+        while (t != TokenEnum.TS):
+            self.verify_token(TokenEnum.TIden)
+            self.save_new_variable(self.s.get_value())
+            t = self.s.get_token()
+        # TODO may be a definition as well
 
     def parse_while(self):
         """Parse a while statement."""
@@ -158,7 +166,7 @@ class Parser:
         """Parse one single command."""
         # definition/declaration of the structure type
         if (first_token == TokenEnum.TIden and
-           self.s.get_token() == self.structure_name):
+           self.s.get_value() == self.structure_name):
             self.parse_new_definition_of_structure()
 
         # definition/declaration of the standard types
@@ -263,6 +271,8 @@ class Parser:
                         self.verify_token(TokenEnum.TIden)
                         self.save_new_variable(self.s.get_value())
                         t = self.s.get_token()
+
+                    # TODO may be a definition as well
 
                 # a function
                 elif (t == TokenEnum.TLZ):
