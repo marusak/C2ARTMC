@@ -109,8 +109,9 @@ class Parser:
 
     def skip_until_semicolon(self):
         """Read and ignore all tokens until semicolon."""
-        pass
-        # TODO
+        t = self.s.get_token()
+        while (t != TokenEnum.TS):
+            t = self.s.get_token()
 
     def parse_new_definition_of_structure(self):
         """Parse line on which definition(s) or declaration(s) are.
