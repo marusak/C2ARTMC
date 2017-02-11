@@ -107,6 +107,88 @@ class Parser:
         self.structure_name = self.s.get_value()
         self.verify_token(TokenEnum.TS)
 
+    def skip_until_semicolon(self):
+        """Read and ignore all tokens until semicolon."""
+        pass
+        # TODO
+
+    def parse_new_definition_of_structure(self):
+        """Parse line on which definition(s) or declaration(s) are.
+
+        Expects that the variables are of the structure type.
+        """
+        pass
+        # TODO
+
+    def parse_while(self):
+        """Parse a while statement."""
+        pass
+        # TODO
+
+    def parse_for(self):
+        """Parse a for statement."""
+        pass
+        # TODO
+
+    def parse_do(self):
+        """Parse a do-while statement."""
+        pass
+        # TODO
+
+    def parse_if(self):
+        """Parse a if statement."""
+        pass
+        # TODO
+
+    def parse_return(self):
+        """Parse a return statement."""
+        pass
+        # TODO
+
+    def parse_assignment(self):
+        """Parse a variable assignment."""
+        pass
+        # TODO
+        # x = ...
+        # x->next = ...
+        # x = ... and x is not a structure type variable
+
+    def parse_command(self, first_token):
+        """Parse one single command."""
+        # definition/declaration of the structure type
+        if (first_token == TokenEnum.TIden and
+           self.s.get_token() == self.structure_name):
+            self.parse_new_definition_of_structure()
+
+        # definition/declaration of the standard types
+        elif (first_token in TokenGroups.DataTypes):
+            # ignore this variables
+            self.skip_until_semicolon()
+
+        # a while statement
+        elif (first_token == TokenEnum.KWWhile):
+            self.parse_while()
+
+        # a for statement
+        elif (first_token == TokenEnum.KWFor):
+            self.parse_for()
+
+        # a do-while statement
+        elif (first_token == TokenEnum.KWDo):
+            self.parse_do()
+
+        # a if statement
+        elif (first_token == TokenEnum.KWIf):
+            self.parse_if()
+
+        # a return statement
+        elif (first_token == TokenEnum.KWReturn):
+            self.parse_return()
+
+        # a variable assignment
+        elif (first_token == TokenEnum.TIden):
+            self.parse_assignment()
+
     def parse_function(self):
         """Parse function. It is already read for the first '('."""
         t = self.s.get_token()
@@ -132,7 +214,11 @@ class Parser:
                 t = self.s.get_token()
 
         self.verify_token(TokenEnum.TLZZ)
-        # TODO Now parse the functions body
+
+        t = self.s.get_token()
+        while (t != TokenEnum.TPZ):
+            self.parse_command(t)
+            t = self.s.get_token()
 
     def get_output_structure_info(self):
         """Return string to be written into header of program.py."""
