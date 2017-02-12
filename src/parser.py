@@ -152,7 +152,7 @@ class Parser:
         t = self.s.get_token()
         # x = null
         if (t == TokenEnum.KWNull):
-            # TODO generate name = null
+            self.g.new_i_x_ass_null(name)
             return self.s.get_token()
 
         # x = y

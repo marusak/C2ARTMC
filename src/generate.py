@@ -70,6 +70,14 @@ class Generate:
                                   "to: next_line",
                                   ])
 
+    def new_i_x_ass_null(self, x):
+        """Add new instruction of type 'x = null'."""
+        self.instructions.append(['"x=null"',
+                                  self.get_line(),
+                                  self.variables[x],
+                                  "to: next_line",
+                                  ])
+
     def new_i_goto(self, label_name):
         """Add new instruction of type 'goto'."""
         self.instructions.append(["\"goto\"",
