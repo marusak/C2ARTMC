@@ -158,6 +158,10 @@ class Parser:
         # x = y
         elif (t == TokenEnum.TIden):
             second_var = self.s.get_value()
+            if (second_var not in self.g.get_variables()):
+                FatalError("Unknown variable '{0}' on line {1}."
+                           .format(second_var, self.s.get_current_line()))
+
             t = self.s.get_token()
             if (t in [TokenEnum.TS, TokenEnum.TC]):
                 self.g.new_i_x_ass_y(name, second_var)
