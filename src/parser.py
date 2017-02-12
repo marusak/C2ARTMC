@@ -137,10 +137,30 @@ class Parser:
                 if (name not in self.g.get_variables()):
                     FatalError("Accessing item of invalid var on line {0}."
                                .format(self.s.get_current_line()))
-                # TODO
-                # x.next = y
+
+                self.verify_token(TokenEnum.TIden)
+                pointer = self.s.get_value()
+
+                self.verify_token(TokenEnum.TAss)
+                t = self.s.get_token()
                 # x.next = NULL
-                # x.next = new
+                if (t == TokenEnum.KWNull):
+                    self.g.new_i_x_next_ass_null(name, pointer)
+
+                # x.next = y
+                elif (t == TokenEnum.TIden):
+                    self.g.new_i_x_next_ass_y(name,
+                                              pointer,
+                                              self.s.get_value())
+
+                # x.next = malloc(..);
+                elif (t == TokenEnum.KWMalloc):
+                    self.skip_until_semicolon()
+                    self.g.new_i_x_next_new(name, pointer)
+
+                else:
+                    FatalError("Unknown assignment on line {0}"
+                               .format(self.s.get_current_line()))
                 return
 
         # skip assignment to variables of different types

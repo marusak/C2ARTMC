@@ -95,6 +95,58 @@ class Generate:
                                   "to: next_line",
                                   ])
 
+    def new_i_x_next_ass_null(self, x, pointer):
+        """Add new instruction of type 'x->pointer = null'."""
+        n = self.structure_pointers.get(pointer,
+                                        self.structure_data.get(pointer,
+                                                                None))
+        if (n is None):
+            FatalError("Unknown item '{0}' in variable '{1}'"
+                       .format(pointer, x))
+
+        self.instructions.append(['"x.next=null"',
+                                  self.get_line(),
+                                  self.variables[x],
+                                  str(n),
+                                  "to: next_line",
+                                  ])
+
+    def new_i_x_next_ass_y(self, x, pointer, y):
+        """Add new instruction of type 'x->pointer = y'."""
+        n = self.structure_pointers.get(pointer,
+                                        self.structure_data.get(pointer,
+                                                                None))
+        if (n is None):
+            FatalError("Unknown item '{0}' in variable '{1}'"
+                       .format(pointer, x))
+
+        self.instructions.append(['"x.next=y"',
+                                  self.get_line(),
+                                  self.variables[x],
+                                  self.variables[y],
+                                  str(n),
+                                  "to: next_line",
+                                  str(5),  # TODO desc_num
+                                  ])
+
+    def new_i_x_next_new(self, x, pointer):
+        """Add new instruction of type 'x->pointer = malloc(...)'."""
+        n = self.structure_pointers.get(pointer,
+                                        self.structure_data.get(pointer,
+                                                                None))
+        if (n is None):
+            FatalError("Unknown item '{0}' in variable '{1}'"
+                       .format(pointer, x))
+
+        self.instructions.append(['"x.next=new"',
+                                  self.get_line(),
+                                  self.variables[x],
+                                  str(n),
+                                  "to: next_line",
+                                  str(5),  # TODO desc_num
+                                  str(1),  # TODO gen_descr
+                                  ])
+
     def new_i_goto(self, label_name):
         """Add new instruction of type 'goto'."""
         self.instructions.append(["\"goto\"",

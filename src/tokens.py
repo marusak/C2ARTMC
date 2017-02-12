@@ -8,8 +8,8 @@ class TokenEnum:
     TDivE, TModE, TE, TN, TAnd, TAmp, TOr, TNE, TLE, TL, TGE, TG, TLZ, TPZ,\
     TInt, TDouble, TStr, TIden, TC, TD, TP, TS, TLZZ, TPZZ, TLHZ, TPHZ, TAss,\
     KWInt, KWDouble, KWChar, KWDo, KWDouble, KWElse, KWEnum, KWFloat, KWFor,\
-    KWGoto, KWIf, KWInt, KWNull, KWReturn, KWSizeof, KWStruct, KWTypedef,\
-    KWVoid, KWWhile, XEOF = range(57)  # noqa: E122
+    KWGoto, KWIf, KWInt, KWMalloc, KWNull, KWReturn, KWSizeof, KWStruct,\
+    KWTypedef, KWVoid, KWWhile, XEOF = range(58)  # noqa: E122
 
 
 class TokenGroups:
@@ -66,6 +66,7 @@ TokenType = {
         'goto':    TokenEnum.KWGoto,
         'if':      TokenEnum.KWIf,
         'int':     TokenEnum.KWInt,
+        'malloc':  TokenEnum.KWMalloc,
         'NULL':    TokenEnum.KWNull,
         'return':  TokenEnum.KWReturn,
         'sizeof':  TokenEnum.KWSizeof,
