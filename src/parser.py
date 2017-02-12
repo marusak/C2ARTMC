@@ -170,7 +170,7 @@ class Parser:
             # x = y->next
             elif (t == TokenEnum.TP):
                 self.verify_token(TokenEnum.TIden)
-                # TODO generate name = second_var.self.s.get_value()
+                self.g.new_i_x_ass_y_next(name, second_var, self.s.get_value())
                 return self.s.get_token()
 
         else:

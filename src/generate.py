@@ -78,6 +78,23 @@ class Generate:
                                   "to: next_line",
                                   ])
 
+    def new_i_x_ass_y_next(self, x, y, pointer):
+        """Add new instruction of type 'x = y->pointer'."""
+        n = self.structure_pointers.get(pointer,
+                                        self.structure_data.get(pointer,
+                                                                None))
+        if (n is None):
+            FatalError("Unknown item '{0}' in variable '{1}'"
+                       .format(pointer, y))
+
+        self.instructions.append(['"x=y.next"',
+                                  self.get_line(),
+                                  self.variables[x],
+                                  self.variables[y],
+                                  str(n),
+                                  "to: next_line",
+                                  ])
+
     def new_i_goto(self, label_name):
         """Add new instruction of type 'goto'."""
         self.instructions.append(["\"goto\"",
