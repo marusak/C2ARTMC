@@ -11,19 +11,10 @@ from src.error import FatalError
 class Parser:
     """The parser."""
 
-    def __init__(self, file_name):
+    def __init__(self, file_name, generate):
         """The init."""
         self.s = Scanner(file_name)
-        self.instructions = []
-
-        # All items of the main data structure and it's instances
-        self.structure_pointers = {}
-        self.structure_data = {}
-        self.variables = {}
-
-        # A counter of unique ids
-        self.pointer_counter = 0
-        self.variables_counter = 0
+        self.g = generate
 
         # The name of the structure
         self.structure_name = ""
@@ -45,33 +36,6 @@ class Parser:
                        .format(expected_identifier,
                                self.s.get_current_line()))
 
-    def add_pointer_to_structure(self, pointer_name):
-        """Add new pointer into structure and generate it's unique ID."""
-        if (pointer_name in self.structure_pointers.keys()):
-            FatalError("Duplicity identifier on line {0}."
-                       .format(self.s.get_current_line()))
-        # Save new item
-        self.structure_pointers[pointer_name] = self.pointer_counter
-        self.pointer_counter += 1
-
-    def add_data_to_structure(self, data_name):
-        """Add new data item into structure and generate it's unique ID."""
-        if (data_name in self.structure_data.keys()):
-            FatalError("Duplicity identifier on line {0}."
-                       .format(self.s.get_current_line()))
-        # Save new item
-        self.structure_data[data_name] = self.pointer_counter
-        self.pointer_counter += 1
-
-    def save_new_variable(self, variable_name):
-        """Add new variable and generate it's unique ID."""
-        if (variable_name in self.variables.keys()):
-            FatalError("Duplicity variable on line {0}."
-                       .format(self.s.get_current_line()))
-        # Save new item
-        self.variables[variable_name] = self.variables_counter
-        self.variables_counter += 1
-
     def parse_typedef(self):
         """Parse one typedef."""
         self.verify_token(TokenEnum.KWStruct)
@@ -88,14 +52,14 @@ class Parser:
                 self.verify_token(TokenEnum.TIden)
                 next_pointer = self.s.get_value()
                 self.verify_token(TokenEnum.TS)
-                self.add_pointer_to_structure(next_pointer)
+                self.g.add_pointer_to_structure(next_pointer)
             # data
             elif (token in TokenGroups.DataTypes):
                 # parse data element
                 self.verify_token(TokenEnum.TIden)
                 data = self.s.get_value()
                 self.verify_token(TokenEnum.TS)
-                self.add_data_to_structure(data)
+                self.g.add_data_to_structure(data)
             else:
                 FatalError("Unknown item in structure on line {0}."
                            .format(self.s.get_current_line()))
@@ -119,15 +83,18 @@ class Parser:
         Expects that the variables are of the structure type.
         """
         self.verify_token(TokenEnum.TIden)
-        self.save_new_variable(self.s.get_value())
+        self.g.save_new_variable(self.s.get_value())
 
         t = self.s.get_token()
 
         while (t != TokenEnum.TS):
             self.verify_token(TokenEnum.TIden)
-            self.save_new_variable(self.s.get_value())
+            name = self.s.get_value()
+            self.g.save_new_variable(name)
             t = self.s.get_token()
-        # TODO may be a definition as well
+
+            if (t == TokenEnum.TAss):
+                t = self.parse_assignment(name)
 
     def parse_while(self):
         """Parse a while statement."""
@@ -151,16 +118,60 @@ class Parser:
 
     def parse_return(self):
         """Parse a return statement."""
-        pass
-        # TODO
+        self.skip_until_semicolon()
+        self.g.new_i_goto("exit")
 
-    def parse_assignment(self):
-        """Parse a variable assignment."""
-        pass
-        # TODO
-        # x = ...
-        # x->next = ...
-        # x = ... and x is not a structure type variable
+    def parse_assignment(self, name=None):
+        """Parse a variable assignment.
+
+        If 'name' was not passed, name is is self.s.get_value().
+        When 'name' was passed, it must be direct assignment name = ...,
+        otherwise it can be x->y = ... .
+
+        After this command ',' or ';' may follow. It must return this symbol.
+        """
+        if (name is None):
+            name = self.s.get_value()
+            t = self.s.get_token()
+            if (t == TokenEnum.TP):
+                if (name not in self.g.get_variables()):
+                    FatalError("Accessing item of invalid var on line {0}."
+                               .format(self.s.get_current_line()))
+                # TODO
+                # x.next = y
+                # x.next = NULL
+                # x.next = new
+                return
+
+        # skip assignment to variables of different types
+        if (name not in self.g.get_variables()):
+            self.skip_until_semicolon()
+            return TokenEnum.TS
+
+        # command beginning with 'x ='
+        t = self.s.get_token()
+        # x = null
+        if (t == TokenEnum.KWNull):
+            # TODO generate name = null
+            return self.s.get_token()
+
+        # x = y
+        elif (t == TokenEnum.TIden):
+            second_var = self.s.get_value()
+            t = self.s.get_token()
+            if (t in [TokenEnum.TS, TokenEnum.TC]):
+                self.g.new_i_x_ass_y(name, second_var)
+                return t
+
+            # x = y->next
+            elif (t == TokenEnum.TP):
+                self.verify_token(TokenEnum.TIden)
+                # TODO generate name = second_var.self.s.get_value()
+                return self.s.get_token()
+
+        else:
+            FatalError("Unknown assignment on line {0}"
+                       .format(self.s.get_current_line()))
 
     def parse_command(self, first_token):
         """Parse one single command."""
@@ -208,7 +219,7 @@ class Parser:
             if (t == TokenEnum.TIden and
                self.s.get_value() == self.structure_name):
                 self.verify_token(TokenEnum.TIden)
-                self.save_new_variable(self.s.get_value())
+                self.g.save_new_variable(self.s.get_value())
 
             # argument of other types
             elif (t in TokenGroups.DataTypes):
@@ -225,29 +236,9 @@ class Parser:
         self.verify_token(TokenEnum.TLZZ)
 
         t = self.s.get_token()
-        while (t != TokenEnum.TPZ):
+        while (t != TokenEnum.TPZZ):
             self.parse_command(t)
             t = self.s.get_token()
-
-    def get_output_structure_info(self):
-        """Return string to be written into header of program.py."""
-        output = "# pointer variables are : "
-        output += ", ".join('{0}={1}'
-                            .format(key, val)
-                            for key, val in self.variables.items())
-        output += "\n# next pointers are : "
-        output += ", ".join('{0}={1}'
-                            .format(key, val)
-                            for key, val in self.structure_pointers.items())
-        output += "\n# data values are : "
-        output += ", ".join('{0}={1}'
-                            .format(key, val)
-                            for key, val in self.structure_data.items())
-        return output
-
-    def get_artmc(self):
-        """Return converted ARTMC instructions."""
-        return self.instructions
 
     def run(self):
         """Parse the file and convert to ARTMC instructions."""
@@ -266,17 +257,20 @@ class Parser:
 
                 # variable declaration(s)
                 if (t in [TokenEnum.TC, TokenEnum.TS]):
-                    self.save_new_variable(name)
+                    self.g.save_new_variable(name)
                     while (t != TokenEnum.TS):
                         self.verify_token(TokenEnum.TIden)
-                        self.save_new_variable(self.s.get_value())
+                        name = self.s.get_value()
+                        self.g.save_new_variable(name)
                         t = self.s.get_token()
 
-                    # TODO may be a definition as well
+                        if (t == TokenEnum.TAss):
+                            t = self.parse_assignment(name)
 
                 # a function
                 elif (t == TokenEnum.TLZ):
                     self.parse_function()
+                    break
 
                 else:
                     FatalError("Unsupported construction on line {0}."

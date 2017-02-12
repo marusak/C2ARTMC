@@ -4,6 +4,7 @@
 import argparse
 
 from src.parser import Parser
+from src.generate import Generate
 
 
 def parse_arguments():
@@ -23,11 +24,11 @@ def parse_arguments():
 def main():
     """The main function."""
     args = parse_arguments()
-    p = Parser(args.INPUT_FILE)
+    g = Generate()
+    p = Parser(args.INPUT_FILE, g)
     p.run()
-    p.get_artmc()
-    # Get string with information about structure
-    p.get_output_structure_info()
+    print(g.get_info())
+    print(g.get_code())
 
 
 if __name__ == "__main__":
