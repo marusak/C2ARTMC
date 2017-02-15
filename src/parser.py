@@ -158,11 +158,6 @@ class Parser:
         pass
         # TODO
 
-    def parse_for(self):
-        """Parse a for statement."""
-        pass
-        # TODO
-
     def parse_do(self):
         """Parse a do-while statement."""
         pass
@@ -302,10 +297,6 @@ class Parser:
         # a while statement
         elif (first_token == TokenEnum.KWWhile):
             self.parse_while()
-
-        # a for statement
-        elif (first_token == TokenEnum.KWFor):
-            self.parse_for()
 
         # a do-while statement
         elif (first_token == TokenEnum.KWDo):
