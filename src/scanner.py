@@ -23,6 +23,9 @@ class Scanner:
         # Keep the line number for better error messages
         self.line_number = 1
 
+        # A token that was returned into stream
+        self.ungeted = None
+
     def get_current_line(self):
         """Return current line for error printing pursposes."""
         return self.line_number
@@ -31,8 +34,17 @@ class Scanner:
         """Return last parsed value."""
         return self.last_value
 
+    def unget_token(self, token):
+        """Return one token into stream."""
+        self.ungeted = token
+
     def get_token(self):
         """Get new token."""
+        if (self.ungeted):
+            token = self.ungeted
+            self.ungeted = None
+            return token
+
         # Remove white spaces from beginning of string
         self.source = self.source.lstrip(' ')
 
