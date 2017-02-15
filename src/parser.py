@@ -189,7 +189,21 @@ class Parser:
             self.parse_command(t)
         self.g.new_i_goto(end)
         self.g.new_label(fail)
-        # TODO else branch
+
+        # try a else branch
+        t = self.s.get_token()
+        if (t != TokenEnum.KWElse):
+            self.s.unget_token(t)
+        else:
+            t = self.s.get_token()
+            if (t == TokenEnum.TLZZ):
+                t = self.s.get_token()
+                while (t != TokenEnum.TPZZ):
+                    self.parse_command(t)
+                    t = self.s.get_token()
+            else:
+                self.parse_command(t)
+
         self.g.new_label(end)
 
     def parse_return(self):
