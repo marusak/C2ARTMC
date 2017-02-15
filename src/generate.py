@@ -147,6 +147,25 @@ class Generate:
                                   str(1),  # TODO gen_descr
                                   ])
 
+    def new_i_x_eq_null(self, x, succ, fail):
+        """Add new instruction of type 'if x == null'."""
+        self.instructions.append(['"ifx==null"',
+                                  self.get_line(),
+                                  self.variables[x],
+                                  "to: {0}".format(succ),
+                                  "to: {0}".format(fail),
+                                  ])
+
+    def new_i_x_eq_y(self, x, y, succ, fail):
+        """Add new instruction of type 'if x == y'."""
+        self.instructions.append(['"ifx==y"',
+                                  self.get_line(),
+                                  self.variables[x],
+                                  self.variables[y],
+                                  "to: {0}".format(succ),
+                                  "to: {0}".format(fail),
+                                  ])
+
     def new_i_goto(self, label_name):
         """Add new instruction of type 'goto'."""
         self.instructions.append(["\"goto\"",

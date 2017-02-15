@@ -19,6 +19,14 @@ class Parser:
         # The name of the structure
         self.structure_name = ""
 
+        # counter to provide unique numbers
+        self.unique_counter = 0
+
+    def generate_unique_label_name(self):
+        """Return string that is unique."""
+        self.unique_counter += 1
+        return "label-{0}".format(str(self.unique_counter - 1))
+
     def verify_token(self, expected_token):
         """Read next token and compare with expected token."""
         if (self.s.get_token() != expected_token):
@@ -96,6 +104,55 @@ class Parser:
             if (t == TokenEnum.TAss):
                 t = self.parse_assignment(name)
 
+    def parse_subexpression(self, succ_label, fail_label, ends_with_par):
+        """Parse a (sub)expression.
+
+        suc_label: label to jump if the expression is successful
+        fail_label: label to jump if the expression is unsuccessful
+        ends_with_par: True if we except parentheses at the end of expression
+        """
+        while (True):
+            t = self.s.get_token()
+
+            # ! means negation - switch labels
+            if (t == TokenEnum.TN):
+                (succ_label, fail_label) = (fail_label, succ_label)
+
+            # subexpression starting with '('
+            elif (t == TokenEnum.TLZ):
+                self.parse_subexpression(succ_label, fail_label, True)
+
+            # end of (sub)expression
+            elif (t == TokenEnum.TPZ and ends_with_par):
+                return
+
+            # a body of expression
+            elif (t == TokenEnum.TIden):
+                x = self.s.get_value()
+                t = self.s.get_token()
+
+                # only support == and !=
+                if (t not in [TokenEnum.TE, TokenEnum.TNE]):
+                    FatalError("Unsupported operator on line {0}"
+                               .format(self.s.get_current_line()))
+                if (t == TokenEnum.TNE):
+                    (succ_label, fail_label) = (fail_label, succ_label)
+
+                t = self.s.get_token()
+                # only support x == NULL and x == y
+                if (t == TokenEnum.KWNull):
+                    self.g.new_i_x_eq_null(x, succ_label, fail_label)
+                elif (t == TokenEnum.TIden):
+                    y = self.s.get_value()
+                    self.g.new_i_x_eq_y(x, y, succ_label, fail_label)
+                else:
+                    FatalError("Unsupported operand on line {0}"
+                               .format(self.s.get_current_line()))
+            # TODO and/or
+            else:
+                FatalError("Unknown type in expression on line {0}."
+                           .format(self.s.get_current_line()))
+
     def parse_while(self):
         """Parse a while statement."""
         pass
@@ -113,8 +170,27 @@ class Parser:
 
     def parse_if(self):
         """Parse a if statement."""
-        pass
-        # TODO
+        # generate unique labels
+        succ = self.generate_unique_label_name()
+        fail = self.generate_unique_label_name()
+        end = self.generate_unique_label_name()
+
+        self.verify_token(TokenEnum.TLZ)
+        self.parse_subexpression(succ, fail, True)
+        self.g.new_label(succ)
+        t = self.s.get_token()
+        # { a new block starts
+        if (t == TokenEnum.TLZZ):
+            t = self.s.get_token()
+            while (t != TokenEnum.TPZZ):
+                self.parse_command(t)
+                t = self.s.get_token()
+        else:
+            self.parse_command(t)
+        self.g.new_i_goto(end)
+        self.g.new_label(fail)
+        # TODO else branch
+        self.g.new_label(end)
 
     def parse_return(self):
         """Parse a return statement."""
