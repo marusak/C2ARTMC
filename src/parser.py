@@ -104,53 +104,131 @@ class Parser:
             if (t == TokenEnum.TAss):
                 t = self.parse_assignment(name)
 
-    def parse_subexpression(self, succ_label, fail_label, ends_with_par):
-        """Parse a (sub)expression.
+    def parse_subexpression(self,
+                            succ_label,
+                            fail_label):
+        """Parse subexpression.
 
         suc_label: label to jump if the expression is successful
         fail_label: label to jump if the expression is unsuccessful
-        ends_with_par: True if we except parentheses at the end of expression
         """
-        while (True):
+        t = self.s.get_token()
+
+        # ! means negation - switch labels
+        if (t == TokenEnum.TN):
+            (succ_label, fail_label) = (fail_label, succ_label)
+
+        elif (t == TokenEnum.TIden):
+            x = self.s.get_value()
             t = self.s.get_token()
 
-            # ! means negation - switch labels
-            if (t == TokenEnum.TN):
+            # only support == and !=
+            if (t not in [TokenEnum.TE, TokenEnum.TNE]):
+                FatalError("Unsupported operator on line {0}"
+                           .format(self.s.get_current_line()))
+            if (t == TokenEnum.TNE):
                 (succ_label, fail_label) = (fail_label, succ_label)
 
-            # subexpression starting with '('
-            elif (t == TokenEnum.TLZ):
-                self.parse_subexpression(succ_label, fail_label, True)
+            t = self.s.get_token()
 
-            # end of (sub)expression
-            elif (t == TokenEnum.TPZ and ends_with_par):
+            # x == NULL
+            if (t == TokenEnum.KWNull):
+                self.g.new_i_x_eq_null(x, succ_label, fail_label)
+
+            # x = y
+            elif (t == TokenEnum.TIden):
+                y = self.s.get_value()
+                self.g.new_i_x_eq_y(x, y, succ_label, fail_label)
+
+            else:
+                FatalError("Unsupported operand on line {0}"
+                           .format(self.s.get_current_line()))
+        else:
+            FatalError("Unknown type in expression on line {0}."
+                       .format(self.s.get_current_line()))
+
+    def parse_expression(self,
+                         succ_label,
+                         fail_label):
+        """Parse a expression.
+
+        suc_label: label to jump if the expression is successful
+        fail_label: label to jump if the expression is unsuccessful
+        """
+        # keeping last binary operator
+        last_op = None
+        # keeping label for repeating binary operator
+        until = None
+
+        while (True):
+            local_succ = self.generate_unique_label_name()
+            local_fail = self.generate_unique_label_name()
+            self.parse_subexpression(local_succ, local_fail)
+
+            t = self.s.get_token()
+
+            # )
+            if (t == TokenEnum.TPZ):
+                if (last_op):
+                    # last operator was &&
+                    if (last_op == TokenEnum.TAnd):
+                        self.g.label_alias(until, fail_label)
+
+                    # last operator was ||
+                    else:
+                        self.g.label_alias(until, succ_label)
+
+                self.g.label_alias(local_succ, succ_label)
+                self.g.label_alias(local_fail, fail_label)
                 return
 
-            # a body of expression
-            elif (t == TokenEnum.TIden):
-                x = self.s.get_value()
-                t = self.s.get_token()
+            # &&
+            elif (t == TokenEnum.TAnd):
+                # case 1 -> first and
+                if not last_op:
+                    last_op = t
+                    until = self.generate_unique_label_name()
 
-                # only support == and !=
-                if (t not in [TokenEnum.TE, TokenEnum.TNE]):
-                    FatalError("Unsupported operator on line {0}"
-                               .format(self.s.get_current_line()))
-                if (t == TokenEnum.TNE):
-                    (succ_label, fail_label) = (fail_label, succ_label)
+                    self.g.label_alias(local_succ, 'next_line')
+                    self.g.label_alias(local_fail, until)
 
-                t = self.s.get_token()
-                # only support x == NULL and x == y
-                if (t == TokenEnum.KWNull):
-                    self.g.new_i_x_eq_null(x, succ_label, fail_label)
-                elif (t == TokenEnum.TIden):
-                    y = self.s.get_value()
-                    self.g.new_i_x_eq_y(x, y, succ_label, fail_label)
+                # case 2 -> repeating and
+                elif (last_op == t):
+                    self.g.label_alias(local_succ, 'next_line')
+                    self.g.label_alias(local_fail, until)
+
+                # case 3 -> switching to and from or
                 else:
-                    FatalError("Unsupported operand on line {0}"
-                               .format(self.s.get_current_line()))
-            # TODO and/or
+                    self.g.new_label(until)
+                    last_op = t
+                    until = self.generate_unique_label_name()
+                    self.g.label_alias(local_succ, 'next_line')
+                    self.g.label_alias(local_fail, until)
+
+            # ||
+            elif (t == TokenEnum.TOr):
+                # case 1 -> first or
+                if not last_op:
+                    last_op = t
+                    until = self.generate_unique_label_name()
+                    self.g.label_alias(local_succ, until)
+                    self.g.label_alias(local_fail, 'next_line')
+
+                # case 2 -> repeating or
+                elif (last_op == t):
+                    self.g.label_alias(local_succ, until)
+                    self.g.label_alias(local_fail, 'next_line')
+
+                # case 3 -> switching to or from and
+                else:
+                    self.g.new_label(until)
+                    last_op = t
+                    until = self.generate_unique_label_name()
+                    self.g.label_alias(local_succ, until)
+                    self.g.label_alias(local_fail, 'next_line')
+
             else:
-                FatalError("Unknown type in expression on line {0}."
+                FatalError("Unknown token in expression on line {0}."
                            .format(self.s.get_current_line()))
 
     def parse_while(self):
@@ -171,7 +249,7 @@ class Parser:
         end = self.generate_unique_label_name()
 
         self.verify_token(TokenEnum.TLZ)
-        self.parse_subexpression(succ, fail, True)
+        self.parse_expression(succ, fail)
         self.g.new_label(succ)
         t = self.s.get_token()
         # { a new block starts

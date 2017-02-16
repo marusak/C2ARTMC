@@ -23,7 +23,10 @@ class Generate:
         self.current_line = 0
 
         # Dictionary of labels
-        self.labels = {}
+        self.labels = {'next_line': 'to: next_line'}
+
+        # Aliases of labels
+        self.aliases = {}
 
     def add_pointer_to_structure(self, pointer_name):
         """Add new pointer into structure and generate it's unique ID."""
@@ -177,12 +180,26 @@ class Generate:
         """Add new label."""
         self.labels[label_name] = str(self.current_line)
 
+    def label_alias(self, aliasing, existing):
+        """Add alias on two labels."""
+        self.aliases[aliasing] = existing
+
     def finish_instructions(self):
         """Finish instruction to be outputable.
 
         Append exit command.
         Replace all labels.
         """
+        # Finish labels aliases
+        for a in self.aliases.keys():
+            try:
+                self.labels[a] = self.labels[self.aliases[a]]
+            except:
+                pass
+
+        for a in self.aliases.keys():
+            self.labels[a] = self.labels[self.aliases[a]]
+
         self.new_label("exit")
         self.instructions.append(['"exit"',
                                   self.get_line(),
@@ -200,7 +217,10 @@ class Generate:
 
                     # custom label
                     elif (label in self.labels.keys()):
-                        self.instructions[i][j] = self.labels[label]
+                        new_v = self.labels[label]
+                        if (new_v == "to: next_line"):
+                                new_v = str(i+1)
+                        self.instructions[i][j] = new_v
 
                     else:
                         FatalError("Unknown label")
