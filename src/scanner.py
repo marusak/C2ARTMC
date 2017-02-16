@@ -154,6 +154,7 @@ def preprocess(file_name):
         - Remove comments -> replace by \n
         - Remove includes -> replace by \n
         - Delete all \t
+        - Simplify expressions
     """
     # Read file into variable
     with open(file_name, 'r') as source_file:

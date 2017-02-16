@@ -104,12 +104,17 @@ class Parser:
             if (t == TokenEnum.TAss):
                 t = self.parse_assignment(name)
 
-    def parse_subexpression(self, succ_label, fail_label, ends_with_par):
+    def parse_subexpression(self,
+                            succ_label,
+                            fail_label,
+                            last_op=None,
+                            until=None):
         """Parse a (sub)expression.
 
         suc_label: label to jump if the expression is successful
         fail_label: label to jump if the expression is unsuccessful
-        ends_with_par: True if we except parentheses at the end of expression
+        last_op: If we parse a group of commands, eg. ands, ors etc..
+        until: Label for last_op case
         """
         while (True):
             t = self.s.get_token()
@@ -120,14 +125,18 @@ class Parser:
 
             # subexpression starting with '('
             elif (t == TokenEnum.TLZ):
-                self.parse_subexpression(succ_label, fail_label, True)
+                self.parse_subexpression(succ_label,
+                                         fail_label,
+                                         last_op,
+                                         until)
 
             # end of (sub)expression
-            elif (t == TokenEnum.TPZ and ends_with_par):
+            elif (t == TokenEnum.TPZ):
                 return
 
             # a body of expression
             elif (t == TokenEnum.TIden):
+                print "Expression body"
                 x = self.s.get_value()
                 t = self.s.get_token()
 
@@ -141,15 +150,72 @@ class Parser:
                 t = self.s.get_token()
                 # only support x == NULL and x == y
                 if (t == TokenEnum.KWNull):
-                    self.g.new_i_x_eq_null(x, succ_label, fail_label)
+                    t = self.s.get_token()
+                    # && or || already is sequence
+                    if (t in [TokenEnum.TAnd, TokenEnum.TOr] and last_op):
+                        if (t == last_op):
+                            if (t == TokenEnum.TAnd):
+                                self.g.new_i_x_eq_null(x, "next_line", until)
+                                self.parse_subexpression(succ_label,
+                                                         fail_label,
+                                                         t,
+                                                         until)
+                            else:
+                                self.g.new_i_x_eq_null(x, until, "next_line")
+                                self.parse_subexpression(succ_label,
+                                                         fail_label,
+                                                         t,
+                                                         until)
+
+                        # changing from or to and or vice versa
+                        else:
+                            last_op = None
+
+                    # not yet && or || used
+                    if (t in [TokenEnum.TAnd, TokenEnum.TOr] and not last_op):
+                        old = until
+                        until = self.generate_unique_label_name()
+                        if (t == TokenEnum.TAnd):
+                            self.g.new_i_x_eq_null(x, "next_line", until)
+                            if old:
+                                self.g.new_label(old)
+                            self.parse_subexpression(succ_label,
+                                                     fail_label,
+                                                     t,
+                                                     until)
+                        if (t == TokenEnum.TOr):
+                            self.g.new_i_x_eq_null(x, until, "next_line", )
+                            if old:
+                                self.g.new_label(old)
+                            self.parse_subexpression(succ_label,
+                                                     fail_label,
+                                                     t,
+                                                     until)
+
+                    if (t not in [TokenEnum.TAnd, TokenEnum.TOr]):
+                        print "last"
+                        self.s.unget_token(t)
+                        if (last_op == TokenEnum.TAnd):
+                            self.g.new_i_goto(fail_label)
+                            self.g.new_i_x_eq_null(x, succ_label, fail_label)
+                            self.g.new_label(until)
+                        else:
+                            self.g.new_label(until)
+                            self.g.new_i_x_eq_null(x, succ_label, fail_label)
                 elif (t == TokenEnum.TIden):
+                    # TODO the same as for ==null with and/or
                     y = self.s.get_value()
                     self.g.new_i_x_eq_y(x, y, succ_label, fail_label)
                 else:
                     FatalError("Unsupported operand on line {0}"
                                .format(self.s.get_current_line()))
-            # TODO and/or
+                t = self.s.get_token()
+                if (t != TokenEnum.TPZ):
+                    self.s.unget_token(t)
+                return
             else:
+                print (TokenEnum.TE)
+                print (t)
                 FatalError("Unknown type in expression on line {0}."
                            .format(self.s.get_current_line()))
 
@@ -171,7 +237,7 @@ class Parser:
         end = self.generate_unique_label_name()
 
         self.verify_token(TokenEnum.TLZ)
-        self.parse_subexpression(succ, fail, True)
+        self.parse_subexpression(succ, fail)
         self.g.new_label(succ)
         t = self.s.get_token()
         # { a new block starts
