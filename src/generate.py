@@ -275,7 +275,8 @@ class Generate:
         # get the 6 variables
         vars = ""
         vars += "    node_width={0}\n".format(len(self.variables) + 1 +
-                                              self.descr_num + 2 + 7)  # TODO 7
+                                              self.descr_num + 2 +
+                                              len(self.structure_data))
         vars += "    pointer_num={0}\n".format(len(self.variables)+1)
         vars += "    desc_num={0}\n".format(self.descr_num)
         vars += "    next_num={0}\n".format(len(self.structure_pointers))
