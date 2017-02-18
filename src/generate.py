@@ -241,12 +241,30 @@ class Generate:
                             for key, val in self.structure_data.items())
         return output
 
-    def get_code(self):
-        """Return converted ARTMC instructions."""
+    def get_full_result(self):
+        """Return full output content."""
+        # get first information about variables
+        result = self.get_info()
+
+        # get the ARTMC code
         self.finish_instructions()
-        output = "def get_program():\n    program=[\n"
+        code = "\ndef get_program():\n    program=[\n"
         for i in self.instructions:
-            output += "        (" + ",".join(i) + "),\n"
-        output = output[:-2] + "]"
-        # TODO add other things on the end such are node_width, pointer_num...
-        return output
+            code += "        (" + ",".join(i) + "),\n"
+        code = code[:-2] + "]\n"
+
+        # get the 6 variables
+        vars = ""
+        vars += "    node_width={0}\n".format(len(self.variables) + 1 +
+                                              5 + 2 + 7)  # TODO 5 and 7
+        vars += "    pointer_num={0}\n".format(len(self.variables)+1)
+        vars += "    desc_num={0}\n".format(5)  # TODO
+        vars += "    next_num={0}\n".format(len(self.structure_pointers))
+        vars += "    err_line={0}\n".format("1"*8)
+        vars += "    restrict_var={0}\n".format(1)  # TODO
+
+        last_code = "\n    env=(node_width, pointer_num, desc_num, next_num,"
+        last_code += " err_line,restrict_var)\n"
+        last_code += "    return(program, env)"
+
+        return result+code+vars+last_code

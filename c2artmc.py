@@ -27,8 +27,7 @@ def main():
     g = Generate()
     p = Parser(args.INPUT_FILE, g)
     p.run()
-    print(g.get_info())
-    print(g.get_code())
+    print(g.get_full_result())
 
 
 if __name__ == "__main__":
