@@ -119,7 +119,6 @@ class Parser:
             (succ_label, fail_label) = (fail_label, succ_label)
             t = self.s.get_token()
 
-
         if (t == TokenEnum.TIden):
             x = self.s.get_value()
             t = self.s.get_token()
@@ -239,8 +238,27 @@ class Parser:
 
     def parse_while(self):
         """Parse a while statement."""
-        pass
-        # TODO
+        succ = self.generate_unique_label_name()
+        fail = self.generate_unique_label_name()
+        beginning = self.generate_unique_label_name()
+
+        self.g.new_label(beginning)
+
+        self.verify_token(TokenEnum.TLZ)
+        self.parse_expression(succ, fail)
+        self.g.new_label(succ)
+
+        t = self.s.get_token()
+        # { a new block starts
+        if (t == TokenEnum.TLZZ):
+            t = self.s.get_token()
+            while (t != TokenEnum.TPZZ):
+                self.parse_command(t)
+                t = self.s.get_token()
+        else:
+            self.parse_command(t)
+        self.g.new_i_goto(beginning)
+        self.g.new_label(fail)
 
     def parse_do(self):
         """Parse a do-while statement."""
