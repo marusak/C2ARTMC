@@ -262,8 +262,26 @@ class Parser:
 
     def parse_do(self):
         """Parse a do-while statement."""
-        pass
-        # TODO
+        succ = self.generate_unique_label_name()
+        fail = self.generate_unique_label_name()
+
+        self.g.new_label(succ)
+
+        t = self.s.get_token()
+        # { a new block starts
+        if (t == TokenEnum.TLZZ):
+            t = self.s.get_token()
+            while (t != TokenEnum.TPZZ):
+                self.parse_command(t)
+                t = self.s.get_token()
+        else:
+            self.parse_command(t)
+
+        self.verify_token(TokenEnum.KWWhile)
+        self.verify_token(TokenEnum.TLZ)
+        self.parse_expression(succ, fail)
+
+        self.g.new_label(fail)
 
     def parse_if(self):
         """Parse a if statement."""
