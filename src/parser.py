@@ -117,8 +117,9 @@ class Parser:
         # ! means negation - switch labels
         if (t == TokenEnum.TN):
             (succ_label, fail_label) = (fail_label, succ_label)
+            t = self.s.get_token()
 
-        elif (t == TokenEnum.TIden):
+        if (t == TokenEnum.TIden):
             x = self.s.get_value()
             t = self.s.get_token()
 
