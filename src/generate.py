@@ -17,7 +17,7 @@ class Generate:
 
         # A counter of unique ids
         self.pointer_counter = 0
-        self.variables_counter = 0
+        self.variables_counter = 1
 
         # A counter of lines
         self.current_line = 0
