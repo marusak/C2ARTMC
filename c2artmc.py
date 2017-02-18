@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
 import argparse
 
 from src.parser import Parser
 from src.generate import Generate
+from src.error import Warning
 
 
 def parse_arguments():
@@ -27,8 +29,18 @@ def main():
     g = Generate()
     p = Parser(args.INPUT_FILE, g)
     p.run()
-    print(g.get_full_result())
 
+    if not args.o:
+        args.o = "program.py"
+
+    try:
+        f = open(args.o, "w")
+    except:
+        Warning("Cannot open output file. Using stdout instead")
+        f = sys.stdout
+
+    f.write(g.get_full_result())
+    f.close()
 
 if __name__ == "__main__":
     main()
