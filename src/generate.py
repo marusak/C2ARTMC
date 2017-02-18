@@ -1,6 +1,8 @@
 """Store instructions and generating output code."""
 
 from src.error import FatalError
+from subprocess import Popen, PIPE
+from os.path import dirname, abspath, join
 
 
 class Generate:
@@ -27,6 +29,23 @@ class Generate:
 
         # Aliases of labels
         self.aliases = {}
+
+        # descr_num
+        cmd = Popen([join(dirname(dirname(dirname(abspath(__file__)))),
+                     "bin/get_typedef_descr.t.sh")],
+                    stdout=PIPE,
+                    stderr=PIPE)
+        stdout, stderr = cmd.communicate()
+        if (cmd.returncode):
+            FatalError("Could not call get_typedef_descr.t.sh." +
+                       "Does the current directory contains 'typedef' file?")
+        self.descr_num = int(stdout) + 1
+
+    def get_descr_num(self):
+        """Return next descr_num."""
+        to_return = self.descr_num
+        self.descr_num += 1
+        return str(to_return)
 
     def add_pointer_to_structure(self, pointer_name):
         """Add new pointer into structure and generate it's unique ID."""
@@ -129,7 +148,7 @@ class Generate:
                                   self.variables[y],
                                   str(n),
                                   "to: next_line",
-                                  str(5),  # TODO desc_num
+                                  self.get_descr_num()
                                   ])
 
     def new_i_x_next_new(self, x, pointer):
@@ -146,7 +165,7 @@ class Generate:
                                   self.variables[x],
                                   str(n),
                                   "to: next_line",
-                                  str(5),  # TODO desc_num
+                                  self.get_descr_num(),
                                   str(1),  # TODO gen_descr
                                   ])
 
@@ -256,9 +275,9 @@ class Generate:
         # get the 6 variables
         vars = ""
         vars += "    node_width={0}\n".format(len(self.variables) + 1 +
-                                              5 + 2 + 7)  # TODO 5 and 7
+                                              self.descr_num + 2 + 7)  # TODO 7
         vars += "    pointer_num={0}\n".format(len(self.variables)+1)
-        vars += "    desc_num={0}\n".format(5)  # TODO
+        vars += "    desc_num={0}\n".format(self.descr_num)
         vars += "    next_num={0}\n".format(len(self.structure_pointers))
         vars += "    err_line={0}\n".format("1"*8)
         vars += "    restrict_var={0}\n".format(1)  # TODO
