@@ -31,11 +31,16 @@ class Generate:
         self.aliases = {}
 
         # descr_num
-        cmd = Popen([join(dirname(dirname(dirname(abspath(__file__)))),
-                     "bin/get_typedef_descr.t.sh")],
-                    stdout=PIPE,
-                    stderr=PIPE)
-        stdout, stderr = cmd.communicate()
+        try:
+            cmd = Popen([join(dirname(dirname(dirname(abspath(__file__)))),
+                         "bin/get_typedef_descr.t.sh")],
+                        stdout=PIPE,
+                        stderr=PIPE)
+            stdout, stderr = cmd.communicate()
+        except:
+            FatalError("Could not call get_typedef_descr.t.sh. " +
+                       "Is the C2ARTMC in the correct place?")
+
         if (cmd.returncode):
             FatalError("Could not call get_typedef_descr.t.sh." +
                        "Does the current directory contains 'typedef' file?")
