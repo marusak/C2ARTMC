@@ -119,6 +119,7 @@ class Parser:
             (succ_label, fail_label) = (fail_label, succ_label)
             t = self.s.get_token()
 
+
         if (t == TokenEnum.TIden):
             x = self.s.get_value()
             t = self.s.get_token()
@@ -144,6 +145,10 @@ class Parser:
             else:
                 FatalError("Unsupported operand on line {0}"
                            .format(self.s.get_current_line()))
+
+        elif (t == TokenEnum.TLZ):
+            self.parse_expression(succ_label, fail_label)
+
         else:
             FatalError("Unknown type in expression on line {0}."
                        .format(self.s.get_current_line()))
