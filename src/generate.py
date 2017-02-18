@@ -280,7 +280,7 @@ class Generate:
         vars += "    pointer_num={0}\n".format(len(self.variables)+1)
         vars += "    desc_num={0}\n".format(self.descr_num)
         vars += "    next_num={0}\n".format(len(self.structure_pointers))
-        vars += "    err_line={0}\n".format("1"*8)
+        vars += "    err_line=\"{0}\"\n".format("1"*8)
         vars += "    restrict_var={0}\n".format(1)  # TODO
 
         last_code = "\n    env=(node_width, pointer_num, desc_num, next_num,"
