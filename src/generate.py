@@ -8,7 +8,7 @@ from os.path import dirname, abspath, join
 class Generate:
     """The class for storing and generating output code."""
 
-    def __init__(self):
+    def __init__(self, descriptor=None):
         """The init."""
         self.instructions = []
 
@@ -31,20 +31,25 @@ class Generate:
         self.aliases = {}
 
         # descr_num
-        try:
-            cmd = Popen([join(dirname(dirname(dirname(abspath(__file__)))),
-                         "bin/get_typedef_descr.t.sh")],
-                        stdout=PIPE,
-                        stderr=PIPE)
-            stdout, stderr = cmd.communicate()
-        except:
-            FatalError("Could not call get_typedef_descr.t.sh. " +
-                       "Is the C2ARTMC in the correct place?")
+        if not descriptor:
+            try:
+                cmd = Popen([join(dirname(dirname(dirname(abspath(__file__)))),
+                             "bin/get_typedef_descr.t.sh")],
+                            stdout=PIPE,
+                            stderr=PIPE)
+                stdout, stderr = cmd.communicate()
+            except:
+                FatalError("Could not call get_typedef_descr.t.sh. " +
+                           "Is the C2ARTMC in the correct place?")
 
-        if (cmd.returncode):
-            FatalError("Could not call get_typedef_descr.t.sh." +
-                       "Does the current directory contains 'typedef' file?")
-        self.descr_num = int(stdout) + 1
+            if (cmd.returncode):
+                FatalError("Could not call get_typedef_descr.t.sh." +
+                           "Does the current directory contains 'typedef' " +
+                           "file? Use -d to set descriptor.")
+            self.descr_num = int(stdout) + 1
+
+        else:
+            self.descr_num = int(descriptor) + 1
 
     def get_descr_num(self):
         """Return next descr_num."""

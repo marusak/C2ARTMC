@@ -19,6 +19,8 @@ def parse_arguments():
                         help="C source file to be converted")
     parser.add_argument("-o",
                         help="Filepath to write the ARTMC file")
+    parser.add_argument("-d",
+                        help="Initial pointer descriptor")
 
     return parser.parse_args()
 
@@ -26,7 +28,7 @@ def parse_arguments():
 def main():
     """The main function."""
     args = parse_arguments()
-    g = Generate()
+    g = Generate(args.d)
     p = Parser(args.INPUT_FILE, g)
     p.run()
 
