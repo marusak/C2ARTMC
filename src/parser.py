@@ -425,6 +425,11 @@ class Parser:
                 self.g.new_i_x_ass_y_next(name, second_var, self.s.get_value())
                 return self.s.get_token()
 
+        elif (t == TokenEnum.KWMalloc):
+            self.skip_until_semicolon()
+            self.g.new_i_new(name)
+            return self.s.get_token()
+
         else:
             FatalError("Unknown assignment on line {0}"
                        .format(self.s.get_current_line()))
