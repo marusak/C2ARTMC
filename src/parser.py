@@ -19,13 +19,23 @@ class Parser:
         # The name of the structure
         self.structure_name = ""
 
-        # counter to provide unique numbers
+        # counter to provide unique numbers or labels
         self.unique_counter = 0
+
+        # counter to provide unique numbers or variables
+        self.unique_counter_v = 0
 
     def generate_unique_label_name(self):
         """Return string that is unique."""
         self.unique_counter += 1
         return "label-{0}".format(str(self.unique_counter - 1))
+
+    def generate_unique_variable(self):
+        """Create new unique variable."""
+        self.unique_counter_v += 1
+        name = "v{0}".format(str(self.unique_counter_v - 1))
+        self.g.save_new_variable(name)
+        return name
 
     def verify_token(self, expected_token):
         """Read next token and compare with expected token."""
@@ -123,6 +133,13 @@ class Parser:
             x = self.s.get_value()
             t = self.s.get_token()
 
+            if (t == TokenEnum.TP):
+                self.verify_token(TokenEnum.TIden)
+                tmp = self.generate_unique_variable()
+                self.g.new_i_x_ass_y_next(tmp, x, self.s.get_value())
+                x = tmp
+                t = self.s.get_token()
+
             # only support == and !=
             if (t not in [TokenEnum.TE, TokenEnum.TNE]):
                 FatalError("Unsupported operator on line {0}"
@@ -139,7 +156,17 @@ class Parser:
             # x = y
             elif (t == TokenEnum.TIden):
                 y = self.s.get_value()
-                self.g.new_i_x_eq_y(x, y, succ_label, fail_label)
+
+                t = self.s.get_token()
+                if (t != TokenEnum.TP):
+                    self.g.new_i_x_eq_y(x, y, succ_label, fail_label)
+                    self.s.unget_token(t)
+
+                else:
+                    self.verify_token(TokenEnum.TIden)
+                    tmp = self.generate_unique_variable()
+                    self.g.new_i_x_ass_y_next(tmp, y, self.s.get_value())
+                    self.g.new_i_x_eq_y(x, tmp, succ_label, fail_label)
 
             else:
                 FatalError("Unsupported operand on line {0}"
