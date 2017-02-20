@@ -267,15 +267,15 @@ class Generate:
         output = "# pointer variables are : "
         output += ", ".join('{0}={1}'
                             .format(key, val)
-                            for key, val in self.variables.items())
+                            for key, val in sorted(self.variables.items()))
         output += "\n# next pointers are : "
         output += ", ".join('{0}={1}'
                             .format(key, val)
-                            for key, val in self.structure_pointers.items())
+                            for key, val in sorted(self.structure_pointers.items()))
         output += "\n# data values are : "
         output += ", ".join('{0}={1}'
                             .format(key, val)
-                            for key, val in self.structure_data.items())
+                            for key, val in sorted(self.structure_data.items()))
         return output
 
     def get_full_result(self):
