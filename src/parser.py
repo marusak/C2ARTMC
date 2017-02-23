@@ -175,6 +175,15 @@ class Parser:
         elif (t == TokenEnum.TLZ):
             self.parse_expression(succ_label, fail_label)
 
+        elif (t in TokenGroups.Nondeterministic):
+            self.g.new_i_if_star(succ_label, fail_label)
+
+        elif (t == TokenEnum.KWTrue):
+            self.g.new_i_goto(succ_label)
+
+        elif (t == TokenEnum.KWFalse):
+            self.g.new_i_goto(fail_label)
+
         else:
             FatalError("Unknown type in expression on line {0}."
                        .format(self.s.get_current_line()))

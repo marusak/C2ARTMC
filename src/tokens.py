@@ -7,9 +7,9 @@ class TokenEnum:
     TAdd, TSub, TMul, TDiv, TMod, TUnaryAdd, TUnarySub, TAddE, TSubE, TMulE,\
     TDivE, TModE, TE, TN, TAnd, TAmp, TOr, TNE, TLE, TL, TGE, TG, TLZ, TPZ,\
     TInt, TDouble, TStr, TIden, TC, TD, TP, TS, TLZZ, TPZZ, TLHZ, TPHZ, TAss,\
-    KWInt, KWDouble, KWChar, KWDo, KWDouble, KWElse, KWEnum, KWFloat, KWFor,\
-    KWGoto, KWIf, KWInt, KWMalloc, KWNull, KWReturn, KWSizeof, KWStruct,\
-    KWTypedef, KWVoid, KWWhile, XEOF = range(58)  # noqa: E122
+    KWAny, KWInt, KWDouble, KWChar, KWDo, KWDouble, KWElse, KWEnum, KWFalse,\
+    KWFloat, KWFor, KWGoto, KWIf, KWInt, KWMalloc, KWNull, KWReturn, KWSizeof,\
+    KWStruct, KWTrue, KWTypedef, KWVoid, KWWhile, XEOF = range(61)  # noqa: E122
 
 
 class TokenGroups:
@@ -21,6 +21,9 @@ class TokenGroups:
                  TokenEnum.KWInt,
                  TokenEnum.KWVoid,
                  ]
+
+    Nondeterministic = [TokenEnum.TMul,
+                        TokenEnum.KWAny]
 
 TokenType = {
         '+':       TokenEnum.TAdd,
@@ -56,11 +59,13 @@ TokenType = {
         '[':       TokenEnum.TLHZ,
         ']':       TokenEnum.TPHZ,
         '=':       TokenEnum.TAss,
+        'any':     TokenEnum.KWAny,
         'char':    TokenEnum.KWChar,
         'do':      TokenEnum.KWDo,
         'double':  TokenEnum.KWDouble,
         'else':    TokenEnum.KWElse,
         'enum':    TokenEnum.KWEnum,
+        'false':   TokenEnum.KWFalse,
         'float':   TokenEnum.KWFloat,
         'for':     TokenEnum.KWFor,
         'goto':    TokenEnum.KWGoto,
@@ -71,6 +76,7 @@ TokenType = {
         'return':  TokenEnum.KWReturn,
         'sizeof':  TokenEnum.KWSizeof,
         'struct':  TokenEnum.KWStruct,
+        'true':    TokenEnum.KWTrue,
         'typedef': TokenEnum.KWTypedef,
         'void':    TokenEnum.KWVoid,
         'while':   TokenEnum.KWWhile,

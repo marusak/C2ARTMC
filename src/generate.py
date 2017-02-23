@@ -213,6 +213,14 @@ class Generate:
                                   "to: next_line",
                                   ])
 
+    def new_i_if_star(self, succ, fail):
+        """Add new instruction of type 'if *'."""
+        self.instructions.append(['"if*"',
+                                  self.get_line(),
+                                  "to: {0}".format(succ),
+                                  "to: {0}".format(fail),
+                                  ])
+
     def new_label(self, label_name):
         """Add new label."""
         self.labels[label_name] = str(self.current_line)
