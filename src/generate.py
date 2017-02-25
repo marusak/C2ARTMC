@@ -25,6 +25,9 @@ class Generate:
         # A counter of lines
         self.current_line = 0
 
+        # A counter for generating unique data
+        self.current_data = 1
+
         # Dictionary of labels
         self.labels = {'next_line': 'to: next_line'}
 
@@ -84,9 +87,27 @@ class Generate:
         self.variables[variable_name] = str(self.variables_counter)
         self.variables_counter += 1
 
+    def get_artmc_data(self, data):
+        """Find out if data converted, if not convert."""
+        data = str(data)
+        if (data in self.mapped_data.keys()):
+            return self.mapped_data[data]
+        converted = self.convert_data(data)
+        self.mapped_data[data] = converted
+        return converted
+
+    def convert_data(self, data):
+        """Convert internal data to string of 0s and 1s for ARTMC."""
+        self.current_data += 1
+        return '"' + bin(self.current_data - 1)[2:].zfill(8) + '"'
+
     def get_variables(self):
         """Return list of all known variables."""
         return self.variables.keys()
+
+    def get_data_name(self):
+        """Return the name of data item in structure."""
+        return self.data_name
 
     def get_line(self):
         """Get the next line number."""
@@ -211,6 +232,19 @@ class Generate:
                                   self.get_line(),
                                   "to: {0}".format(succ),
                                   "to: {0}".format(fail),
+                                  ])
+
+    def new_i_setdata(self, x, pointer, data, line_num):
+        """Add new instruction of type 'x.data = "something"."""
+        data = self.get_artmc_data(data)
+        if (pointer != self.data_name):
+            FatalError("Assigning data to non-data item on line {0}."
+                       .format(line_num))
+        self.instructions.append(['"setdata"',
+                                  self.get_line(),
+                                  self.variables[x],
+                                  data,
+                                  "to: next_line",
                                   ])
 
     def new_label(self, label_name):

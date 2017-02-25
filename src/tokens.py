@@ -25,6 +25,10 @@ class TokenGroups:
     Nondeterministic = [TokenEnum.TMul,
                         TokenEnum.KWAny]
 
+    Datas = [TokenEnum.TStr,
+             TokenEnum.TInt,
+             TokenEnum.TDouble]
+
 TokenType = {
         '+':       TokenEnum.TAdd,
         '-':       TokenEnum.TSub,

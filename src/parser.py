@@ -388,6 +388,7 @@ class Parser:
 
                 self.verify_token(TokenEnum.TAss)
                 t = self.s.get_token()
+
                 # x.next = NULL
                 if (t == TokenEnum.KWNull):
                     self.g.new_i_x_next_ass_null(name, pointer)
@@ -402,6 +403,12 @@ class Parser:
                 elif (t == TokenEnum.KWMalloc):
                     self.skip_until_semicolon()
                     self.g.new_i_x_next_new(name, pointer)
+
+                elif (t in TokenGroups.Datas):
+                    self.g.new_i_setdata(name,
+                                         pointer,
+                                         self.s.get_value(),
+                                         self.s.get_current_line())
 
                 else:
                     FatalError("Unknown assignment on line {0}"
