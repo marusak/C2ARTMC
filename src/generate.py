@@ -14,8 +14,9 @@ class Generate:
 
         # All items of the main data structure and it's instances
         self.structure_pointers = {}
-        self.structure_data = {}
+        self.mapped_data = {}
         self.variables = {}
+        self.data_name = None
 
         # A counter of unique ids
         self.pointer_counter = 0
@@ -68,12 +69,11 @@ class Generate:
 
     def add_data_to_structure(self, data_name):
         """Add new data item into structure and generate it's unique ID."""
-        if (data_name in self.structure_data.keys()):
-            FatalError("Duplicity identifier on line {0}."
+        if (self.data_name):
+            FatalError("Only one data item allowed in structure on line {0}."
                        .format(self.s.get_current_line()))
         # Save new item
-        self.structure_data[data_name] = str(self.pointer_counter)
-        self.pointer_counter += 1
+        self.data_name = data_name
 
     def save_new_variable(self, variable_name):
         """Add new variable and generate it's unique ID."""
@@ -112,9 +112,7 @@ class Generate:
 
     def new_i_x_ass_y_next(self, x, y, pointer):
         """Add new instruction of type 'x = y->pointer'."""
-        n = self.structure_pointers.get(pointer,
-                                        self.structure_data.get(pointer,
-                                                                None))
+        n = self.structure_pointers.get(pointer, None)
         if (n is None):
             FatalError("Unknown item '{0}' in variable '{1}'"
                        .format(pointer, y))
@@ -129,9 +127,7 @@ class Generate:
 
     def new_i_x_next_ass_null(self, x, pointer):
         """Add new instruction of type 'x->pointer = null'."""
-        n = self.structure_pointers.get(pointer,
-                                        self.structure_data.get(pointer,
-                                                                None))
+        n = self.structure_pointers.get(pointer, None)
         if (n is None):
             FatalError("Unknown item '{0}' in variable '{1}'"
                        .format(pointer, x))
@@ -145,9 +141,7 @@ class Generate:
 
     def new_i_x_next_ass_y(self, x, pointer, y):
         """Add new instruction of type 'x->pointer = y'."""
-        n = self.structure_pointers.get(pointer,
-                                        self.structure_data.get(pointer,
-                                                                None))
+        n = self.structure_pointers.get(pointer, None)
         if (n is None):
             FatalError("Unknown item '{0}' in variable '{1}'"
                        .format(pointer, x))
@@ -163,9 +157,7 @@ class Generate:
 
     def new_i_x_next_new(self, x, pointer):
         """Add new instruction of type 'x->pointer = malloc(...)'."""
-        n = self.structure_pointers.get(pointer,
-                                        self.structure_data.get(pointer,
-                                                                None))
+        n = self.structure_pointers.get(pointer, None)
         if (n is None):
             FatalError("Unknown item '{0}' in variable '{1}'"
                        .format(pointer, x))
@@ -279,11 +271,12 @@ class Generate:
         output += "\n# next pointers are : "
         output += ", ".join('{0}={1}'
                             .format(key, val)
-                            for key, val in sorted(self.structure_pointers.items()))
+                            for key, val in sorted(self.
+                                                   structure_pointers.items()))
         output += "\n# data values are : "
         output += ", ".join('{0}={1}'
                             .format(key, val)
-                            for key, val in sorted(self.structure_data.items()))
+                            for key, val in sorted(self.mapped_data.items()))
         return output
 
     def get_full_result(self):
@@ -302,7 +295,7 @@ class Generate:
         vars = ""
         vars += "    node_width={0}\n".format(len(self.variables) + 1 +
                                               self.descr_num + 2 +
-                                              len(self.structure_data))
+                                              8)
         vars += "    pointer_num={0}\n".format(len(self.variables)+1)
         vars += "    desc_num={0}\n".format(self.descr_num)
         vars += "    next_num={0}\n".format(len(self.structure_pointers))

@@ -1,6 +1,6 @@
 # pointer variables are : t=3, x=1, y=2
 # next pointers are : next=0
-# data values are : data=1
+# data values are : 
 def get_program():
     program=[
         ("x=null","00000000",3,1),
@@ -12,7 +12,7 @@ def get_program():
         ("goto","00000110",1),
         ("goto","00000111",8),
         ("exit","00001000")]
-    node_width=12
+    node_width=19
     pointer_num=4
     desc_num=5
     next_num=1
