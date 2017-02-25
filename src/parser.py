@@ -126,6 +126,7 @@ class Parser:
         suc_label: label to jump if the expression is successful
         fail_label: label to jump if the expression is unsuccessful
         """
+        processing_data = False
         t = self.s.get_token()
 
         # ! means negation - switch labels
@@ -139,9 +140,15 @@ class Parser:
 
             if (t == TokenEnum.TP):
                 self.verify_token(TokenEnum.TIden)
-                tmp = self.generate_unique_variable()
-                self.g.new_i_x_ass_y_next(tmp, x, self.s.get_value())
-                x = tmp
+
+                # it may be just comparing data
+                if (self.s.get_value() == self.g.get_data_name()):
+                    processing_data = True
+                else:
+                    tmp = self.generate_unique_variable()
+                    self.g.new_i_x_ass_y_next(tmp, x, self.s.get_value())
+                    x = tmp
+
                 t = self.s.get_token()
 
             # only support == and !=
@@ -171,6 +178,12 @@ class Parser:
                     tmp = self.generate_unique_variable()
                     self.g.new_i_x_ass_y_next(tmp, y, self.s.get_value())
                     self.g.new_i_x_eq_y(x, tmp, succ_label, fail_label)
+
+            elif (t in TokenGroups.Datas and processing_data):
+                self.g.new_i_ifdata(x,
+                                    self.s.get_value(),
+                                    succ_label,
+                                    fail_label)
 
             else:
                 FatalError("Unsupported operand on line {0}"

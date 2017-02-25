@@ -247,6 +247,17 @@ class Generate:
                                   "to: next_line",
                                   ])
 
+    def new_i_ifdata(self, x, data, succ, fail):
+        """Add new instruction of type 'if (x.data == "something")."""
+        data = self.get_artmc_data(data)
+        self.instructions.append(['"ifdata"',
+                                  self.get_line(),
+                                  self.variables[x],
+                                  data,
+                                  "to: {0}".format(succ),
+                                  "to: {0}".format(fail),
+                                  ])
+
     def new_label(self, label_name):
         """Add new label."""
         self.labels[label_name] = str(self.current_line)
