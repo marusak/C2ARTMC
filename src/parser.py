@@ -11,7 +11,7 @@ from src.error import FatalError
 class Parser:
     """The parser."""
 
-    def __init__(self, file_name, generate):
+    def __init__(self, file_name, generate, ignore):
         """The init."""
         self.s = Scanner(file_name)
         self.g = generate
@@ -24,6 +24,8 @@ class Parser:
 
         # counter to provide unique numbers or variables
         self.unique_counter_v = 0
+
+        self.ignore = ignore
 
     def generate_unique_label_name(self):
         """Return string that is unique."""
@@ -180,10 +182,13 @@ class Parser:
                     self.g.new_i_x_eq_y(x, tmp, succ_label, fail_label)
 
             elif (t in TokenGroups.Datas and processing_data):
-                self.g.new_i_ifdata(x,
-                                    self.s.get_value(),
-                                    succ_label,
-                                    fail_label)
+                if (self.ignore):
+                    self.g.new_i_if_star(succ_label, fail_label)
+                else:
+                    self.g.new_i_ifdata(x,
+                                        self.s.get_value(),
+                                        succ_label,
+                                        fail_label)
 
             else:
                 FatalError("Unsupported operand on line {0}"
@@ -419,10 +424,11 @@ class Parser:
                     return TokenEnum.TS
 
                 elif (t in TokenGroups.Datas):
-                    self.g.new_i_setdata(name,
-                                         pointer,
-                                         self.s.get_value(),
-                                         self.s.get_current_line())
+                    if (not self.ignore):
+                        self.g.new_i_setdata(name,
+                                             pointer,
+                                             self.s.get_value(),
+                                             self.s.get_current_line())
 
                 else:
                     FatalError("Unknown assignment on line {0}"

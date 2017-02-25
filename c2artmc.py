@@ -21,6 +21,8 @@ def parse_arguments():
                         help="Filepath to write the ARTMC file")
     parser.add_argument("-d",
                         help="Initial pointer descriptor")
+    parser.add_argument("-i", action="store_true",
+                        help="Ignore data")
 
     return parser.parse_args()
 
@@ -29,7 +31,7 @@ def main():
     """The main function."""
     args = parse_arguments()
     g = Generate(args.d)
-    p = Parser(args.INPUT_FILE, g)
+    p = Parser(args.INPUT_FILE, g, args.i)
     p.run()
 
     if not args.o:
