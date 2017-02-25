@@ -416,6 +416,7 @@ class Parser:
                 elif (t == TokenEnum.KWMalloc):
                     self.skip_until_semicolon()
                     self.g.new_i_x_next_new(name, pointer)
+                    return TokenEnum.TS
 
                 elif (t in TokenGroups.Datas):
                     self.g.new_i_setdata(name,
@@ -426,7 +427,7 @@ class Parser:
                 else:
                     FatalError("Unknown assignment on line {0}"
                                .format(self.s.get_current_line()))
-                return
+                return self.s.get_token()
 
         # skip assignment to variables of different types
         if (name not in self.g.get_variables()):
