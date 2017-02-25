@@ -58,28 +58,28 @@ class Generate:
         self.descr_num += 1
         return str(to_return)
 
-    def add_pointer_to_structure(self, pointer_name):
+    def add_pointer_to_structure(self, pointer_name, current_line):
         """Add new pointer into structure and generate it's unique ID."""
         if (pointer_name in self.structure_pointers.keys()):
             FatalError("Duplicity identifier on line {0}."
-                       .format(self.s.get_current_line()))
+                       .format(current_line))
         # Save new item
         self.structure_pointers[pointer_name] = self.pointer_counter
         self.pointer_counter += 1
 
-    def add_data_to_structure(self, data_name):
+    def add_data_to_structure(self, data_name, current_line):
         """Add new data item into structure and generate it's unique ID."""
         if (self.data_name):
             FatalError("Only one data item allowed in structure on line {0}."
-                       .format(self.s.get_current_line()))
+                       .format(current_line))
         # Save new item
         self.data_name = data_name
 
-    def save_new_variable(self, variable_name):
+    def save_new_variable(self, variable_name, current_line):
         """Add new variable and generate it's unique ID."""
         if (variable_name in self.variables.keys()):
             FatalError("Duplicity variable on line {0}."
-                       .format(self.s.get_current_line()))
+                       .format(current_line))
         # Save new item
         self.variables[variable_name] = str(self.variables_counter)
         self.variables_counter += 1

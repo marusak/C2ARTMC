@@ -34,7 +34,8 @@ class Parser:
         """Create new unique variable."""
         self.unique_counter_v += 1
         name = "v{0}".format(str(self.unique_counter_v - 1))
-        self.g.save_new_variable(name)
+        self.g.save_new_variable(name,
+                                 self.s.get_current_line())
         return name
 
     def verify_token(self, expected_token):
@@ -70,14 +71,16 @@ class Parser:
                 self.verify_token(TokenEnum.TIden)
                 next_pointer = self.s.get_value()
                 self.verify_token(TokenEnum.TS)
-                self.g.add_pointer_to_structure(next_pointer)
+                self.g.add_pointer_to_structure(next_pointer,
+                                                self.s.get_current_line())
             # data
             elif (token in TokenGroups.DataTypes):
                 # parse data element
                 self.verify_token(TokenEnum.TIden)
                 data = self.s.get_value()
                 self.verify_token(TokenEnum.TS)
-                self.g.add_data_to_structure(data)
+                self.g.add_data_to_structure(data,
+                                             self.s.get_current_line())
             else:
                 FatalError("Unknown item in structure on line {0}."
                            .format(self.s.get_current_line()))
@@ -101,14 +104,15 @@ class Parser:
         Expects that the variables are of the structure type.
         """
         self.verify_token(TokenEnum.TIden)
-        self.g.save_new_variable(self.s.get_value())
+        self.g.save_new_variable(self.s.get_value(),
+                                 self.s.get_current_line())
 
         t = self.s.get_token()
 
         while (t != TokenEnum.TS):
             self.verify_token(TokenEnum.TIden)
             name = self.s.get_value()
-            self.g.save_new_variable(name)
+            self.g.save_new_variable(name, self.s.get_current_line())
             t = self.s.get_token()
 
             if (t == TokenEnum.TAss):
@@ -485,7 +489,8 @@ class Parser:
             if (t == TokenEnum.TIden and
                self.s.get_value() == self.structure_name):
                 self.verify_token(TokenEnum.TIden)
-                self.g.save_new_variable(self.s.get_value())
+                self.g.save_new_variable(self.s.get_value(),
+                                         self.s.get_current_line())
 
             # argument of other types
             elif (t in TokenGroups.DataTypes):
@@ -523,11 +528,13 @@ class Parser:
 
                 # variable declaration(s)
                 if (t in [TokenEnum.TC, TokenEnum.TS]):
-                    self.g.save_new_variable(name)
+                    self.g.save_new_variable(name,
+                                             self.s.get_current_line())
                     while (t != TokenEnum.TS):
                         self.verify_token(TokenEnum.TIden)
                         name = self.s.get_value()
-                        self.g.save_new_variable(name)
+                        self.g.save_new_variable(name,
+                                                 self.s.get_current_line())
                         t = self.s.get_token()
 
                         if (t == TokenEnum.TAss):
