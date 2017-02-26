@@ -468,7 +468,7 @@ class Parser:
         elif (t == TokenEnum.KWMalloc):
             self.skip_until_semicolon()
             self.g.new_i_new(name)
-            return self.s.get_token()
+            return TokenEnum.TS
 
         else:
             FatalError("Unknown assignment on line {0}"
