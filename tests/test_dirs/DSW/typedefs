@@ -1,0 +1,26 @@
+
+typedef struct T
+/*? x ?*/
+{
+  struct T * left ;
+  struct T * right ;
+} 
++
+{
+  struct T * left ; /*? null ?*/
+  struct T * right ;
+}
++
+{
+  struct T * left ; 
+  struct T * right ; /*? null ?*/
+}
++
+{
+  struct T * left ; /*? null ?*/
+  struct T * right ; /*? null ?*/
+};
+
+
+
+
