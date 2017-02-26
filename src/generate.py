@@ -273,13 +273,13 @@ class Generate:
         Replace all labels.
         """
         # Finish labels aliases
-        for a in self.aliases.keys():
+        for a in sorted(self.aliases.keys()):
             try:
                 self.labels[a] = self.labels[self.aliases[a]]
             except:
                 pass
 
-        for a in self.aliases.keys():
+        for a in sorted(self.aliases.keys()):
             self.labels[a] = self.labels[self.aliases[a]]
 
         self.new_label("exit")
