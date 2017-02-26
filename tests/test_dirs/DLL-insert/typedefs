@@ -1,0 +1,26 @@
+
+typedef struct Tinit
+/*? t ?*/
+{
+  struct T2 * next ; /*? null ?*/
+  struct T2 * back ; /*? null ?*/
+}
++
+{
+  struct T2 * next ; /*? null ?*/
+  struct T2 * back ; /*? null ?*/
+}
+;
+
+typedef struct T2
+{
+  struct T2 * next ; /*? null ?*/
+  struct Any * back ; /*? -next ?*/
+} 
++
+{
+  struct T2 * next ; 
+  struct Any * back ; /*? -next ?*/
+};
+
+
