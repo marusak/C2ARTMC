@@ -470,6 +470,11 @@ class Parser:
             self.g.new_i_new(name)
             return TokenEnum.TS
 
+        elif (t == TokenEnum.KWRandomAlloc):
+            self.skip_until_semicolon()
+            self.g.new_i_random_alloc(name)
+            return TokenEnum.TS
+
         else:
             FatalError("Unknown assignment on line {0}"
                        .format(self.s.get_current_line()))

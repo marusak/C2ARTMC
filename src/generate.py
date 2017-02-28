@@ -258,6 +258,14 @@ class Generate:
                                   "to: {0}".format(fail),
                                   ])
 
+    def new_i_random_alloc(self, x):
+        """Add new instruction of type 'x=random_alloc()'."""
+        self.instructions.append(['"x=random"',
+                                  self.get_line(),
+                                  self.variables[x],
+                                  "to: next_line",
+                                  ])
+
     def new_label(self, label_name):
         """Add new label."""
         self.labels[label_name] = str(self.current_line)
