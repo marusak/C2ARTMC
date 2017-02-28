@@ -170,7 +170,18 @@ class Parser:
             elif (t == TokenEnum.TIden):
                 y = self.s.get_value()
 
+                if (processing_data):
+                    if (self.ignore):
+                        self.g.new_i_if_star(succ_label, fail_label)
+                    else:
+                        self.g.new_i_ifdata(x,
+                                            y,
+                                            succ_label,
+                                            fail_label)
+                    return
+
                 t = self.s.get_token()
+
                 if (t != TokenEnum.TP):
                     self.g.new_i_x_eq_y(x, y, succ_label, fail_label)
                     self.s.unget_token(t)
@@ -413,9 +424,16 @@ class Parser:
 
                 # x.next = y
                 elif (t == TokenEnum.TIden):
-                    self.g.new_i_x_next_ass_y(name,
-                                              pointer,
-                                              self.s.get_value())
+                    if (self.s.get_value() in self.g.get_constants()):
+                        if (not self.ignore):
+                            self.g.new_i_setdata(name,
+                                                 pointer,
+                                                 self.s.get_value(),
+                                                 self.s.get_current_line())
+                    else:
+                        self.g.new_i_x_next_ass_y(name,
+                                                  pointer,
+                                                  self.s.get_value())
 
                 # x.next = malloc(..);
                 elif (t == TokenEnum.KWMalloc):
@@ -437,6 +455,10 @@ class Parser:
 
         # skip assignment to variables of different types
         if (name not in self.g.get_variables()):
+            if (name in self.g.get_constants() and not self.ignore):
+                FatalError("Changing value of standard variable on line {0}.\
+                        These operation are not permitted. Use -i to ignore."
+                           .format(self.s.get_current_line()))
             self.skip_until_semicolon()
             return TokenEnum.TS
 
@@ -488,7 +510,9 @@ class Parser:
 
         # definition/declaration of the standard types
         elif (first_token in TokenGroups.DataTypes):
-            # ignore this variables
+            self.verify_token(TokenEnum.TIden)
+            self.g.add_standard_variable(self.s.get_value(),
+                                         self.s.get_current_line())
             self.skip_until_semicolon()
 
         # a while statement
@@ -527,6 +551,8 @@ class Parser:
             # argument of other types
             elif (t in TokenGroups.DataTypes):
                 self.verify_token(TokenEnum.TIden)
+                self.g.add_standard_variable(self.s.get_value(),
+                                             self.s.get_current_line())
 
             else:
                 FatalError("Unknown argument type on line {0}."
@@ -553,20 +579,31 @@ class Parser:
 
             # a function on variable of the main strucutre
             elif (t == TokenEnum.TIden and
-                  self.s.get_value() == self.structure_name):
+                  self.s.get_value() == self.structure_name or
+                  t in TokenGroups.DataTypes):
+
+                standard = True if t in TokenGroups.DataTypes else False
+
                 self.verify_token(TokenEnum.TIden)
                 name = self.s.get_value()
                 t = self.s.get_token()
 
                 # variable declaration(s)
                 if (t in [TokenEnum.TC, TokenEnum.TS]):
-                    self.g.save_new_variable(name,
-                                             self.s.get_current_line())
+                    if standard:
+                        self.g.add_standard_variable(name,
+                                                     self.s.get_current_line())
+                    else:
+                        self.g.save_new_variable(name,
+                                                 self.s.get_current_line())
                     while (t != TokenEnum.TS):
                         self.verify_token(TokenEnum.TIden)
                         name = self.s.get_value()
-                        self.g.save_new_variable(name,
-                                                 self.s.get_current_line())
+                        line = self.s.get_current_line()
+                        if standard:
+                            self.g.add_standard_variable(name, line)
+                        else:
+                            self.g.save_new_variable(name, line)
                         t = self.s.get_token()
 
                         if (t == TokenEnum.TAss):
@@ -580,13 +617,6 @@ class Parser:
                 else:
                     FatalError("Unsupported construction on line {0}."
                                .format(self.s.get_current_line()))
-
-            # a function
-            elif (t in TokenGroups.DataTypes):
-                self.verify_token(TokenEnum.TIden)
-                name = self.s.get_value()
-                self.verify_token(TokenEnum.TLZ)
-                self.parse_function()
 
             else:
                 FatalError("Unknown construction on line {0}."

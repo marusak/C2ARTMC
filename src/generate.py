@@ -55,6 +55,10 @@ class Generate:
         else:
             self.descr_num = int(descriptor) + 1
 
+    def get_constants(self):
+        """Return all known constants."""
+        return self.mapped_data.keys()
+
     def get_descr_num(self):
         """Return next descr_num."""
         to_return = self.descr_num
@@ -95,6 +99,13 @@ class Generate:
         converted = self.convert_data(data)
         self.mapped_data[data] = converted
         return converted
+
+    def add_standard_variable(self, name, line):
+        """Non-changing varaible can be threaded as constant."""
+        if (name in self.variables):
+            FatalError("Redefining variable on line {0}"
+                       .format(line))
+        self.get_artmc_data(name)
 
     def convert_data(self, data):
         """Convert internal data to string of 0s and 1s for ARTMC."""
