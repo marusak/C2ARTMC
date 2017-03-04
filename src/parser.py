@@ -424,7 +424,7 @@ class Parser:
 
                 # x.next = y
                 elif (t == TokenEnum.TIden):
-                    if (self.s.get_value() in self.g.get_constants()):
+                    if (pointer == self.g.get_data_name()):
                         if (not self.ignore):
                             self.g.new_i_setdata(name,
                                                  pointer,
