@@ -48,7 +48,7 @@ class Generate:
 
             if (cmd.returncode):
                 FatalError("Could not call get_typedef_descr.t.sh." +
-                           "Does the current directory contains 'typedef' " +
+                           "Does the current directory contains 'typedefs' " +
                            "file? Use -d to set descriptor.")
             self.descr_num = int(stdout) + 1
 
