@@ -433,9 +433,21 @@ class Parser:
                                                  self.s.get_value(),
                                                  self.s.get_current_line())
                     else:
-                        self.g.new_i_x_next_ass_y(name,
-                                                  pointer,
-                                                  self.s.get_value())
+                        y = self.s.get_value()
+                        t = self.s.get_token()
+                        if (t != TokenEnum.TP):
+                            self.g.new_i_x_next_ass_y(name,
+                                                      pointer,
+                                                      y)
+                            self.s.unget_token(t)
+                        else:
+                            # x->next = y->prev
+                            self.verify_token(TokenEnum.TIden)
+                            tmp = self.generate_unique_variable()
+                            self.g.new_i_x_ass_y_next(tmp,
+                                                      y,
+                                                      self.s.get_value())
+                            self.g.new_i_x_next_ass_y(name, pointer, tmp)
 
                 # x.next = malloc(..);
                 elif (t == TokenEnum.KWMalloc):
