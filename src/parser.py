@@ -110,6 +110,8 @@ class Parser:
                                  self.s.get_current_line())
 
         t = self.s.get_token()
+        if (t == TokenEnum.TAss):
+            t = self.parse_assignment(self.s.get_value())
 
         while (t != TokenEnum.TS):
             self.verify_token(TokenEnum.TIden)
