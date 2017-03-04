@@ -15,7 +15,8 @@ def run_once(files_dir, exec_file):
             source_file = f
             break
     else:
-        sys.exit(1)
+        print ("Warning: {0} does not contain input file.".format(files_dir))
+        return
     cmd = Popen([exec_file, join(files_dir, source_file)],
                 stdout=PIPE,
                 stderr=PIPE)
