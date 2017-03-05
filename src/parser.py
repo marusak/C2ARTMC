@@ -155,6 +155,22 @@ class Parser:
 
                 t = self.s.get_token()
 
+            # using short comparing e.g if(x) or if(x->data) etc.
+            if (t in [TokenEnum.TPZ, TokenEnum.TOr, TokenEnum.TAnd]):
+                if processing_data:
+                    if (self.ignore):
+                        self.g.new_i_if_star(succ_label, fail_label)
+                    else:
+                        self.g.new_i_ifdata(x,
+                                            0,
+                                            fail_label,
+                                            succ_label)
+                else:
+                    self.g.new_i_x_eq_null(x, fail_label, succ_label)
+
+                self.s.unget_token(t)
+                return
+
             # only support == and !=
             if (t not in [TokenEnum.TE, TokenEnum.TNE]):
                 FatalError("Unsupported operator on line {0}"
