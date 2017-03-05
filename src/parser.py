@@ -142,15 +142,18 @@ class Parser:
             x = self.s.get_value()
             t = self.s.get_token()
 
-            if (t == TokenEnum.TP):
+            while (t == TokenEnum.TP):
                 self.verify_token(TokenEnum.TIden)
+                pointer = self.s.get_value()
 
                 # it may be just comparing data
-                if (self.s.get_value() == self.g.get_data_name()):
+                if (pointer == self.g.get_data_name()):
                     processing_data = True
+                    t = self.s.get_token()
+                    break
                 else:
                     tmp = self.generate_unique_variable()
-                    self.g.new_i_x_ass_y_next(tmp, x, self.s.get_value())
+                    self.g.new_i_x_ass_y_next(tmp, x, pointer)
                     x = tmp
 
                 t = self.s.get_token()
@@ -199,16 +202,15 @@ class Parser:
                     return
 
                 t = self.s.get_token()
-
-                if (t != TokenEnum.TP):
-                    self.g.new_i_x_eq_y(x, y, succ_label, fail_label)
-                    self.s.unget_token(t)
-
-                else:
+                while (t == TokenEnum.TP):
                     self.verify_token(TokenEnum.TIden)
                     tmp = self.generate_unique_variable()
                     self.g.new_i_x_ass_y_next(tmp, y, self.s.get_value())
-                    self.g.new_i_x_eq_y(x, tmp, succ_label, fail_label)
+                    y = tmp
+                    t = self.s.get_token()
+
+                self.g.new_i_x_eq_y(x, y, succ_label, fail_label)
+                self.s.unget_token(t)
 
             elif (t in TokenGroups.Datas and processing_data):
                 if (self.ignore):
@@ -433,7 +435,22 @@ class Parser:
                 self.verify_token(TokenEnum.TIden)
                 pointer = self.s.get_value()
 
-                self.verify_token(TokenEnum.TAss)
+                t = self.s.get_token()
+                while (t == TokenEnum.TP):
+                    self.verify_token(TokenEnum.TIden)
+                    p = self.s.get_value()
+                    tmp = self.generate_unique_variable()
+                    self.g.new_i_x_ass_y_next(tmp,
+                                              name,
+                                              pointer)
+                    name = tmp
+                    pointer = p
+                    t = self.s.get_token()
+
+                if (t != TokenEnum.TAss):
+                    FatalError("Unknown token in assignment on line {0}."
+                               .format(self.s.get_current_line()))
+
                 t = self.s.get_token()
 
                 # x.next = NULL
@@ -451,19 +468,19 @@ class Parser:
                     else:
                         y = self.s.get_value()
                         t = self.s.get_token()
-                        if (t != TokenEnum.TP):
-                            self.g.new_i_x_next_ass_y(name,
-                                                      pointer,
-                                                      y)
-                            self.s.unget_token(t)
-                        else:
-                            # x->next = y->prev
+
+                        while (t == TokenEnum.TP):
                             self.verify_token(TokenEnum.TIden)
+                            p = self.s.get_value()
                             tmp = self.generate_unique_variable()
                             self.g.new_i_x_ass_y_next(tmp,
                                                       y,
-                                                      self.s.get_value())
-                            self.g.new_i_x_next_ass_y(name, pointer, tmp)
+                                                      p)
+                            y = tmp
+                            t = self.s.get_token()
+
+                        self.s.unget_token(t)
+                        self.g.new_i_x_next_ass_y(name, pointer, y)
 
                 # x.next = malloc(..);
                 elif (t == TokenEnum.KWMalloc):
@@ -511,11 +528,25 @@ class Parser:
                 self.g.new_i_x_ass_y(name, second_var)
                 return t
 
-            # x = y->next
+            # x = y->next->next...
             elif (t == TokenEnum.TP):
                 self.verify_token(TokenEnum.TIden)
-                self.g.new_i_x_ass_y_next(name, second_var, self.s.get_value())
-                return self.s.get_token()
+                pointer = self.s.get_value()
+
+                t = self.s.get_token()
+                while (t == TokenEnum.TP):
+                    self.verify_token(TokenEnum.TIden)
+                    p = self.s.get_value()
+                    tmp = self.generate_unique_variable()
+                    self.g.new_i_x_ass_y_next(tmp,
+                                              second_var,
+                                              pointer)
+                    second_var = tmp
+                    pointer = p
+                    t = self.s.get_token()
+
+                self.g.new_i_x_ass_y_next(name, second_var, pointer)
+                return t
 
         elif (t == TokenEnum.KWMalloc):
             self.skip_until_semicolon()
