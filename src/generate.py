@@ -84,9 +84,6 @@ class Generate:
 
     def save_new_variable(self, variable_name, current_line):
         """Add new variable and generate it's unique ID."""
-        if (variable_name in self.variables.keys()):
-            FatalError("Duplicity variable on line {0}."
-                       .format(current_line))
         # Save new item
         self.variables[variable_name] = str(self.variables_counter)
         self.variables_counter += 1
