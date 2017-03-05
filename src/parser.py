@@ -27,6 +27,9 @@ class Parser:
 
         self.ignore = ignore
 
+        self.last_begining = []
+        self.last_end = []
+
     def generate_unique_label_name(self):
         """Return string that is unique."""
         self.unique_counter += 1
@@ -331,6 +334,9 @@ class Parser:
         fail = self.generate_unique_label_name()
         beginning = self.generate_unique_label_name()
 
+        self.last_begining.append(beginning)
+        self.last_end.append(fail)
+
         self.g.new_label(beginning)
 
         self.verify_token(TokenEnum.TLZ)
@@ -348,13 +354,18 @@ class Parser:
             self.parse_command(t)
         self.g.new_i_goto(beginning)
         self.g.new_label(fail)
+        self.last_begining.pop()
+        self.last_end.pop()
 
     def parse_do(self):
         """Parse a do-while statement."""
         succ = self.generate_unique_label_name()
         fail = self.generate_unique_label_name()
+        beginning = self.generate_unique_label_name()
 
         self.g.new_label(succ)
+        self.last_begining.append(beginning)
+        self.last_end.append(fail)
 
         t = self.s.get_token()
         # { a new block starts
@@ -368,9 +379,14 @@ class Parser:
 
         self.verify_token(TokenEnum.KWWhile)
         self.verify_token(TokenEnum.TLZ)
+
+        self.g.new_label(beginning)
+
         self.parse_expression(succ, fail)
 
         self.g.new_label(fail)
+        self.last_begining.pop()
+        self.last_end.pop()
 
     def parse_if(self):
         """Parse a if statement."""
@@ -595,6 +611,16 @@ class Parser:
         # a variable assignment
         elif (first_token == TokenEnum.TIden):
             self.parse_assignment()
+
+        # a break statement
+        elif (first_token == TokenEnum.KWBreak):
+            self.g.new_i_goto(self.last_end[-1])
+            self.verify_token(TokenEnum.TS)
+
+        # a continue statement
+        elif (first_token == TokenEnum.KWContinue):
+            self.g.new_i_goto(self.last_begining[-1])
+            self.verify_token(TokenEnum.TS)
 
     def parse_function(self):
         """Parse function. It is already read for the first '('."""
