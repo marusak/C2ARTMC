@@ -1,0 +1,9 @@
+typedef struct Tinit
+/*? aux ?*/
+{
+    struct Tinit * next ; /*? null ?*/
+    struct Tinit * prev ; /*? null ?*/
+};
+
+
+
