@@ -274,6 +274,13 @@ class Generate:
                                   "to: next_line",
                                   ])
 
+    def new_i_error(self):
+        """Add new instruction of type 'return ERROR'."""
+        self.get_line()
+        self.instructions.append(['"exit"',
+                                  "1"*8,
+                                  ])
+
     def new_label(self, label_name):
         """Add new label."""
         self.labels[label_name] = str(self.current_line)

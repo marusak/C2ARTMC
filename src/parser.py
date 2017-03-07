@@ -428,8 +428,14 @@ class Parser:
 
     def parse_return(self):
         """Parse a return statement."""
-        self.skip_until_semicolon()
-        self.g.new_i_goto("exit")
+        t = self.s.get_token()
+        if (t == TokenEnum.KWError):
+            self.skip_until_semicolon()
+            self.g.new_i_error()
+        else:
+            self.s.unget_token(t)
+            self.skip_until_semicolon()
+            self.g.new_i_goto("exit")
 
     def parse_assignment(self, name=None):
         """Parse a variable assignment.
