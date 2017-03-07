@@ -437,6 +437,18 @@ class Parser:
             self.skip_until_semicolon()
             self.g.new_i_goto("exit")
 
+    def parse_assert(self):
+        """Parse a assert statement."""
+        succ = self.generate_unique_label_name()
+        fail = self.generate_unique_label_name()
+
+        self.verify_token(TokenEnum.TLZ)
+        self.parse_expression(succ, fail)
+        self.g.new_label(fail)
+        self.g.new_i_error()
+        self.g.new_label(succ)
+        self.verify_token(TokenEnum.TS)
+
     def parse_assignment(self, name=None):
         """Parse a variable assignment.
 
@@ -627,6 +639,9 @@ class Parser:
         elif (first_token == TokenEnum.KWContinue):
             self.g.new_i_goto(self.last_begining[-1])
             self.verify_token(TokenEnum.TS)
+
+        elif (first_token == TokenEnum.KWAssert):
+            self.parse_assert()
 
     def parse_function(self):
         """Parse function. It is already read for the first '('."""
