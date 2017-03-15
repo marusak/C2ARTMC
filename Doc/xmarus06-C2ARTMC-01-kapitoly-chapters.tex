@@ -6,20 +6,19 @@
 \chapter{Nástroj ARTMC}
 ARTMC je nástroj na formálnu verifikáciu programov, ktoré manipulujú s
  dynamicky viazanými dátovými štruktúrami. Tento nástroj bol vyvinutý na Fakulte
- Informatiky Vysokého Učení Technického v Brne vrámci výskmnej skupiny VeriFit,
+ Informatiky Vysokého Učení Technického v Brne vrámci výskumnej skupiny VeriFit,
  ktorá sa zaoberá verifikáciou programov. V tejto kapitole je tento nástroj
  popísaný z dvoch hľadísk. Najskôr je stručný prehľad funkcionality jazyka a
  následne je popísaná štruktúra vstupného súboru, ktorý je pre túto prácu
- najdôzležitejší.
--- CO je to verifikacia?
--- Co su to dynamicke datove struktury?
+ najdôležitejší.
+
  \section{Funkcionalita a použitie ARTMC}
  Majme na vstupe nerekurzívny program, ktorý manipuluje s dynamicky viazanými
  šturktúrami s viacnásobnými next ukazateľmi. Snahou nástroja je overiť, že
  nemôžu nastať nedovolené operácie (napr. zápis do null ukazateľa, použitie
  nedefinovaného alebo už zmazaného prvku atď.).
 
- Verifikačná metóda, ktorá je použitá v tomto nástroji je založená na anstraktom
+ Verifikačná metóda, ktorá je použitá v tomto nástroji je založená na abstraktom
  regulárnom stromovom model checkingu. MORE 
 
  \section{Formát vstupného súboru}
@@ -55,10 +54,10 @@ ARTMC je nástroj na formálnu verifikáciu programov, ktoré manipulujú s
  \begin{itemize}
      \item[Identifikátor] Prvá položka je vždy reťazec obsahujúci identifikátor inštrukcie.
      \item[Číslo príkazu] Druhá položka značená ako \textit{line\_num} identifikuje príkaz
-         vrámci celého programu. Jedná sa o reťazec skaldajúci sa z postupnosti
+         vrámci celého programu. Jedná sa o reťazec skladajúci sa z postupnosti
          núl a jedničiek, ktorý musí byť vrámci celého  programu jedinečný.
          Ideálny postup je číslovať inštukcie od 0 až po N a previesť tieto
-         čísla do binárnej podoby.
+         čísla do binárnej podoby. Zároveň je dôležité, aby všetky výsledné binárne čísla mali rovnako znakov.
      \item[Premenné] Označené ako \textit{x} a \textit{b}. V programe sú značené prirodzenými číslami.
      \item[Ukazateľové premenné] Označené ako \textit{next}. V programe sú číslované od 0.
      \item[Ukazateľ na dalšiu inštrukciu] Označené ako \textit{next\_line}. Označuje
@@ -69,32 +68,136 @@ ARTMC je nástroj na formálnu verifikáciu programov, ktoré manipulujú s
      \item[Desktirpty 2] dunno now
  \end{itemize}
 \section{Tvorba programu v ARTMC}
+
 Preco pisanie v ARTMC je pain a ako v C nie je a prelozenie a ze uz je aj VERLIS (odkaz na akpiotlu)
 
 \chapter{Prekladače}
 Prekladač je nástroj, ktorý vytvára kód z jazyka vyššej úrovne do jazyka nižsej úrovne.
-MORE
+Co je na vstupe a co na vystupe - v com je to dobre a preco to chceme
+3 casti - scanner - parser - generovanie kodu
+
 \section{Analýza zhora-nadol}
 Ako to ide, vyhody, kde sa to pozuiva
+
 \section{Analýza zdola-nahor}
 Ako to ide, vyhody, kde sa to pozuiva
+
 \section{LL-gramatika}
 Co to je, ako sa tvori + v prilohe moja
+
 \chapter{Súčasný stav prekladača pre ARTMC}
-bola snaha, co to je...
-\section{AVERILES}
-kto, preco v com a ako
+Pre ARTMC bol vytvorený prekladač z jazyka C s názvom AVERILES. Jedná sa o
+rekladač napísaný v jazyku Java. Snahou tejto práce nie je tento prekladač
+upraviť ale napísať úplne nový. Hlavné dôvody prečo je potrebé vytvoriť nový
+prekladač sú:
+\begin{itemize}
+    \item Chyby v prekladači\\
+        Prekladač nedokázal spracovať určité výrazy. Niektoré výrazy prekladal nesprávne.
+        Preto bolo potrebné pri zložitejších programoch manuálne kontrolovať výsledný
+        program a editovať vstupný rpogram do takej formy, aby ho prekladač dokázal
+        preložiť.
+    \item Tažko rozšíteľný\\
+        Prekladač bol napísaný v jazyku Java dos+t zložitým a nečitateľným spôsobom. Takýto
+        kód sa veľmi tažko modifikuje a rozširuje o daľsie vlastnosti. Prekladač,
+        ktorý je výstupom tejto práce si dáva za cieľ čitateľný kód, do ktorého
+        sa jednoducho dopĺňajú dalšie funkcionality.
+    \item Nepraktické používanie\\
+        Proces prekladu za pomoci Averlis pozostáva z dvoch krokov
+        \begin{enumerate}
+            \item Tvorba XML zo zdrojového kódu v C
+            \item Preklad XML do ARTMC
+        \end{enumerate}
+        Takýto postup je zložitejší, nakoľko je potrebné volať dva programy.
+        Zároveň programy nemajú prepínače na modifikáciu ich správania. Teda
+        ich použitie je možné len v jednom užívateľskom prípade
+\end{itemize}
+
+
 \chapter{Implementácia}
-Táto kapitola sa venuje navrhovaniu implementácie...
-\section{Python}
-\section{Git}
-\section{Tox}
-\section{Unittest}
-\section{OO}
+Táto kapitola sa venuje návrhu a implementácii samotného prekladača.
+Ako implementačný jazyk bol zvolený python. Kritériá, ktoré by mala výsledná
+aplikácia spĺnať sa dajú rozdeliť do dvoch kategórií:
+\begin{enumerate}
+    \item Použiteľnosť a prenositeľnosť
+    \item Moderný vývoj
+\end{enumerate}
+
+\section{Použiteľnosť a prenositeľnosť}
+Výsledná aplikácia by mala byť jednoducho použiteľná. Tak ako bolo spomenuté v
+kapitole XX, momentálne existujúci prekladač ma nie jednoduché použivanie. Zároveň
+neumožnuje špecifikovať dalšie voľby, ktoré by uivateľ mohol potrebovať. Voľby,
+ktoré by uivateľ mohol potrebovať mimo iné patria hlavne:
+\begin{itemize}
+    \item Možnosť špecifikovať výstupný súbor\\
+        Defaultne výstupný súbor sa uloží na rovnake miesto ako vstupný a je
+        pomenovaný \texttt{program.py}. Avšak užívateľ si môže zvoliť ľubovoľné umiestenie
+        a názov súboru.
+    \item Možnosť špecifikovať vstupný descriptor\\
+        Viď kapitola X. Nakoľko sa vstupný descriptor získava z \texttt{getsth} a je
+        možné, že tento program nie je dostupný, aby sa dal preklad spustiť, môže
+        užívateľ túto hodnotu poskytnúť.
+    \item Možnosť ignorácie dát\\
+        Nakoľko podpora práce s dátami v ARTMC je výrazne obmedzená, môže byť
+        vhodné nechať prekladač aby prácu s dátami neprekladal.
+\end{itemize}
+
+Rovnako medzi hlavné požiadavky patrí aj prenositeľnosť. V rámci prenositeľnosti
+musíme uvažovať dva druhy:
+\begin{itemize}
+    \item Operačný systém\\
+        Program by mal byť spustieteľný a správne bežať aspoň na Linux-och a Windows-och.
+    \item Verzia pythonu\\
+        Program by mal byť spustieteľný a správne bežať na všetkých hlavných verziách Pythonu.
+        Viac o Pythone a verziách je v kapitole XX.
+\end{itemize}
+
+\subsection{Python}
+Python je vysokoúrovňový skriptovací programovací jazyk. Podporuje viacero programovacích
+paradigmat. Pre túto prácu bude použité objektovo orientované. Zároveň Python podporuje
+dynamickú typovú kontrolu. MORE
+Python má dve hlavné verzie. Python 2.X a Python 3.X. Dalej tieto verzie sa delia na podverzie.
+Verzie a podverzie nemusia (a ani nie sú) medzi sebou kompatibilné. To prináša problém
+pre programátorov, ktorý chcú písať program tak, aby fungoval pre rôzne verzie.
+C2ARTMC by mal fungovať aspon pre verzie \texttt{2.6, 2.7, 3.3, 3.4, 3.5}.
+
+\section{Moderný vývoj}
+Táto časť sa venuje postupom a metódam, ktoré pri vývoji budú použité. Jedná sa
+o prevažne o technológie, ktoré určujú kvalitný projekt v dnešnej dobe.
+
+\subsection{Git}
+Verzovací systém git umožnuje sledovať vývoj projektu a v jednotlivých zmenách
+v histórií sa posúvať. Teda v prípade chyby je jednoduché zistiť kedy a ako chyba
+vznikla. Zároveň je jednoduché sa vrátiť do stavu pred chybou.
+Git umožnuje rovnako jedoduchú spoluprácu viacerých autorov. Táto práca je
+prirodzene dielom jedného autora, avšak je možné, že po dokončení práce sa nájde
+chyba, alebo bude treba doplniť funkcionalitu a to umožní aby iný autor túto zmenu
+vykonal.
+Táto práca vyuiva GitHub a je dostupná na URL.
+
+\subsection{Unittest}
+Pri pridávaní novej funkcionality sa môže stať, že sa zavedie chyba vrámci inej
+funckionality. Preto je najvhodnejšie, po každej zmene otestovať všetky predtým
+naprogramované funkcionality. To je prirodzene takmer nemožné. Preto sa píšu testy,
+ktoré sa dajú spúsťat hromadne a je ľahko a rýchlo možné overit, že neprišlo k
+zavedeniu chyby.
+
+\subsection{Tox}
+Aby bolo možné spúsťat unittesty pod rôznymi verizami pythonu a overiť, že všetky testy
+upsejú na všetkých podporvovanćyh verziach pythonu v práci bude použitý nájstroj tox.
+Jedná sa o porgram, ktorý potrebuje iba jeden jednoduchý konfiguračný súbor, ktorý
+obsahuj spôsob ako sa spúštajú unittesty a verzie pythonov, pod ktorými chceme
+aby program fungoval. Následne zavolaním programu tox bez argumentov sa testy
+spustia pod všetk=ymi poždaovaními verziami a prehľadny výpis oznámi, či všetky
+testy boli úspešné, prípadne ktorý test neuspel v ktorej verzii.
+
 \chapter{Výsledná aplikácia}
+
 \section{Testy}
+
 \section{Nedostatky}
+
 \section{Navrhovaná práca}
+
 \chapter{Záver}
 
 %=========================================================================
