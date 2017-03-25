@@ -35,7 +35,35 @@ TODO aspon raz tolko
 Nástroj ARTMC potrebuje pre svoju analýzu dva súbory. Jedná sa o súbor \texttt{typedefs}, ktorý obsahuje definíciu množiny počiatočnej konfigurácie a súbor \texttt{program.py} obsahujúci definíciu programu vo formáte vytvorenom pre potreby tohto nástroja.
 
 \subsection{typedefs}
-TODO
+Tento súbor sa používa na špecifikáciu množiny počiatočnej konfigurácie. Súbor obsahuje množinu typov. Následne sa pamäť zostavuje z uzlov špecifikovaných typov, ktore sú prepojené za pomoci selektorov.
+
+Existujú dva druhy selektorov:
+\begin{itemize}
+\item \textit{Priame spojenia}
+\item \textit{Nepriame spojenia} sú popísané za pomoci cesty cez priame spojenia. Za pomoci symbola ``-'' pred priamym spojením sa značí nasledovanie spojenia späť.
+\end{itemize}
+
+Súbor typedefs pre obojsmerne viazaný list by mohol vyzerať nasledovne: \textit{(+ znamená \uv{alebo})}
+
+\texttt{
+typedef struct Tinit\\                                                            
+/*? x ?*/\\                                                                       
+\{\\
+  struct T2 * next ;\\                                                           
+  struct T2 * back ; /*? null ?*/\\                                               
+\};\\
+                                                                                \\
+typedef struct T2                                                           
+\{\\
+  struct T2 * next ; /*? null ?*/\\                                               
+  struct Any * back ; /*? -next ?*/\\
+\}
++
+\{\\
+  struct T2 * next ;\\                                                           
+  struct Any * back ; /*? -next ?*/\\                                             
+\};
+}
 
 \subsection{program.py}
 Zdrojový súbor obsahujúci jednu funkciu v jazyku Python, ktorá vracia dvojicu \texttt{(program, env)}.
@@ -52,7 +80,7 @@ if *                & (``if*'',``line\_num'',next\_line\_then,next\_line\_else)\
 goto                & (``goto'',``line\_num'',next\_line)\\
 exit                & (``exit'',``line\_num'')\\
 x.next=null         & (``x.next=null'',``line\_num'',x,next,next\_line)\\
-xnext=new           & (``x.next=new'',``line\_num'',x,next,next\_line, descr\_num, gen\_descr)\\
+x.next=new           & (``x.next=new'',``line\_num'',x,next,next\_line, descr\_num, gen\_descr)\\
 setdata             & (``setdata'',``line\_num",x,``data'',next\_line)\\
 if x.data==``\dots'' & (``ifdata'',``line\_num'',x,``data'',next\_line\_then,next\_line\_else)\\
 x:=random\_position & (``x=random'',``line\_num'',x,next\_line)\\
@@ -75,9 +103,31 @@ new                 & (``new'',``line\_num'',x,next\_line)\\
         číslo riadku inštrukcie, na ktorej sa po skončení bude pokračovať. Inštrukcie
         sú číslované od nuly. Ak je použítá prípona \textit{\_then} alebo \textit{\_else}
         jedná sa o miesto pokračovania v prípade splnenia alebo nesplnenia podmienky danej inštrukcie.
-    \item \textit{Deskriptory 1} - TODO
-    \item \textit{Desktirpty 2} - TODO
+    \item \textit{Deskriptory 1} - Označené ako \textit{descr\_num}. Jedinečný deskriptor použitý pri vykonávani danej inštrukcie. Deskriptory sú číslované od 1. Viac o nastavovaní hodnôt tohto deskriptoru je v TODO ref.
+    \item \textit{Desktirpty 2} - Označené ako \textit{gen\_num}. Využíva sa iba pri príkaze \texttt{x.next=new} a označuje automatickú generáciu počiatočného deskriptoru. Nadobúda hodnoty 0 (vypnuté) a 1 (zapnuté).
 \end{itemize}
+
+\subsection{env}
+Jedná sa o 6ticu \texttt{node\_width, pointer\_num, desc\_num, next\_num, err\_line, restrict\_var} obsahujúcu informácie o programe.
+Význam jednotlivých položiek je uvedený v TODO ref
+
+\begin{itemize}
+\item \texttt{node\_width = pointer\_num + descr\_num + 2 + } šírka dát  
+\item \texttt{pointer\_num} = Počet ukazateľových premenných zvýšený o 1
+\item \texttt{desc\_num} = Počet ukazateľových deskriptorov zvýšený o 1. TODO ref NAstavovnaide desktiptoru
+\item \texttt{next\_num} = Počet next pointerov použitých v programe
+\item \texttt{err\_line} = Označenie riadku, na ktorý sa skáče v prípade chyby.
+\item \texttt{restrict\_var} = Automatické generovanie automatu, ktorý garantuje iba jeden výskyt programovej premennej v konfigurácii. Nadobúda hodnoty 0 (vypnuté) a 1 (zapnuté).
+\end{itemize}
+
+
+\subsection{Nastavovanie deskriptoru}
+Deskriptor pozostáva z dvoch častí:
+\begin{enumerate}
+\item Deskriptory v konfigurácii - Jedná sa o deskriptory, ktoré sú použité v súbore \textit{typedefs}. Tieto deskriptory už nemôžu byť znova použité. Číslo najvyššieho použitého deskriptoru je možné získať zo skriptu \texttt{get\_typedef\_descr.t.sh}, ktorý je šírení v distribúcii ARTMC.
+\item Vlastné deskriptory - Každý príkaz typu \texttt{x.next=y} alebo \texttt{x.next=new} dostane vlastný deskriptor, ktorý ešte nebol použitý. Nemôže byť použitý ani v konfigurácii.
+\end{enumerate}
+
 \section{Tvorba programu v ARTMC}
 Tvorba programu pre nástroj ARTMC je zložitá, ľahko sa v nom tvoria chyby a je zložité
 upravovať napísaný program.
@@ -132,6 +182,9 @@ prepísanie takmer celého kódu.
 
 TODO Ukážka - pridať podmeinku a je to v keli...
 TODO praca s datami?
+
+
+
 
 \chapter{Prekladače}
 Prekladač je nástroj, ktorý číta zdrojový program a prekladá ho na cieľový program.
