@@ -128,6 +128,11 @@ Deskriptor pozostáva z dvoch častí:
 \item Vlastné deskriptory - Každý príkaz typu \texttt{x.next=y} alebo \texttt{x.next=new} dostane vlastný deskriptor, ktorý ešte nebol použitý. Nemôže byť použitý ani v konfigurácii.
 \end{enumerate}
 
+\subsection{Podpora práce s dátami v ARTMC}
+Jazyk pre nástroj ARTMC obsahuje iba dve inštrukcie pre prácu s dátami. Jedná sa o príkazy \texttt{setdata} a \texttt{ifdata}. Existujú teda iba funkcie na priradenie hodnoty a na porovanie hodnoty. Ako si je možné v tabuľke TODO ref všímnúť, tieto funkcie berú iba jednú premennú \texttt{x}. Je to preto, lebo sa predpokladá, že štruktúra, ktorej je premenná \texttt{x} má práve jednu dátovú položku. V jazyku C môžu tieto dáta byť ľubovoľného typu, avšak pre ARTMC musia byť kódované ako postupnosť núl a jedničiek. Na skutočnej reprezentácii v binárnej podobe nezáleží, tak je napríklad vhodné prvým dátam dať napr. 	``00000001'' ďalším ``00000010'' atď. Je len potrebné aby rovnaká hodnota nebola kódovaná viackrát.
+
+TODO čo ak +1 aťd...
+
 \section{Tvorba programu v ARTMC}
 Tvorba programu pre nástroj ARTMC je zložitá, ľahko sa v nom tvoria chyby a je zložité
 upravovať napísaný program.
@@ -150,7 +155,7 @@ Takýto program by sa do nástroja artmc prepísal ako:\\
 \tab (``goto'',``00000011'',0),\\
 }
 
-Okrem tohoto kódu avšak je potrebné napísať celú triedu, ktorá vracia tento kód.
+Okrem tohoto kódu avšak je potrebné napísať celú triedu, ktorá vracia tento kód a dané prostredie.
 Teda celý vstupný súbor by vyzeral nasledovne.
 
 
@@ -163,7 +168,7 @@ def get\_program()$\colon$\\
 \tab \tab (``x=y.next'',``00000010'',1,1,0,3),\\
 \tab \tab (``goto'',``00000011'',0),\\
 \tab \tab (``exit'',``00000100'')]   \# Na konci musí byť inštrukcia exit\\
-\tab node\_width=16111 \\
+\tab node\_width=16\\
 \tab pointer\_num=3\\
 \tab desc\_num=3\\
 \tab next\_num=1\\
@@ -174,14 +179,40 @@ def get\_program()$\colon$\\
 \tab return(program, env)\\
 }
 
-Programátor si ihneď uvedomí ako ľahko sa môžu vyskytnúť chyby, hlavne pri značení
-premenných číslom, pri značení miesta skoku atď. Rovnako si určite uvedomí, aká zložitá
-je úprava kódu, keď sa pouiva absolútne adresovanie.
-Ak by sme sa rozhodli čo i len trochu upraviť testovanú funkciu, znamenalo by to
-prepísanie takmer celého kódu.
+Ako je na prvý pohľad zrejmé, napísať program v jazyku C je výrazne jednoduchšie ako pre nástroj ARTMC. Rovanko je v C značne menšia šanca zavedenia chyby. Pri tvorbe v ARTMC je potrebné počítať premenné a správne ich značiť, počítať riadky pre pokračovanie inštrukcií atď.. Ešte zložitejšia je úprava kódu, kde len pridaním jednej drobnej zmeny je častokrát potrebné prepísať takmer celý program. Predstavme si že sa rozhodneme mierne zmeniť predchádzajúci program na:\\
+\noindent
+\texttt{
+\\
+while(x->next != NULL)\{\\
+\tab x->next = malloc(sizeof(x));\\
+\tab x = x->next;\\
+\}
+\\
+}
+\\
+Výstup by sa výrazne zmenil. Podčiarkuté sú všetky riadky, ktoré sa zmenili alebo pribudli.
 
-TODO Ukážka - pridať podmeinku a je to v keli...
-TODO praca s datami?
+
+\texttt{
+\\
+def get\_program()$\colon$\\
+\tab program=[\\
+\tab \tab (``x=y.next'',``00000000'',2,1,0,1),\\
+\underline{\tab \tab (``ifx==null'',``00000001'',2,5,2),}\\
+\underline{\tab \tab (``x.next=new'',``00000010'',1,0,3,3,1),}\\
+\underline{\tab \tab (``x=y.next'',``00000011'',1,1,0,4),}\\
+\underline{\tab \tab (``goto'',``00000100'',0),}\\
+\underline{\tab \tab (``exit'',``00000101'')]}\\
+\underline{\tab node\_width=17}\\
+\tab pointer\_num=3\\
+\underline{\tab desc\_num=4}\\
+\tab next\_num=1\\
+\tab err\_line="11111111"\\
+\tab restrict\_var=1\\
+\\
+\tab env=(node\_width, pointer\_num, desc\_num, next\_num, err\_line,restrict\_var)\\
+\tab return(program, env)\\
+}
 
 
 
