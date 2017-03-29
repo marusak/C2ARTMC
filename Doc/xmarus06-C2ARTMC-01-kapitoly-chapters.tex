@@ -6,9 +6,9 @@ Verifikácia programov, teda overovanie že program spĺňa určité požiadavky
 
 Jedným z aktívnych subjektov pre verifikáciu a automatizovanú analýzu je aj výskumná skupina VeriFit na Vysokom Učení Technickom v Brne. Skupina se zabývá základným výzkumom, ale taktiež aj vývojom prototypových verifikačných nástrojov. Jedným z takýchto nástrojov je aj ARTMC.
 
-Cieľom tejto práce je implementovať prekladač, ktorý dokáže z validného programu napísanom v jazyku C vytvoriť validný funkčne rovnaký program pre nástroj ARTMC.
+Cieľom tejto práce je implementovať prekladač, ktorý dokáže z validného programu napísanom v jazyku C vytvoriť validný funkčne rovnaký program pre nástroj ARTMC. Takýto prekladač je potrebný z dôvodu zložitého zápisu programov v jazyku pre nástroj ARTMC. ARTMC bol hlavne vyvýjaný na ukázanie možností verifikácie programov, ktoré pracujú s dynamicky viazanými dátovými štruktúrami. Počas vývoja sa nekládol dôraz na použiteľnosť ale skôr na funkčnosť, čo ma za následok pre ľudí veľmi obtiažne tvoriteľný vstupný formát.
 
-TODO kazdy odsek raz tak dlhy
+Prekladač by mal byť dostatočne robustný aj napriek veľmi malej podmnožine jazyka C ktorú je nástroj ARTMC schopný spracovať. V prípade konštrukcie, ktorá nie je podprovaná zo strany ARTMC sa zachovať adekvátne, či to už znamená skončnie chybou a oznámením čo konkrétne nie je možné spracovať, alebo dané príkazy preskočiť. Ďalej sa očakáva čitateľnosť a udržovateľnosť napísaného prekladača pre dalšie vylepšovanie a dopĺňanie funkcionality. V neposlednom rade je dôležitá prenositeľnosť.
 
 
 \chapter{Nástroj ARTMC}
@@ -29,7 +29,12 @@ nedefinovaného alebo už zmazaného prvku atď.).
 Verifikačná metóda, ktorá je použitá v tomto nástroji je založená na abstraktom
 regulárnom stromovom model checkingu. TODO odkaz kde sa o tom najde viac
 
+VSTUp-: prikaz - vystup - co overi...
+
+diagram vstup->daco->vystup...
+
 TODO aspon raz tolko
+
 
 \section{Formát vstupného súboru}
 Nástroj ARTMC potrebuje pre svoju analýzu dva súbory. Jedná sa o súbor \texttt{typedefs}, ktorý obsahuje definíciu množiny počiatočnej konfigurácie a súbor \texttt{program.py} obsahujúci definíciu programu vo formáte vytvorenom pre potreby tohto nástroja.
@@ -51,7 +56,7 @@ typedef struct Tinit\\
 \{\\
   struct T2 * next ;\\                                                           
   struct T2 * back ; /*? null ?*/\\                                               
-\};\\
+\};
                                                                                 \\
 typedef struct T2                                                           
 \{\\
@@ -129,9 +134,42 @@ Deskriptor pozostáva z dvoch častí:
 \end{enumerate}
 
 \subsection{Podpora práce s dátami v ARTMC}
-Jazyk pre nástroj ARTMC obsahuje iba dve inštrukcie pre prácu s dátami. Jedná sa o príkazy \texttt{setdata} a \texttt{ifdata}. Existujú teda iba funkcie na priradenie hodnoty a na porovanie hodnoty. Ako si je možné v tabuľke TODO ref všímnúť, tieto funkcie berú iba jednú premennú \texttt{x}. Je to preto, lebo sa predpokladá, že štruktúra, ktorej je premenná \texttt{x} má práve jednu dátovú položku. V jazyku C môžu tieto dáta byť ľubovoľného typu, avšak pre ARTMC musia byť kódované ako postupnosť núl a jedničiek. Na skutočnej reprezentácii v binárnej podobe nezáleží, tak je napríklad vhodné prvým dátam dať napr. 	``00000001'' ďalším ``00000010'' atď. Je len potrebné aby rovnaká hodnota nebola kódovaná viackrát.
+Jazyk pre nástroj ARTMC obsahuje iba dve inštrukcie pre prácu s dátami. Jedná sa o príkazy \texttt{setdata} a \texttt{ifdata}. Existujú teda iba funkcie na priradenie hodnoty a na porovanie hodnoty. Ako si je možné v tabuľke TODO ref všímnúť, tieto funkcie berú iba jednú premennú \texttt{x}. Je to preto, lebo sa predpokladá, že štruktúra, ktorej je premenná \texttt{x} má práve jednu dátovú položku. V jazyku C môžu tieto dáta byť ľubovoľného typu, avšak pre ARTMC musia byť kódované ako postupnosť núl a jedničiek. Na skutočnej reprezentácii v binárnej podobe nezáleží, tak je napríklad vhodné prvým dátam dať napr. 	``00000001'' ďalším ``00000010'' atď. Je len potrebné aby rovnaká hodnota nebola kódovaná viackrát pod rôznymi kódmi.
 
-TODO čo ak +1 aťd...
+Problematické je avšak spracovanie zložitejších výrazov nakoľko neexistujú funkcie na sčítanie, odčítanie a pod.. Teda napríklad výraz\\
+\tab \texttt{if (x->data - 1 > y->data)}\\
+sa nedá zapísať do nástroja ARTMC. Je možná určitá analýza a za pomoci sledovania šírenia konštánt alebo úpravy výrazov je možné niektoré konštrukcie preložiť. Napríklad kód:\\
+\texttt{
+if (x->data -1 == 0)\\
+\tab \dots
+}  
+
+\noindent
+po úprave výrazu je možné prepísať ako:\\
+\texttt{
+if (x->data == 1)\\
+\tab \dots
+}  
+
+\noindent
+a napríklad kód:\\
+\texttt{
+y->data = 0\\
+\dots \textit{ak sa nezmení y a ani y->data}\\
+if (x->data == y->data)\\
+\tab \dots
+}  
+
+\noindent
+po sledovaní šírenia konštánt je možné zaísať ako:\\
+\texttt{
+y->data = 0\\
+\dots\\
+if (x->data == 0)\\ 
+\tab \dots
+}  
+
+Avšak takéto úpravy nie sú vždy možné, hlavne ak sa upravujú hodnoty vo while cykloch. Potom ostáva už len \textit{ignorácia práce s dátami}. Pri takomto postupe sa neuvažujú žiadne inštrukcie kde sa nastavuje hodnota dát a všetky podmienky, ktoré porovnávajú dáta sú nahradené inštrukciou \texttt{if*}.
 
 \section{Tvorba programu v ARTMC}
 Tvorba programu pre nástroj ARTMC je zložitá, ľahko sa v nom tvoria chyby a je zložité
@@ -144,7 +182,6 @@ while(x->next != NULL)\\
 \tab x = x->next;
 \\
 }
-\\
 \noindent
 Takýto program by sa do nástroja artmc prepísal ako:\\
 \texttt{ 
@@ -174,9 +211,8 @@ def get\_program()$\colon$\\
 \tab next\_num=1\\
 \tab err\_line="11111111"\\
 \tab restrict\_var=1\\
-\\
 \tab env=(node\_width, pointer\_num, desc\_num, next\_num, err\_line,restrict\_var)\\
-\tab return(program, env)\\
+\tab return(program, env)
 }
 
 Ako je na prvý pohľad zrejmé, napísať program v jazyku C je výrazne jednoduchšie ako pre nástroj ARTMC. Rovanko je v C značne menšia šanca zavedenia chyby. Pri tvorbe v ARTMC je potrebné počítať premenné a správne ich značiť, počítať riadky pre pokračovanie inštrukcií atď.. Ešte zložitejšia je úprava kódu, kde len pridaním jednej drobnej zmeny je častokrát potrebné prepísať takmer celý program. Predstavme si že sa rozhodneme mierne zmeniť predchádzajúci program na:\\
@@ -189,7 +225,7 @@ while(x->next != NULL)\{\\
 \}
 \\
 }
-\\
+
 Výstup by sa výrazne zmenil. Podčiarkuté sú všetky riadky, ktoré sa zmenili alebo pribudli.
 
 
@@ -209,19 +245,51 @@ def get\_program()$\colon$\\
 \tab next\_num=1\\
 \tab err\_line="11111111"\\
 \tab restrict\_var=1\\
-\\
 \tab env=(node\_width, pointer\_num, desc\_num, next\_num, err\_line,restrict\_var)\\
-\tab return(program, env)\\
+\tab return(program, env)
 }
-
-
-
 
 \chapter{Prekladače}
 Prekladač je nástroj, ktorý číta zdrojový program a prekladá ho na cieľový program.
 Zdrojový a cieľový program sú si vzájomne funkčne ekvivalentné. [slidy IFJ Uvod do kompilatorov]
-Prekladač pozastáva z viacerých častí. Schéma bežného prekladača je na obrázku 1.
-TODO [OBRAZOK 4/17 IFJ Uvod do kompilatorov].
+Prekladač pozastáva z viacerých častí. Schéma bežného prekladača je na obrázku \ref{fig:sch}.
+
+\begin{figure}
+\begin{tikzpicture}[align=center, node distance = 2cm and 3cm, auto]
+    % Place nodes
+    \node [block] (lex) {Lexikálny analýzátor};
+    \node [cloud, left of=lex, align=center] (zdroj) {Zdrojový\\program};
+    \node [block, right=of lex] (synta) {Syntaktický analyzátor};
+    \node [block, below=of synta] (sema) {Sémantický analýzátor};
+    \node [block, below=of lex] (gen) {Generátor vnútorného kódu};
+    \node [block, below=of gen] (opti) {Op\-ti\-ma\-li\-zá\-tor};
+    \node [block, below=of sema] (gen_ciel) {Generátor cieľového kódu};
+    \node [cloud, right of=gen_ciel, align=center] (ciel) {Cieľový\\program};
+    % Draw edges
+    \path [line,dashed] (zdroj) -- (lex);
+    
+    \draw[->] (lex.10) -- node[]{Tokeny} (synta.170);
+    \draw[->,dashed] (synta.190) -- (lex.-10);
+
+    \draw[->] (synta.260) -- node[xshift=0.5cm]{Derivačný strom} (sema.100);
+    \draw[->,dashed] (sema.80) -- (synta.280);
+
+    \draw[->] (sema.170) -- node[yshift=-0.5cm,align=center]{Abstraktný\\syntaktický strom} (gen.10);
+    \draw[->,dashed] (gen.-10) -- (sema.190);
+
+
+    \path [line] (gen) -- node[xshift=-3cm]{Vnútorný kód} (opti);
+
+    \path [line] (opti) -- node[align=center]{Optimalizovaný\\vnútorný kód} (gen_ciel);
+
+    \path [line,dashed] (gen_ciel) -- (ciel);
+    
+
+\end{tikzpicture}
+\caption{Schéma prekladača}
+\label{fig:sch}
+
+\end{figure}
 
 \section{Lexikálny analyzátor}
 Lexikálny analyzátor, scanner, má na vstupe zdrojový program. Tento program

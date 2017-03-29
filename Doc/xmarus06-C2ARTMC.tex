@@ -85,6 +85,14 @@
 % This solves the problems with links which leads after the picture
 \usepackage[all]{hypcap}
 
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usetikzlibrary{positioning}
+
+
+
+
+
 % Informace o práci/projektu / Information about the thesis
 %---------------------------------------------------------------------------
 \projectinfo{
@@ -160,12 +168,26 @@ Uvedl jsem všechny literární prameny a publikace, ze kterých jsem čerpal.}
 \widowpenalty=10000
 
 \begin{document}
+% Define block styles
+\tikzstyle{decision} = [diamond, draw, fill=blue!20, 
+    text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
+\tikzstyle{block} = [rectangle, draw, fill=blue!20, 
+    text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, -latex']
+\tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3cm,
+    minimum height=2em]  
+
+
+
   % Vysazeni titulnich stran / Typesetting of the title pages
   % ----------------------------------------------
   \maketitle
   % Obsah
   % ----------------------------------------------
   \tableofcontents
+  
+
+  
   
   % Seznam obrazku a tabulek (pokud prace obsahuje velke mnozstvi obrazku, tak se to hodi)
   % List of figures and list of tables (if the thesis contains a lot of pictures, it is good)
