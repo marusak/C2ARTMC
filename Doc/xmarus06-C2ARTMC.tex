@@ -43,6 +43,8 @@
 
 \newcommand{\tab}{\hspace*{8mm}}
 
+\newcommand{\data}{data \nodepart{second} \phantom{null}}
+
 % vypne funkci šablony, která automaticky nahrazuje uvozovky,
 % aby nebyly prováděny nevhodné náhrady v popisech API apod.
 % disables function of the template which replaces quotation marks
@@ -88,6 +90,8 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows}
 \usetikzlibrary{positioning}
+\usetikzlibrary{shapes}
+
 
 
 
@@ -176,6 +180,14 @@ Uvedl jsem všechny literární prameny a publikace, ze kterých jsem čerpal.}
 \tikzstyle{line} = [draw, -latex']
 \tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3cm,
     minimum height=2em]  
+\tikzstyle{data} = [rectangle split, rectangle split parts=2, draw, fill=blue!20, 
+    text width=4em, text centered, rounded corners, minimum height = 3em]
+\tikzstyle{tblock} = [rectangle, draw, fill=blue!20, 
+    text width=4em, text centered, rounded corners]
+\tikzstyle{label} = [rectangle, text width=6em, text centered]
+\tikzstyle{wblock} = [rectangle, draw, fill=blue!20, 
+    text width=6em, text centered, rounded corners]
+
 
 
 

@@ -261,9 +261,9 @@ Prekladač pozastáva z viacerých častí. Schéma bežného prekladača je na 
     \node [cloud, left of=lex, align=center] (zdroj) {Zdrojový\\program};
     \node [block, right=of lex] (synta) {Syntaktický analyzátor};
     \node [block, below=of synta] (sema) {Sémantický analýzátor};
-    \node [block, below=of lex] (gen) {Generátor vnútorného kódu};
+    \node [block, below=of lex, align=center] (gen) {Generátor vnú\-tor\-né\-ho kódu};
     \node [block, below=of gen] (opti) {Op\-ti\-ma\-li\-zá\-tor};
-    \node [block, below=of sema] (gen_ciel) {Generátor cieľového kódu};
+    \node [block, below=of sema, align=center] (gen_ciel) {Generátor cie\-ľo-vé\-ho kódu};
     \node [cloud, right of=gen_ciel, align=center] (ciel) {Cieľový\\program};
     % Draw edges
     \path [line,dashed] (zdroj) -- (lex);
@@ -295,8 +295,39 @@ Prekladač pozastáva z viacerých častí. Schéma bežného prekladača je na 
 Lexikálny analyzátor, scanner, má na vstupe zdrojový program. Tento program
 rozdeľuje na lexémy - logicky oddelené lexikálne jednotky. Na výstupe je reťazec
 tokenov, pričom token reprezentuje lexémy a môže obsahovať ďalšie atribúty.
-Pre lepšie porozumenie viď obrázok OBR1
-TODO [Obrazok IFJ 7/17 Uvod do kompilatorov - jednoducheis nieco ako int x = 0;]
+Pre lepšie porozumenie viď obrázok \ref{fig:lex}.
+
+\begin{figure}
+\begin{tikzpicture}[align=center, auto]
+
+	\node [tblock] (s3) {y};
+	\node[single arrow,draw=black,fill=black!10,minimum height=1cm, shape border rotate=-180, above=of s3] (ar1) {};	
+	
+    \node [wblock, above=of ar1] (first) {x = y * 2};
+    \node [tblock, left=of s3] (s2) {=};
+    \node [tblock, left=of s2] (s1) {x};
+
+
+    \node [tblock, right=of s3] (s4) {*};
+    \node [tblock, right=of s4] (s5) {2};  
+	   
+	   
+	\node [data, below of=s1] (p1) {id \nodepart{second} x};    
+	\node [data, below of=s2] (p2) {=};  
+	\node [data, below of=s3] (p3) {id \nodepart{second} y};
+	\node [data, below of=s4] (p4) {*}; 
+	\node [data, below of=s5] (p5) {int \nodepart{second} 2};
+
+	\node [label, left of=s1, xshift=-1cm] (t1) {Lexémy:};   
+    \node [label, left of=p1, xshift=-1cm] (t2) {Tokeny:};  
+
+
+\end{tikzpicture}
+\caption{Schéma rozdelovania na lexémy a tokeny}
+\label{fig:lex}
+
+\end{figure}
+
 
 \section{Syntaktický analyzátor}
 Syntaktický analyzátor, parser, má na vstupe reťazec tokenov, ktoré získal
