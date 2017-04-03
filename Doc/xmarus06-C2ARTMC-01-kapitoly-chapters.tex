@@ -24,16 +24,63 @@ najdôležitejší.
 Majme na vstupe nerekurzívny program, ktorý manipuluje s dynamicky viazanými
 šturktúrami s viacnásobnými next ukazateľmi. Snahou nástroja je overiť, že
 nemôžu nastať nedovolené operácie (napr. zápis do null ukazateľa, použitie
-nedefinovaného alebo už zmazaného prvku atď.).
+nedefinovaného alebo už zmazaného prvku atď.)\cite{artmc1}.
 
 Verifikačná metóda, ktorá je použitá v tomto nástroji je založená na abstraktom
-regulárnom stromovom model checkingu. TODO odkaz kde sa o tom najde viac
+regulárnom stromovom model checkingu \cite{artmc2}.
 
-VSTUp-: prikaz - vystup - co overi...
+Schéma fungovania nástroja ARTMC je znázornená na obrázku \ref{fig:ARTMC_schema}.
 
-diagram vstup->daco->vystup...
 
-TODO aspon raz tolko
+\begin{figure}
+\begin{tikzpicture}[align=center, node distance = 1cm and 0.5cm, auto]
+    % Place nodes
+    \node [wblock, text width=6em] (program) {program.py};
+    \node [wblock, below=of program, text width=6em] (typedef) {typedef};
+    
+    \node [wblock, right=of program, fill=black!30!green] (generator) {run\_generator.t.sh};
+    \node [wblock, right=of typedef, fill=black!30!green] (parse) {parse\_typedef.t.sh};
+        
+    \node [ttblock, right=of generator] (f3) {$f_n.gta$};
+    \node [ttblock, above=of f3] (f2) {$f_2.gta$};
+    \node [ttblock, above=of f2, yshift=-0.5cm] (f1) {$f_1.gta$};
+    
+    \node [ttblock, right=of parse] (x3) {$init.gta$};
+    \node [ttblock, below=of x3, yshift=0.5cm] (x2) {$descr_1.gta$};
+    \node [ttblock, below=of x2] (x1) {$descr_n.gta$};
+
+    \node [wblock, right=of x3, yshift=0.75cm, fill=black!30!green] (run) {main2\_\textit{method}};
+
+    \path [line] (program) -- (parse);
+    \path [line] (program) -- (generator);
+    \path [line] (typedef) -- (parse);
+    \path (f2) -- node[auto=false]{\vdots} (f3);
+    \path (x1) -- node[auto=false]{\vdots} (x2);
+    
+    \path [line] (generator) -- (f1);
+    \path [line] (generator) -- (f2);
+    \path [line] (generator) -- (f3);
+    
+    \path [line] (parse) -- (x1);
+    \path [line] (parse) -- (x2);
+    \path [line] (parse) -- (x3);
+    
+    \path [line] (x1) -- (run);
+    \path [line] (x2) -- (run);
+    \path [line] (x2) -- (run);
+    \path [line] (f1) -- (run);
+    \path [line] (f2) -- (run);
+    \path [line] (f3) -- (run);
+        
+    \node [final, right=of run, fill=black!30!green] (anal) {analýza};
+    
+    \path [line] (run) -- (anal);
+
+\end{tikzpicture}
+\caption{Schéma prekladača}
+\label{fig:ARTMC_schema}
+
+\end{figure}
 
 
 \section{Formát vstupného súboru}
@@ -108,18 +155,18 @@ new                 & (``new'',``line\_num'',x,next\_line)\\
         číslo riadku inštrukcie, na ktorej sa po skončení bude pokračovať. Inštrukcie
         sú číslované od nuly. Ak je použítá prípona \textit{\_then} alebo \textit{\_else}
         jedná sa o miesto pokračovania v prípade splnenia alebo nesplnenia podmienky danej inštrukcie.
-    \item \textit{Deskriptory 1} - Označené ako \textit{descr\_num}. Jedinečný deskriptor použitý pri vykonávani danej inštrukcie. Deskriptory sú číslované od 1. Viac o nastavovaní hodnôt tohto deskriptoru je v TODO ref.
+    \item \textit{Deskriptory 1} - Označené ako \textit{descr\_num}. Jedinečný deskriptor použitý pri vykonávani danej inštrukcie. Deskriptory sú číslované od 1. Viac o nastavovaní hodnôt tohto deskriptoru je v podsekcii \ref{kap_descr}.
     \item \textit{Desktirpty 2} - Označené ako \textit{gen\_num}. Využíva sa iba pri príkaze \texttt{x.next=new} a označuje automatickú generáciu počiatočného deskriptoru. Nadobúda hodnoty 0 (vypnuté) a 1 (zapnuté).
 \end{itemize}
 
 \subsection{env}
 Jedná sa o 6ticu \texttt{node\_width, pointer\_num, desc\_num, next\_num, err\_line, restrict\_var} obsahujúcu informácie o programe.
-Význam jednotlivých položiek je uvedený v TODO ref
+Význam jednotlivých položiek je nasledovný:
 
 \begin{itemize}
 \item \texttt{node\_width = pointer\_num + descr\_num + 2 + } šírka dát  
 \item \texttt{pointer\_num} = Počet ukazateľových premenných zvýšený o 1
-\item \texttt{desc\_num} = Počet ukazateľových deskriptorov zvýšený o 1. TODO ref NAstavovnaide desktiptoru
+\item \texttt{desc\_num} = Počet ukazateľových deskriptorov zvýšený o 1. Viac v podsekcii\ref{kap_descr}.
 \item \texttt{next\_num} = Počet next pointerov použitých v programe
 \item \texttt{err\_line} = Označenie riadku, na ktorý sa skáče v prípade chyby.
 \item \texttt{restrict\_var} = Automatické generovanie automatu, ktorý garantuje iba jeden výskyt programovej premennej v konfigurácii. Nadobúda hodnoty 0 (vypnuté) a 1 (zapnuté).
@@ -127,6 +174,7 @@ Význam jednotlivých položiek je uvedený v TODO ref
 
 
 \subsection{Nastavovanie deskriptoru}
+\label{kap_descr}
 Deskriptor pozostáva z dvoch častí:
 \begin{enumerate}
 \item Deskriptory v konfigurácii - Jedná sa o deskriptory, ktoré sú použité v súbore \textit{typedefs}. Tieto deskriptory už nemôžu byť znova použité. Číslo najvyššieho použitého deskriptoru je možné získať zo skriptu \texttt{get\_typedef\_descr.t.sh}, ktorý je šírení v distribúcii ARTMC.
@@ -134,7 +182,7 @@ Deskriptor pozostáva z dvoch častí:
 \end{enumerate}
 
 \subsection{Podpora práce s dátami v ARTMC}
-Jazyk pre nástroj ARTMC obsahuje iba dve inštrukcie pre prácu s dátami. Jedná sa o príkazy \texttt{setdata} a \texttt{ifdata}. Existujú teda iba funkcie na priradenie hodnoty a na porovanie hodnoty. Ako si je možné v tabuľke TODO ref všímnúť, tieto funkcie berú iba jednú premennú \texttt{x}. Je to preto, lebo sa predpokladá, že štruktúra, ktorej je premenná \texttt{x} má práve jednu dátovú položku. V jazyku C môžu tieto dáta byť ľubovoľného typu, avšak pre ARTMC musia byť kódované ako postupnosť núl a jedničiek. Na skutočnej reprezentácii v binárnej podobe nezáleží, tak je napríklad vhodné prvým dátam dať napr. 	``00000001'' ďalším ``00000010'' atď. Je len potrebné aby rovnaká hodnota nebola kódovaná viackrát pod rôznymi kódmi.
+Jazyk pre nástroj ARTMC obsahuje iba dve inštrukcie pre prácu s dátami. Jedná sa o príkazy \texttt{setdata} a \texttt{ifdata}. Existujú teda iba funkcie na priradenie hodnoty a na porovanie hodnoty. Ako si je možné v tabuľke \ref{table:prikazy} všímnúť, tieto funkcie berú iba jednú premennú \texttt{x}. Je to preto, lebo sa predpokladá, že štruktúra, ktorej je premenná \texttt{x} má práve jednu dátovú položku. V jazyku C môžu tieto dáta byť ľubovoľného typu, avšak pre ARTMC musia byť kódované ako postupnosť núl a jedničiek. Na skutočnej reprezentácii v binárnej podobe nezáleží, tak je napríklad vhodné prvým dátam dať napr. 	``00000001'' ďalším ``00000010'' atď. Je len potrebné aby rovnaká hodnota nebola kódovaná viackrát pod rôznymi kódmi.
 
 Problematické je avšak spracovanie zložitejších výrazov nakoľko neexistujú funkcie na sčítanie, odčítanie a pod.. Teda napríklad výraz\\
 \tab \texttt{if (x->data - 1 > y->data)}\\
@@ -297,8 +345,9 @@ rozdeľuje na lexémy - logicky oddelené lexikálne jednotky. Na výstupe je re
 tokenov, pričom token reprezentuje lexémy a môže obsahovať ďalšie atribúty.
 Pre lepšie porozumenie viď obrázok \ref{fig:lex}.
 
+\begin{center}
 \begin{figure}
-\begin{tikzpicture}[align=center, auto]
+\begin{tikzpicture}[auto]
 
 	\node [tblock] (s3) {y};
 	\node[single arrow,draw=black,fill=black!10,minimum height=1cm, shape border rotate=-180, above=of s3] (ar1) {};	
@@ -327,6 +376,7 @@ Pre lepšie porozumenie viď obrázok \ref{fig:lex}.
 \label{fig:lex}
 
 \end{figure}
+\end{center}
 
 
 \section{Syntaktický analyzátor}
