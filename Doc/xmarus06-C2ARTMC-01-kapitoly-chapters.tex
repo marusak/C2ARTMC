@@ -298,6 +298,7 @@ def get\_program()$\colon$\\
 }
 
 \chapter{Prekladače}
+\label{kap_prekladace}
 Prekladač je nástroj, ktorý číta zdrojový program a prekladá ho na cieľový program.
 Zdrojový a cieľový program sú si vzájomne funkčne ekvivalentné\cite{meduna}.
 Prekladač pozastáva z viacerých častí. Schéma bežného prekladača je na obrázku \ref{fig:sch}.
@@ -427,6 +428,7 @@ Medzi optimalizácie môžu patriť:
 Optimalizovaný kód získaný z optimalizátora je prevedený na cieľový program.
 
 \section{Syntaxou riadený preklad}
+\label{sec_synta}
 Jedná sa o prístup, keď celý prekladač je riadený procesom parsovania. Teda ku každému pravidlu gramatiky sú priradené dalšie akcie, ktoré pokrývajú ostatné fázy prekladu. Medzi akcie môže napríklad patriť:
 \begin{itemize}
     \item Vyvolanie sémantickej kontroly
@@ -463,10 +465,9 @@ prekladač sú:
         ich použitie je možné len v jednom užívateľskom prípade
 \end{itemize}
 
-
 \chapter{Implementácia}
 Táto kapitola sa venuje návrhu a implementácii samotného prekladača.
-Ako implementačný jazyk bol zvolený python. Kritériá, ktoré by mala výsledná
+Ako implementačný jazyk bol zvolený Python. Kritériá, ktoré by mala výsledná
 aplikácia spĺnať sa dajú rozdeliť do dvoch kategórií:
 \begin{enumerate}
     \item Použiteľnosť a prenositeľnosť
@@ -497,7 +498,7 @@ musíme uvažovať dva druhy:
 \begin{itemize}
     \item Operačný systém\\
         Program by mal byť spustieteľný a správne bežať aspoň na Linux-och a Windows-och.
-    \item Verzia pythonu\\
+    \item Verzia Pythonu\\
         Program by mal byť spustieteľný a správne bežať na všetkých hlavných verziách Pythonu.
         Viac o Pythone a verziách je v kapitole XX.
 \end{itemize}
@@ -523,7 +524,7 @@ Git umožnuje rovnako jedoduchú spoluprácu viacerých autorov. Táto práca je
 prirodzene dielom jedného autora, avšak je možné, že po dokončení práce sa nájde
 chyba, alebo bude treba doplniť funkcionalitu a to umožní aby iný autor túto zmenu
 vykonal.
-Táto práca vyuiva GitHub a je dostupná na URL.
+Táto práca vyuiva GitHub a je dostupná na \texttt{https://github.com/marusak/C2ARTMC}.
 
 \subsection{Unittest}
 Pri pridávaní novej funkcionality sa môže stať, že sa zavedie chyba vrámci inej
@@ -541,7 +542,6 @@ aby program fungoval. Následne zavolaním programu tox bez argumentov sa testy
 spustia pod všetk=ymi poždaovaními verziami a prehľadny výpis oznámi, či všetky
 testy boli úspešné, prípadne ktorý test neuspel v ktorej verzii.
 
-TODO co vlasnte implementujem ZHora dole, sytnaxou riadeny... ako vyzera schema viac ako meduna/14 skutocne nazy tried?
 
 \chapter{Výsledná aplikácia}
 Aplikácia bola vytvorená s ohľadom na zadanie bakalárskej práce. Boli dodržané všetky body zadania. Pri vývoji som sa držal požadovaných vlastností na kód a vývoj spomenutých v kapitole TODO ref. Hneď po vytvorení prvej skutočne funkčnej časti kódu boli vytvárané automatické testy pre overenie skutočne fungujúcich implemenotvaných častí a overenie že počas pridávania novej funkcionality neprišlo k regresii v inej časti kódu. 
@@ -550,8 +550,22 @@ Kód bol od začiatku publikovaný na GitHub-e s ohľadom na odporúčané prakt
 
 Výsledný program bol poriadne otestovaný na veľkej sade testov. Všetky testy prešli úspešne na všetkých požadovaných operačných systémoch ako aj verziách Pythonu.
 
+
+
+\section{Výsledná implementácia}
+Ako prvá časť bol implementovaný lexikálny analyzátor. Jedná sa o samotnú triedu \texttt{Scanner}, ktorá v inizializácii berie názov súboru z programom v jazyku C. Následne je vstupný program načítaný a predspracovaný. Jedná sa hlavne o odstránenie komentárov a nahradenie skupín bielych znakov jednou medzerou. Tieto úpravy následne umožnujú jednoduchšie delenie kódu na tokeny. Trieda lexikálneho analyzátora poskytuje metódu \texttt{get\_token}, ktorá vráti práve jeden token. Na delenie sa nevyužívajú regulárne výrazy, ale podľa prvého neprečítaného znaku sa scanner rozhoduje o aký token sa môže jednať. Následne po rozpoznaní tokenu, je vrátený token, ktorý je reprezentovaný jedným číslom - jedná sa o imitáciu \texttt{enum} pre jazyk Python. Konkrétna hodnota tokenu sa nevracia priamo a je možné ju získať volaním funkcie \texttt{get\_value}. Scanner poskytuje aj metódu \texttt{unget\_token}, ktorá vráti jeden token späť do vstupného reťazca. Nakoľko je ale scanner ako aj celý prekladač jednopriechodový, je táto funkcia implementovaná instančnou premennou, ktorá drží vrátenú hodnotu. Výhodou je jednoduchá implementácia, nevýhodou je možné vrátiť iba jeden token.
+
+Následne bol tvorený syntaktický analyzátor, ktorý je implementovaný ako trieda \texttt{Parser}. Jedná sa o syntaxou riadený preklad a preto je samotný analyzátor najdlhšia časť kódu. Napriek svojej veľkosti sa jedná o pomerne jednoduchý program. V princípe je celá analýza jeden while cyklus, ktorý čaká až skončí vstupný súbor a scanner vráti EOF. V tomto cykle sa prečíta prvý token a sa rozhodne o aký príkaz sa jedná. V tejto úrovni sa môže jednať iba do definícu alebo deklaráciu programu alebo premennej. Spracovanie premennej je priamočiara záležitosť. Spracovanie funkcie obsluhuje funkcia \texttt{parse\_function}, ktorá je obdobne jeden while cyklus, ktorý volá funkciu \texttt{parse\_command} až pokiaľ nenarazí na ukončujúcu zloženú zátvorku. Funkcia \texttt{parse\_command}
+na základe prvého tokenu zavolá funkcie na spracovanie príkazu, napríklad \texttt{parse\_if} alebo \texttt{parse\_assignment}. Ak sa jedná o príkaz, ktorý vytvára daľšiu úroveň zanorenia ako napríklad \texttt{if} alebo \texttt{while}, celá úroveň je spracovaná touto funkciou za volania  \texttt{parse\_command} na spracovanie jednotlivých príkazov. Hovoríme teda o rekurzívnom zanorovaní.
+
+Ako bolo spomenuté v sekcii \ref{sec_synta} ohľadom syntaxou riadenom preklade, počas syntaktickej analýzy sa vykonávajú aj dalšie akcie. Pri nájedení novej premennej je táto premenná vložená do tabuľky symbolov, ktorú vlastní trieda \texttt{Parser} a poskytuje sadu inštrukcií na prácu s ňou. Pri prečítaní celého príkazu sa vygeneruje inštrukcia vo vnútrom kóde. Na spracovanie vnúorného kódu bola vytvorená trieda \texttt{Generate}. Tento názov napovedá, že trieda nie len že príjma od parseru inštrukcie vo vnútornej reprezentácií, ale aj generuje cieľový kód. Trieda poskytuje celú radu pre vkladanie inštrukcií, ktoré začínajú prefixom \texttt{new\_i\_}. Okrem toho obsahuje funkciu \texttt{get\_full\_result}, ktorá má za úlohu vrátiť kód vo výstupnom jazyku pripravený na výpis alebo zápis do súboru. Táto funkcia volá všetky potrebné funkcie na generovanie a dokončovanie inštrukcií z vnútorného kódu do výsledného kódu.
+
+Schéma fungovania výslednej implementácie je znázornená na obrázku... 
+TODO ako vyzera schema viac ako meduna/14 skutocne nazy tried?
+
+\section{Zaujímavé vlastnosti}
+
 TODO fetury ake mame, skratove, ignore data...
-Ake foldery, subory...
 
 \section{Nedostatky a známe chyby}
 Vo výslednej aplikácií nie sú žiadne známe chyby a všetky požiadavky boli implementované.
