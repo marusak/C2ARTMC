@@ -77,7 +77,7 @@ Schéma fungovania nástroja ARTMC je znázornená na obrázku \ref{fig:ARTMC_sc
     \path [line] (run) -- (anal);
 
 \end{tikzpicture}
-\caption{Schéma prekladača}
+\caption{Schéma práce nástroja ARTMC}
 \label{fig:ARTMC_schema}
 
 \end{figure}
@@ -299,10 +299,10 @@ def get\_program()$\colon$\\
 
 \chapter{Prekladače}
 Prekladač je nástroj, ktorý číta zdrojový program a prekladá ho na cieľový program.
-Zdrojový a cieľový program sú si vzájomne funkčne ekvivalentné. [slidy IFJ Uvod do kompilatorov]
+Zdrojový a cieľový program sú si vzájomne funkčne ekvivalentné\cite{meduna}.
 Prekladač pozastáva z viacerých častí. Schéma bežného prekladača je na obrázku \ref{fig:sch}.
 
-\begin{figure}
+\begin{figure}[h]
 \begin{tikzpicture}[align=center, node distance = 2cm and 3cm, auto]
     % Place nodes
     \node [block] (lex) {Lexikálny analýzátor};
@@ -334,19 +334,20 @@ Prekladač pozastáva z viacerých častí. Schéma bežného prekladača je na 
     
 
 \end{tikzpicture}
-\caption{Schéma prekladača}
+\caption{Schéma prekladača TODO ref slidy IFJ}
 \label{fig:sch}
 
 \end{figure}
 
 \section{Lexikálny analyzátor}
+\label{sec_lex}
 Lexikálny analyzátor, scanner, má na vstupe zdrojový program. Tento program
 rozdeľuje na lexémy - logicky oddelené lexikálne jednotky. Na výstupe je reťazec
 tokenov, pričom token reprezentuje lexémy a môže obsahovať ďalšie atribúty.
 Pre lepšie porozumenie viď obrázok \ref{fig:lex}.
 
 \begin{center}
-\begin{figure}
+\begin{figure}[h]
 \begin{tikzpicture}[auto]
 
 	\node [tblock] (s3) {y};
@@ -381,16 +382,17 @@ Pre lepšie porozumenie viď obrázok \ref{fig:lex}.
 
 \section{Syntaktický analyzátor}
 Syntaktický analyzátor, parser, má na vstupe reťazec tokenov, ktoré získal
-z lexikalného analyzátora(ref na kapitolu vyssie). Úlohou je skontrolovať, či
+z lexikalného analyzátora. Úlohou je skontrolovať, či
 reťazec tokenov reprezentuje syntakticky správne napísaný program. Táto kontrola
 prebieha za pomoci konštrukcie derivačného stromu. Ak je možné zostrojiť derivačný strom
 jedná sa o program validný. Konštrukcia môže prebiehať dvôma spôsobmi a to zhora
-nadol a zdola nahor.
+nadol a zdola nahor. \cite{meduna} 
 
 \subsection{Analýza zhora-nadol}
-TODO
+Metóda zhora-nadol sa snaží skonštruovať derivačný strom od najvyššej úrovne a postupne prechádza derivačný strom dole za využita formálnych pravidiel gramatiky. To znamená, že derivačný strom sa konštruje od koreňa smerom k listom, zľava doprava, poďla ľavej derivácie. Syntaktická analýza zhora dole využíva pre svoju prácu LL syntaktické analyzátory. \cite{aho}
+
 \subsection{Analýza zdola-nahor}
-TODO
+Metóda zdola-nahor sa snaží skonštruovať derivačný strom od najnižšej úrovne a postupne prechadza derivačný strom smerom ku koreni za využitia formálnych pravidiel gramatiky. To znamená, že sa najskôr identifikujú jednotlivé symboly z ktorých sa následne vytvára derivačný strom. Táto metóda využíva precedenčnú tabuľku. \cite{aho}
 
 \section{Sémantický analyzátor}
 Na vstupe sémantického analyzátoru je derivačný strom, ktorý bol získaný od
@@ -422,9 +424,17 @@ Medzi optimalizácie môžu patriť:
 \end{itemize}
 
 \section{Generovanie cieľového kódu}
-Optimalizovaný kód zśiakný z optimalizátora je prevedený na cieLový program.
+Optimalizovaný kód získaný z optimalizátora je prevedený na cieľový program.
 
-Syntaxou riadený preklad je ...TODO
+\section{Syntaxou riadený preklad}
+Jedná sa o prístup, keď celý prekladač je riadený procesom parsovania. Teda ku každému pravidlu gramatiky sú priradené dalšie akcie, ktoré pokrývajú ostatné fázy prekladu. Medzi akcie môže napríklad patriť:
+\begin{itemize}
+    \item Vyvolanie sémantickej kontroly
+    \item Ukladanie informácií napr. do tabuľky symbolov alebo tabuľky návestí
+    \item Generovanie kódu
+\end{itemize}
+Prevažne pri využití tejto techniky postačuje jeden priechod cez zdrojový program.
+
 
 \chapter{Súčasný stav prekladača pre ARTMC}
 Pre ARTMC bol vytvorený prekladač z jazyka C s názvom AVERILES. Jedná sa o
@@ -531,12 +541,17 @@ aby program fungoval. Následne zavolaním programu tox bez argumentov sa testy
 spustia pod všetk=ymi poždaovaními verziami a prehľadny výpis oznámi, či všetky
 testy boli úspešné, prípadne ktorý test neuspel v ktorej verzii.
 
+TODO co vlasnte implementujem ZHora dole, sytnaxou riadeny... ako vyzera schema viac ako meduna/14 skutocne nazy tried?
+
 \chapter{Výsledná aplikácia}
 Aplikácia bola vytvorená s ohľadom na zadanie bakalárskej práce. Boli dodržané všetky body zadania. Pri vývoji som sa držal požadovaných vlastností na kód a vývoj spomenutých v kapitole TODO ref. Hneď po vytvorení prvej skutočne funkčnej časti kódu boli vytvárané automatické testy pre overenie skutočne fungujúcich implemenotvaných častí a overenie že počas pridávania novej funkcionality neprišlo k regresii v inej časti kódu. 
 
 Kód bol od začiatku publikovaný na GitHub-e s ohľadom na odporúčané praktiky pri využívaný verzovacieho systému git. História je prehľadná a je možné v nej jedoducho sa vracať alebo zisťovať ktorá časť kódu bola kedy implementovaná.
 
 Výsledný program bol poriadne otestovaný na veľkej sade testov. Všetky testy prešli úspešne na všetkých požadovaných operačných systémoch ako aj verziách Pythonu.
+
+TODO fetury ake mame, skratove, ignore data...
+Ake foldery, subory...
 
 \section{Nedostatky a známe chyby}
 Vo výslednej aplikácií nie sú žiadne známe chyby a všetky požiadavky boli implementované.
