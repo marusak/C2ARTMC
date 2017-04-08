@@ -33,46 +33,46 @@ Schéma fungovania nástroja ARTMC je znázornená na obrázku \ref{fig:ARTMC_sc
 
 
 \begin{figure}
-\begin{tikzpicture}[align=center, node distance = 1cm and 0.5cm, auto]
+\begin{tikzpicture}[align=center, node distance = 1cm and 0.5cm, auto, >=latex']
     % Place nodes
-    \node [wblock, text width=6em] (program) {program.py};
-    \node [wblock, below=of program, text width=6em] (typedef) {typedef};
+    \node [block] (program) {program.py};
+    \node [block, below=of program] (typedef) {typedef};
     
-    \node [wblock, right=of program, fill=black!30!green] (generator) {run\_generator.t.sh};
-    \node [wblock, right=of typedef, fill=black!30!green] (parse) {parse\_typedef.t.sh};
+    \node [block, right=of program, fill=black!30] (generator) {run\_generator.t.sh};
+    \node [block, right=of typedef, fill=black!30] (parse) {parse\_typedef.t.sh};
         
-    \node [ttblock, right=of generator] (f3) {$f_n.gta$};
-    \node [ttblock, above=of f3] (f2) {$f_2.gta$};
-    \node [ttblock, above=of f2, yshift=-0.5cm] (f1) {$f_1.gta$};
+    \node [small_w_block, right=of generator] (f3) {$f_n.gta$};
+    \node [small_w_block, above=of f3] (f2) {$f_2.gta$};
+    \node [small_w_block, above=of f2, yshift=-0.5cm] (f1) {$f_1.gta$};
     
-    \node [ttblock, right=of parse] (x3) {$init.gta$};
-    \node [ttblock, below=of x3, yshift=0.5cm] (x2) {$descr_1.gta$};
-    \node [ttblock, below=of x2] (x1) {$descr_n.gta$};
+    \node [small_w_block, right=of parse] (x3) {$init.gta$};
+    \node [small_w_block, below=of x3, yshift=0.5cm] (x2) {$descr_1.gta$};
+    \node [small_w_block, below=of x2] (x1) {$descr_n.gta$};
 
-    \node [wblock, right=of x3, yshift=0.75cm, fill=black!30!green] (run) {main2\_\textit{method}};
+    \node [block, right=of x3, yshift=1.0cm, fill=black!30] (run) {main2\_\textit{method}};
 
-    \path [line] (program) -- (parse);
+	\draw [->] (program) |-++(1.5,-1.0) -| (parse);
     \path [line] (program) -- (generator);
     \path [line] (typedef) -- (parse);
     \path (f2) -- node[auto=false]{\vdots} (f3);
     \path (x1) -- node[auto=false]{\vdots} (x2);
     
-    \path [line] (generator) -- (f1);
-    \path [line] (generator) -- (f2);
-    \path [line] (generator) -- (f3);
+    \path [line] (generator) |- (f1);
+    \path [line] (generator.70) |- (f2);
+    \path [line] (generator) |- (f3);
     
-    \path [line] (parse) -- (x1);
-    \path [line] (parse) -- (x2);
-    \path [line] (parse) -- (x3);
+    \path [line] (parse) |- (x1);
+    \path [line] (parse.290) |- (x2);
+    \path [line] (parse) |- (x3);
     
-    \path [line] (x1) -- (run);
-    \path [line] (x2) -- (run);
-    \path [line] (x2) -- (run);
-    \path [line] (f1) -- (run);
-    \path [line] (f2) -- (run);
-    \path [line] (f3) -- (run);
+    \path [line] (x1) -| (run.290);
+    \path [line] (x2) -| (run);
+    \path [line] (x3) -| (run.250);
+    \path [line] (f1) -| (run.70);
+    \path [line] (f2) -| (run);
+    \path [line] (f3) -| (run.110);
         
-    \node [final, right=of run, fill=black!30!green] (anal) {analýza};
+    \node [cloud, right=of run, fill=black!30] (anal) {analýza};
     
     \path [line] (run) -- (anal);
 
@@ -357,16 +357,16 @@ Pre lepšie porozumenie viď obrázok \ref{fig:lex}.
 \begin{figure}[h]
 \begin{tikzpicture}[auto]
 
-	\node [tblock] (s3) {y};
-	\node[single arrow,draw=black,fill=black!10,minimum height=1cm, shape border rotate=-180, above=of s3] (ar1) {};	
+	\node [small_block] (s3) {y};
+	\node[single arrow,draw=black,fill=white,minimum height=1cm, shape border rotate=-180, above=of s3] (ar1) {};	
 	
-    \node [wblock, above=of ar1] (first) {x = y * 2};
-    \node [tblock, left=of s3] (s2) {=};
-    \node [tblock, left=of s2] (s1) {x};
+    \node [block, above=of ar1] (first) {x = y * 2};
+    \node [small_block, left=of s3] (s2) {=};
+    \node [small_block, left=of s2] (s1) {x};
 
 
-    \node [tblock, right=of s3] (s4) {*};
-    \node [tblock, right=of s4] (s5) {2};  
+    \node [small_block, right=of s3] (s4) {*};
+    \node [small_block, right=of s4] (s5) {2};  
 	   
 	   
 	\node [data, below of=s1] (p1) {id \nodepart{second} x};    
