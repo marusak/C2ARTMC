@@ -26,6 +26,8 @@ class Scanner:
         # A token that was returned into stream
         self.ungeted = None
 
+        self.end = False
+
     def get_current_line(self):
         """Return current line for error printing pursposes."""
         return self.line_number
@@ -53,6 +55,9 @@ class Scanner:
 
         # Check if not end of file
         if first_char == '\t':
+            if self.end:
+                FatalError("EOF found to early.")
+            self.end = True
             return TokenEnum.XEOF
 
         # Count lines
