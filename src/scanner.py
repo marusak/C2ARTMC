@@ -62,7 +62,7 @@ class Scanner:
             return self.get_token()
 
         # If first character cannot be composed of more characters
-        elif first_char in [';', ',', '(', ')', '{', '}', '[', ']', '.']:
+        elif first_char in [';', ',', '(', ')', '{', '}', '[', ']', '.', ':']:
             self.source = self.source[1:]
             return TokenType[first_char]
 

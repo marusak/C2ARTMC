@@ -437,6 +437,12 @@ class Parser:
             self.skip_until_semicolon()
             self.g.new_i_goto("exit")
 
+    def parse_goto(self):
+        """Parse a goto statement."""
+        self.verify_token(TokenEnum.TIden)
+        self.g.new_i_goto("custom_" + self.s.get_value())
+        self.verify_token(TokenEnum.TS)
+
     def parse_assert(self):
         """Parse a assert statement."""
         succ = self.generate_unique_label_name()
@@ -533,6 +539,9 @@ class Parser:
                     FatalError("Unknown assignment on line {0}"
                                .format(self.s.get_current_line()))
                 return self.s.get_token()
+
+            elif (t == TokenEnum.TCO):
+                self.g.new_label("custom_" + name)
 
         # skip assignment to variables of different types
         if (name not in self.g.get_variables()):
@@ -642,6 +651,9 @@ class Parser:
 
         elif (first_token == TokenEnum.KWAssert):
             self.parse_assert()
+
+        elif (first_token == TokenEnum.KWGoto):
+            self.parse_goto()
 
     def parse_function(self):
         """Parse function. It is already read for the first '('."""

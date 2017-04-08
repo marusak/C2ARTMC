@@ -7,10 +7,10 @@ class TokenEnum:
     TAdd, TSub, TMul, TDiv, TMod, TUnaryAdd, TUnarySub, TAddE, TSubE, TMulE,\
     TDivE, TModE, TE, TN, TAnd, TAmp, TOr, TNE, TLE, TL, TGE, TG, TLZ, TPZ,\
     TInt, TDouble, TStr, TIden, TC, TD, TP, TS, TLZZ, TPZZ, TLHZ, TPHZ, TAss,\
-    KWAny, KWAssert,  KWBreak, KWContinue, KWInt, KWDouble, KWChar, KWDo,\
+    TCO, KWAny, KWAssert,  KWBreak, KWContinue, KWInt, KWDouble, KWChar, KWDo,\
     KWDouble, KWElse, KWEnum, KWError, KWFalse, KWFloat, KWFor, KWGoto, KWIf,\
     KWInt, KWMalloc, KWNull, KWRandomAlloc, KWReturn, KWSizeof, KWStruct,\
-    KWTrue, KWTypedef, KWVoid, KWWhile, XEOF = range(66)  # noqa: E122
+    KWTrue, KWTypedef, KWVoid, KWWhile, XEOF = range(67)  # noqa: E122
 
 
 class TokenGroups:
@@ -64,6 +64,7 @@ TokenType = {
         '[':            TokenEnum.TLHZ,
         ']':            TokenEnum.TPHZ,
         '=':            TokenEnum.TAss,
+        ':':            TokenEnum.TCO,
         'any':          TokenEnum.KWAny,
         'assert':       TokenEnum.KWAssert,
         'break':        TokenEnum.KWBreak,
