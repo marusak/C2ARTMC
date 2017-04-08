@@ -91,7 +91,9 @@
 \usetikzlibrary{shapes,arrows}
 \usetikzlibrary{positioning}
 \usetikzlibrary{shapes}
-
+\usetikzlibrary{babel}
+\usetikzlibrary{calc}
+\usetikzlibrary{fit}
 
 
 
@@ -175,11 +177,9 @@ Uvedl jsem všechny literární prameny a publikace, ze kterých jsem čerpal.}
 % Define block styles
 \tikzstyle{decision} = [diamond, draw, fill=blue!20, 
     text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
-\tikzstyle{block} = [rectangle, draw, fill=blue!20, 
-    text width=5em, text centered, rounded corners, minimum height=4em]
-\tikzstyle{line} = [draw, -latex']
-\tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3cm,
-    minimum height=2em]  
+
+
+
 \tikzstyle{data} = [rectangle split, rectangle split parts=2, draw, fill=blue!20, 
     text width=3em, text centered, rounded corners, minimum height = 3em]
 \tikzstyle{tblock} = [rectangle, draw, fill=blue!20, 
@@ -190,7 +190,10 @@ Uvedl jsem všechny literární prameny a publikace, ze kterých jsem čerpal.}
     text width=5em, text centered, rounded corners]
 \tikzstyle{final} = [draw, ellipse,fill=red!20, minimum height=2em]  
 
-
+\tikzstyle{block} = [draw, fill=white, rectangle, 
+    minimum height=3em, minimum width=6em]
+\tikzstyle{cloud} = [draw, ellipse,fill=white, minimum height=2em]  
+\tikzstyle{line} = [draw, -latex']
 
 
   % Vysazeni titulnich stran / Typesetting of the title pages

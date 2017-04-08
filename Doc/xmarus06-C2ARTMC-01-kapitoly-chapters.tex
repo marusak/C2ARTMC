@@ -303,42 +303,48 @@ Prekladač je nástroj, ktorý číta zdrojový program a prekladá ho na cieľo
 Zdrojový a cieľový program sú si vzájomne funkčne ekvivalentné\cite{meduna}.
 Prekladač pozastáva z viacerých častí. Schéma bežného prekladača je na obrázku \ref{fig:sch}.
 
+
 \begin{figure}[h]
-\begin{tikzpicture}[align=center, node distance = 2cm and 3cm, auto]
+\begin{center}
+\begin{tikzpicture}[align=center, auto]
     % Place nodes
     \node [block] (lex) {Lexikálny analýzátor};
-    \node [cloud, left of=lex, align=center] (zdroj) {Zdrojový\\program};
-    \node [block, right=of lex] (synta) {Syntaktický analyzátor};
-    \node [block, below=of synta] (sema) {Sémantický analýzátor};
-    \node [block, below=of lex, align=center] (gen) {Generátor vnú\-tor\-né\-ho kódu};
+    \node [cloud, above=of lex, align=center] (zdroj) {Zdrojový\\program};
+    \node [block, below=of lex, yshift=-1cm] (synta) {Syntaktický analyzátor};
+    \node [block, right=of synta, xshift=3.0cm, align=center] (sema) {Sémantický\\analýzátor};
+    \node [block, below=of synta, yshift=-1cm] (gen) {Generátor vnútorného kódu};
     \node [block, below=of gen] (opti) {Op\-ti\-ma\-li\-zá\-tor};
-    \node [block, below=of sema, align=center] (gen_ciel) {Generátor cie\-ľo-vé\-ho kódu};
-    \node [cloud, right of=gen_ciel, align=center] (ciel) {Cieľový\\program};
-    % Draw edges
-    \path [line,dashed] (zdroj) -- (lex);
+    \node [block, below=of opti, align=center] (gen_ciel) {Generátor cieľového kódu};
+    \node [cloud, below=of gen_ciel, align=center] (ciel) {Cieľový\\program};
     
-    \draw[->] (lex.10) -- node[]{Tokeny} (synta.170);
-    \draw[->,dashed] (synta.190) -- (lex.-10);
+    \node [label, left=of synta, xshift=-0.75cm, yshift=0.5cm] (xlbl) {};
+    
+    \node [label, left=of synta, xshift=-1.4cm, yshift=0.5cm,align=center](lbl){Syntaxou\\riadený\\preklad};
+    
+    \node[draw,dashed, inner xsep=2em, inner ysep=2em, fit=(synta) (sema) (gen) (xlbl)] {};
+    
+    % Draw edges
+    \path [line] (zdroj) -- (lex);
+    
+    \draw[->] (lex.230) -- node[near start, xshift=-1.25cm]{token} (synta.130);
+    \draw[->] (synta.50) -- node[near end, xshift=2.25cm]{get\_token} (lex.310);
+    
+    \draw[->] (sema.163) -- node[yshift=0.5cm]{sémantická informácia} (synta.10);
+    \draw[->] (synta.-10) -- node[]{sémantická kontrola} (sema.197.75);
+    
+    \path [line] (synta) -- node[]{generovanie inštrukcií} (gen);
+    \path [line] (gen) -- node[]{vnútorný kód} (opti);
+    \path [line] (opti) -- node[]{optimalizovaný kód} (gen_ciel);
 
-    \draw[->] (synta.260) -- node[xshift=0.5cm]{Derivačný strom} (sema.100);
-    \draw[->,dashed] (sema.80) -- (synta.280);
-
-    \draw[->] (sema.170) -- node[yshift=-0.5cm,align=center]{Abstraktný\\syntaktický strom} (gen.10);
-    \draw[->,dashed] (gen.-10) -- (sema.190);
-
-
-    \path [line] (gen) -- node[xshift=-3cm]{Vnútorný kód} (opti);
-
-    \path [line] (opti) -- node[align=center]{Optimalizovaný\\vnútorný kód} (gen_ciel);
-
-    \path [line,dashed] (gen_ciel) -- (ciel);
+    \path [line] (gen_ciel) -- (ciel);
     
 
 \end{tikzpicture}
-\caption{Schéma prekladača TODO ref slidy IFJ}
+\caption{Schéma prekladača \cite{meduna}}
 \label{fig:sch}
-
+\end{center}
 \end{figure}
+
 
 \section{Lexikálny analyzátor}
 \label{sec_lex}
@@ -553,19 +559,76 @@ Výsledný program bol poriadne otestovaný na veľkej sade testov. Všetky test
 
 
 \section{Výsledná implementácia}
+V tejto časti textu je popis implementácie. Jedná sa o spojenie znalostí z kapitoly \ref{kap_prekladace} o prekladačoch so skutočne použitými vlastnostami a ich implementáciou v jazyku Python.
+\subsection{Lexikálny analyzátor}
 Ako prvá časť bol implementovaný lexikálny analyzátor. Jedná sa o samotnú triedu \texttt{Scanner}, ktorá v inizializácii berie názov súboru z programom v jazyku C. Následne je vstupný program načítaný a predspracovaný. Jedná sa hlavne o odstránenie komentárov a nahradenie skupín bielych znakov jednou medzerou. Tieto úpravy následne umožnujú jednoduchšie delenie kódu na tokeny. Trieda lexikálneho analyzátora poskytuje metódu \texttt{get\_token}, ktorá vráti práve jeden token. Na delenie sa nevyužívajú regulárne výrazy, ale podľa prvého neprečítaného znaku sa scanner rozhoduje o aký token sa môže jednať. Následne po rozpoznaní tokenu, je vrátený token, ktorý je reprezentovaný jedným číslom - jedná sa o imitáciu \texttt{enum} pre jazyk Python. Konkrétna hodnota tokenu sa nevracia priamo a je možné ju získať volaním funkcie \texttt{get\_value}. Scanner poskytuje aj metódu \texttt{unget\_token}, ktorá vráti jeden token späť do vstupného reťazca. Nakoľko je ale scanner ako aj celý prekladač jednopriechodový, je táto funkcia implementovaná instančnou premennou, ktorá drží vrátenú hodnotu. Výhodou je jednoduchá implementácia, nevýhodou je možné vrátiť iba jeden token.
 
+\subsection{Syntaktický analyzátor}
 Následne bol tvorený syntaktický analyzátor, ktorý je implementovaný ako trieda \texttt{Parser}. Jedná sa o syntaxou riadený preklad a preto je samotný analyzátor najdlhšia časť kódu. Napriek svojej veľkosti sa jedná o pomerne jednoduchý program. V princípe je celá analýza jeden while cyklus, ktorý čaká až skončí vstupný súbor a scanner vráti EOF. V tomto cykle sa prečíta prvý token a sa rozhodne o aký príkaz sa jedná. V tejto úrovni sa môže jednať iba do definícu alebo deklaráciu programu alebo premennej. Spracovanie premennej je priamočiara záležitosť. Spracovanie funkcie obsluhuje funkcia \texttt{parse\_function}, ktorá je obdobne jeden while cyklus, ktorý volá funkciu \texttt{parse\_command} až pokiaľ nenarazí na ukončujúcu zloženú zátvorku. Funkcia \texttt{parse\_command}
 na základe prvého tokenu zavolá funkcie na spracovanie príkazu, napríklad \texttt{parse\_if} alebo \texttt{parse\_assignment}. Ak sa jedná o príkaz, ktorý vytvára daľšiu úroveň zanorenia ako napríklad \texttt{if} alebo \texttt{while}, celá úroveň je spracovaná touto funkciou za volania  \texttt{parse\_command} na spracovanie jednotlivých príkazov. Hovoríme teda o rekurzívnom zanorovaní.
 
-Ako bolo spomenuté v sekcii \ref{sec_synta} ohľadom syntaxou riadenom preklade, počas syntaktickej analýzy sa vykonávajú aj dalšie akcie. Pri nájedení novej premennej je táto premenná vložená do tabuľky symbolov, ktorú vlastní trieda \texttt{Parser} a poskytuje sadu inštrukcií na prácu s ňou. Pri prečítaní celého príkazu sa vygeneruje inštrukcia vo vnútrom kóde. Na spracovanie vnúorného kódu bola vytvorená trieda \texttt{Generate}. Tento názov napovedá, že trieda nie len že príjma od parseru inštrukcie vo vnútornej reprezentácií, ale aj generuje cieľový kód. Trieda poskytuje celú radu pre vkladanie inštrukcií, ktoré začínajú prefixom \texttt{new\_i\_}. Okrem toho obsahuje funkciu \texttt{get\_full\_result}, ktorá má za úlohu vrátiť kód vo výstupnom jazyku pripravený na výpis alebo zápis do súboru. Táto funkcia volá všetky potrebné funkcie na generovanie a dokončovanie inštrukcií z vnútorného kódu do výsledného kódu.
+Ako bolo spomenuté v sekcii \ref{sec_synta} ohľadom syntaxou riadenom preklade, počas syntaktickej analýzy sa vykonávajú aj dalšie akcie. Medzi takéto akcie patrí napríklad vloženie premennej do tabuľky symbolov po nájdení novej premennej. Tabuľku symbolov vlastní trieda \texttt{Parser} a poskytuje sadu inštrukcií na prácu s ňou. Medzi daľsie akcie patrí vygenerovanie inštrukcie vo vnútornom kóde po prečítaní celého príkazu. 
 
-Schéma fungovania výslednej implementácie je znázornená na obrázku... 
-TODO ako vyzera schema viac ako meduna/14 skutocne nazy tried?
+\subsection{Sémantický analyzátor}
+Sémantický analyzátor nie je implicitne oddelený od zvyšku kódu ako je napríklad lexikálny alebo syntaktický analyzátor. Sémantická analýza sa vykonáva len v tak obmedzenej forme, že všetky potrebné kontroly boli priamo zahrnuté do parsera. Hlavný dôvod málo kontrôl súvisi s nepodporovaním dát v jazyku ARTMC a teda takmer všetky inštrukcie, kde je potrebná sémantická analýza sa nevyskytujú vo vstupnom súbore. Je prirodzene ošetrené aj správanie v prípade výskytu takejto konštrukcie. To je popísané v sekcii \ref{sec_features}.
+
+\subsection{Generovanie kódu}
+Na spracovanie vnútorného kódu bola vytvorená trieda \texttt{Generate}. Tento názov napovedá, že trieda nie len že príjma od parseru inštrukcie vo vnútornej reprezentácií, ale aj generuje cieľový kód. Trieda poskytuje celú radu funkcií pre vkladanie inštrukcií, ktoré začínajú prefixom \texttt{new\_i\_}. Okrem toho obsahuje funkciu \texttt{get\_full\_result}, ktorá má za úlohu vrátiť kód vo výstupnom jazyku pripravený na výpis alebo zápis do súboru. Táto funkcia volá všetky potrebné funkcie na generovanie a dokončovanie inštrukcií z vnútorného kódu do výsledného kódu.
+
+Schéma fungovania výslednej implementácie je znázornená na obrázku \ref{fig:imp}.
+
+\begin{center}
+\begin{figure}[h]
+\begin{tikzpicture}[auto,>=latex']
+
+    \node [cloud, align=center] (vstup) {Vstupný\\program};
+    \node [block, right=of vstup, xshift=1.5cm] (c2artmc) {c2artmc.py};
+    \node [cloud, right=of c2artmc, align=center, xshift=3cm] (vystup) {Výstupný\\program};
+    
+    \node [block, below=of vystup, xshift=-1.75cm] (generate) {Generate};
+
+
+    \path [line] (vstup) -- (c2artmc);
+
+    \draw [->] (c2artmc.20) -- (vystup.160);
+    \draw [->] (c2artmc.280) |- node[near start]{init} (generate.170);
+    \draw [->] (c2artmc.-20) -| node[near start, yshift=-0.75cm, xshift=-0.25cm]{get\_full\_result} (generate.110);
+    \draw [->, dashed] (generate.70) |- node[near start, xshift=3.5cm, yshift=-0.5cm]{výstupný program}  (c2artmc);
+    
+    \node [block, below=of vstup, xshift=1.75cm] (parser) {Parser};
+    \draw [->] (c2artmc.260) |- node[near end]{init} (parser);
+    \draw [->] (c2artmc.240) |- node[near end]{run} (parser.20);
+    \draw [->] (parser.-20) |- node[near end, yshift=-0.5cm]{new\_i\_<insturction>}  (generate.200);
+    
+    
+    \node [block, below=of parser, yshift=-1.5cm] (scanner) {Scanner};
+    \draw [->] (parser.218) -- node[near start, rotate=-90, yshift=-0.16cm, xshift=-0.5cm]{init} (scanner.142);
+    \draw [->] (parser.240) -- node[near start, rotate=-90, yshift=-0.16cm, xshift=-0.5cm]{get\_token} (scanner.120);
+    \draw [->] (parser.275) -- node[near start, rotate=-90, yshift=-0.16cm, xshift=-0.5cm]{unget\_token} (scanner.85);
+    
+        \draw [->, dashed] (scanner.50) -- node[near start, rotate=-90, yshift=-0.16cm, xshift=-0.5cm]{token} (parser.310);
+
+
+
+\end{tikzpicture}
+\caption{Schéma fungovania implementovaného prekladača}
+\label{fig:imp}
+
+\end{figure}
+\end{center}
+
+
+\section{Vstup a výstup}
+TODO ze musi byt najskor typedef
 
 \section{Zaujímavé vlastnosti}
+\label{sec_features}
 
-TODO fetury ake mame, skratove, ignore data...
+TODO aj netypicke C clastnosti, prekakovanie return ak tam nie je ERROR ci co, preskakovanie mallock(...)...
+TODO fetury ake mame, skratove, ignore data..., skip unknown stuff...
+
+\section{Testy}
+TODO
 
 \section{Nedostatky a známe chyby}
 Vo výslednej aplikácií nie sú žiadne známe chyby a všetky požiadavky boli implementované.
