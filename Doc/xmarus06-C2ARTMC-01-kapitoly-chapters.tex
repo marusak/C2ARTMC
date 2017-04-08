@@ -12,6 +12,7 @@ Prekladač by mal byť dostatočne robustný aj napriek veľmi malej podmnožine
 
 
 \chapter{Nástroj ARTMC}
+\label{kap_artmc}
 ARTMC je nástroj na formálnu verifikáciu programov, ktoré manipulujú s
 dynamicky viazanými dátovými štruktúrami. Tento nástroj bol vyvinutý na Fakulte
 Informatiky Vysokého Učení Technického v Brne vrámci výskumnej skupiny VeriFit,
@@ -304,7 +305,7 @@ Zdrojový a cieľový program sú si vzájomne funkčne ekvivalentné\cite{medun
 Prekladač pozastáva z viacerých častí. Schéma bežného prekladača je na obrázku \ref{fig:sch}.
 
 
-\begin{figure}[h]
+\begin{figure}
 \begin{center}
 \begin{tikzpicture}[align=center, auto]
     % Place nodes
@@ -354,7 +355,7 @@ tokenov, pričom token reprezentuje lexémy a môže obsahovať ďalšie atribú
 Pre lepšie porozumenie viď obrázok \ref{fig:lex}.
 
 \begin{center}
-\begin{figure}[h]
+\begin{figure}
 \begin{tikzpicture}[auto]
 
 	\node [small_block] (s3) {y};
@@ -472,6 +473,7 @@ prekladač sú:
 \end{itemize}
 
 \chapter{Implementácia}
+\label{kap_imp}
 Táto kapitola sa venuje návrhu a implementácii samotného prekladača.
 Ako implementačný jazyk bol zvolený Python. Kritériá, ktoré by mala výsledná
 aplikácia spĺnať sa dajú rozdeliť do dvoch kategórií:
@@ -550,7 +552,7 @@ testy boli úspešné, prípadne ktorý test neuspel v ktorej verzii.
 
 
 \chapter{Výsledná aplikácia}
-Aplikácia bola vytvorená s ohľadom na zadanie bakalárskej práce. Boli dodržané všetky body zadania. Pri vývoji som sa držal požadovaných vlastností na kód a vývoj spomenutých v kapitole TODO ref. Hneď po vytvorení prvej skutočne funkčnej časti kódu boli vytvárané automatické testy pre overenie skutočne fungujúcich implemenotvaných častí a overenie že počas pridávania novej funkcionality neprišlo k regresii v inej časti kódu. 
+Aplikácia bola vytvorená s ohľadom na zadanie bakalárskej práce. Boli dodržané všetky body zadania. Pri vývoji som sa držal požadovaných vlastností na kód a vývoj spomenutých v kapitole \ref{kap_imp}. Hneď po vytvorení prvej skutočne funkčnej časti kódu boli vytvárané automatické testy pre overenie skutočne fungujúcich implemenotvaných častí a overenie že počas pridávania novej funkcionality neprišlo k regresii v inej časti kódu. 
 
 Kód bol od začiatku publikovaný na GitHub-e s ohľadom na odporúčané praktiky pri využívaný verzovacieho systému git. História je prehľadná a je možné v nej jedoducho sa vracať alebo zisťovať ktorá časť kódu bola kedy implementovaná.
 
@@ -619,13 +621,83 @@ Schéma fungovania výslednej implementácie je znázornená na obrázku \ref{fi
 
 
 \section{Vstup a výstup}
-TODO ze musi byt najskor typedef
+Na vstupe sa očakáva platný program v jazyku C s určitými výnimkami. Výnimky môžme rozdeliť na štyri skupiny:\\
+\begin{enumerate}
+\item Nepodporované konštrukcie
+\item Neštandardné podporované konštrukcie
+\item Povinné položky
+\item Nepovinné položky
+\end{enumerate}
+
+\subsection{Nepodporované konštrukcie}
+Ako bolo spomenuté v kapitole \ref{kap_artmc}, nástroj ARTMC má odmädzenú sadu príkazov a preto nie je možné preložiť ľubovoľné konštrukcie. Avšak prekladač bol implementovaný tak, aby nebolo nutné program príliš upravovať. Je to dosiahnuté tým, že príkazy, ktoré nemenia používané premenné sú preskočené. Viac o tejto vlastnosti je v sekcii \ref{sec_features}.
+
+Z významných konštrukcií nie sú podporované:
+\begin{itemize}
+\item \texttt{enum}
+\item \texttt{for}
+\item \texttt{union}
+\end{itemize}
+
+Medzi významné nepodporované konštrukcie patrí aj obmedzenie prác s dátami. Tomuto obmedzeniu sa venuje sekcia \ref{sec_data}.
+
+\subsection{Neštandardné podporované konštrukcie}
+Okrem validných konštrukcií pre jazyk C boli implementované aj rozšírenia, ktoré sú potrebné pre nástroj ARTMC. Jedná sa hlavne o podporu nedeterministického rozhodovania. V jazyku C je túto konštrukciu možné zapísať ako \texttt{if(*)} alebo \texttt{if(any)}. Obe tieto konštrukcie sa preložia na príkaz \texttt{if*}.
+
+Bola implementovaná podpora aj pre kľúčové slovo \texttt{ERROR}, ktoré sa môže vyskytnúť vrámci vrámci príkazu \texttt{return}. Tento príkaz sa preloží na príkaz \texttt{goto}. Ako miesto skoku je riadok vyskytujúci sa v \texttt{env} \texttt{err\_line}. Príkaz \texttt{return ERROR} sa môže chápať ako ukončenie s chybou, napríklas po neúspešnom mallokovaní pamäte.
+
+Posledná neštandardná vlastnosť pre implementovaný prekladač je podpora funckie \texttt{random\_alloc(void)}. Táto funkcia sa preloží na príkaz \texttt{random\_position}. Využitím tejto funkcie je možné prinútiť nástroj ARTMC vybrať náhodný alokovaný uzol.
+
+\subsection{Povinné položky}
+Nástroj ARTMC defaultne predpokladá existenciu akejsi špecifickej štruktúry. Avšak počas návrhu prekladača bolo rozhodnuté, že prekladač nebude implicitne predpokladať existenciu žiadnej dátovej štruktúry a bude vyžadovať, aby vždy bola presne zadaná pre každý program. Preto vstupný program musí obsahovať presne definovanú štruktúru. Príkladom môže byť štruktúra v schéme \ref{fig:struct}. Za povšimnutie stojí existencia iba jednej neukazateľovej položky. Viac ako jedna dátova položka totižto nie je podporovaná zo strany nástroja ARTMC a teda takúto štruktúru prekladač odmietne.
+
+\begin{center}
+\begin{figure}
+\texttt{
+typedef struct T1 \{\\                                                            
+\tab struct T1* next;\\                                                            
+\tab struct T1* prev;\\                                                          
+\tab int data;\\                                                                   
+\}* T;
+}
+
+\label{fig:struct}
+\caption{Vzorový príklad štruktúry vo vstupnom programe}
+\end{figure}
+\end{center}
+
+\subsection{Nepovinné položky}
+Prekladač nepodporuje direktívu preprocesoru \texttt{\#include}. Avšak takéto riadky sú pri preklade ignorované, takže je možné ich tam nechať. Preto je riadok \texttt{\#include <xxxxxx.h>} nepovinný aj napriek tomu, že v zdrojovom kóde sa môžu vyskytovať kľučové slová a funkcie ktorú sú touto knižnicou podporované. V tabuľke \ref{table:kniz} je výpis knižníc a príkazov, ktoré z nich sú podporované.
+
+\begin{table}[]
+\centering
+\caption{Implicitne podporované príkazy}
+\label{table:kniz}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Knižnica} & \textbf{Kľúčové slová a  funkcie} \\ \hline
+stdlib.h          & NULL, malloc                      \\ \hline
+assert.h          & assert                            \\ \hline
+stdbool.h         & true, false                       \\ \hline
+\end{tabular}
+\end{table}
+
+
+\section{Práca s dátami}
+\label{sec_data}
+Vo vstupnom súbore nie sú podporované operácie nad dátovými premennými okrem priradenia a porovnania. Je možné len jedno priradenie a následne nie je možné hodnotu meniť. Na takúto situáciu prekladač upozorní. Avšak je možné preložiť aj takýto program za pomoci ignorovania práce s dátami.
+
+\subsection{Ignorovanie dát}
+TODO - int z = 5ô z++...
+\subsection{Konštanty}
+TODO
 
 \section{Zaujímavé vlastnosti}
 \label{sec_features}
 
-TODO aj netypicke C clastnosti, prekakovanie return ak tam nie je ERROR ci co, preskakovanie mallock(...)...
-TODO fetury ake mame, skratove, ignore data..., skip unknown stuff...
+TODO aj netypicke C clastnosti, prekakovanie return ak tam nie je ERROR, preskakovanie mallock(...), preskakovanie funkcii atd...skip unknown stuff...
+
+TODO fetury ake mame, skratove, more
 
 \section{Testy}
 TODO
