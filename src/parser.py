@@ -5,7 +5,7 @@ Parse the whole file and return writable structure of ARTMC instructions.
 
 from src.tokens import TokenEnum, TokenGroups
 from src.scanner import Scanner
-from src.error import FatalError
+from src.error import FatalError, Warning
 
 
 class Parser:
@@ -576,6 +576,8 @@ class Parser:
                             "These operation are not permitted. "
                             "Use -i to ignore.")
                            .format(self.s.get_current_line()))
+            Warning("Skipping command beginning with '{0}' on line {1}."
+                    .format(name, self.s.get_current_line()))
             self.skip_until_semicolon()
             return TokenEnum.TS
 
