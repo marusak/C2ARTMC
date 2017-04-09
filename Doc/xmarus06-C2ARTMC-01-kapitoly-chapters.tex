@@ -726,7 +726,21 @@ Obdobne je možné použiť štandardnú dátovú premennú aj v podmienke ako j
 Avšak rovanko ako pri práci s dátami priamo, ani v tomto prípade nie je možné meniť hodnotu premennej. Preto takúto premennú môžme považovať za konštantu.
 
 \section{Použitie aplikácie}
-TODO -h
+Prekladač poskytuje viacero prepínačov, ktorými je možné upraviť implicitné správanie.  Nasleduje výpis \texttt{c2artmc.py --help}, ktorý ukazuje možné použitie tohto nástroja.
+\begin{verbatim}
+usage: c2artmc.py [-h] [-o O] [-d D] [-i] INPUT_FILE
+
+Converter from C to ARTMC.
+
+positional arguments:
+ INPUT_FILE  C source file to be converted
+
+optional arguments:
+  -h, --help  show this help message and exit
+  -o O        Filepath to write the ARTMC file
+  -d D        Initial pointer descriptor
+  -i          Ignore data
+\end{verbatim}
 
 \section{Zaujímavé vlastnosti}
 \label{sec_features}
