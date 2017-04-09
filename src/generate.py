@@ -43,13 +43,13 @@ class Generate:
                             stderr=PIPE)
                 stdout, stderr = cmd.communicate()
             except:
-                FatalError("Could not call get_typedef_descr.t.sh. " +
-                           "Is the C2ARTMC in the correct place?")
+                FatalError(("Could not call get_typedef_descr.t.sh. "
+                           "Is the C2ARTMC in the correct place?"))
 
             if (cmd.returncode):
-                FatalError("Could not call get_typedef_descr.t.sh." +
-                           "Does the current directory contains 'typedefs' " +
-                           "file? Use -d to set descriptor.")
+                FatalError(("Could not call get_typedef_descr.t.sh."
+                           "Does the current directory contains 'typedefs' "
+                           "file? Use -d to set descriptor."))
             self.descr_num = int(stdout) + 1
 
         else:

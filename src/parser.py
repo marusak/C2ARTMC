@@ -572,8 +572,9 @@ class Parser:
         # skip assignment to variables of different types
         if (name not in self.g.get_variables()):
             if (name in self.g.get_constants() and not self.ignore):
-                FatalError("Changing value of standard variable on line {0}.\
-                        These operation are not permitted. Use -i to ignore."
+                FatalError(("Changing value of standard variable on line {0}. "
+                            "These operation are not permitted. "
+                            "Use -i to ignore.")
                            .format(self.s.get_current_line()))
             self.skip_until_semicolon()
             return TokenEnum.TS
