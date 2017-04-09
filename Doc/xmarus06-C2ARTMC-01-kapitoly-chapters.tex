@@ -620,7 +620,7 @@ Schéma fungovania výslednej implementácie je znázornená na obrázku \ref{fi
 \end{center}
 
 
-\section{Vstup a výstup}
+\section{Vstupný program}
 Na vstupe sa očakáva platný program v jazyku C s určitými výnimkami. Výnimky môžme rozdeliť na štyri skupiny:\\
 \begin{enumerate}
 \item Nepodporované konštrukcie
@@ -688,9 +688,45 @@ stdbool.h         & true, false                       \\ \hline
 Vo vstupnom súbore nie sú podporované operácie nad dátovými premennými okrem priradenia a porovnania. Je možné len jedno priradenie a následne nie je možné hodnotu meniť. Na takúto situáciu prekladač upozorní. Avšak je možné preložiť aj takýto program za pomoci ignorovania práce s dátami.
 
 \subsection{Ignorovanie dát}
-TODO - int z = 5ô z++...
+Počas vývoja a testovania prekladača sa vyskytol problém pri práci s dátami. Na vstupe sa mohol objaviť validný program, ktorý mohol by korektne preložený avšak kvôli čo i len jednému príkazu manipulujúcim s dátovou premennou nemohol byť tento program preložený. Často sa jednalo o prácu s premennou, ktorá nebola nijak potrebná pre analýzu nástrojom ARTMC. Ako príklad uvádzam nasledujúci program:\\
+
+\noindent
+\texttt{
+\tab x->data = 1;\\
+\tab \dots\\
+\tab x->data *= 2;\\
+\tab \dots \\
+\tab \textit{ manipuluje sa s x->data }\\
+\tab \dots\\
+\tab if (x->data < 0)\\
+\tab \tab x->next = y;\\
+}
+
+V horeuvedenom programe sa manipuluje s dátovou položkou štruktúry. Takéto operácie nie sú podporované zo strany nástroja ARTMC a preto by tento program nemohol byť preložený. Avšak ak používateľ prekladača uzná, že tieto manipulácie a podmienka nie je kritickým rozhodovacím miestom a teda vynechanie zmien dátovej položky a nahradenie podmienky za nedeterministickú je možné, môže použiť prepínač \texttt{-i}, ktorý vynúti neprekladanie všetký operácií, ktoré manipulujú s dátami a všetky podmienky obsahujúce porovnávanie dátove položky sa zmenia na nedeterministickú podmienku \texttt{if*}.
+
 \subsection{Konštanty}
-TODO
+Okrem podpory priameho priradovania dát do dátovej položky štruktúry je možné použiť priradenie aj zo štandardnej dátovej položky. Príklad použitia je znázornení na nasledujúcom kuse kódu:\\
+
+\noindent
+\texttt{
+\tab int i = 0;\\
+\tab x->data = i;\\
+}
+
+Obdobne je možné použiť štandardnú dátovú premennú aj v podmienke ako je vidieť v nasledujúcej ukážke:\\
+
+\noindent
+\texttt{
+\tab int i = 0;\\
+\tab x->data = 1;\\
+\tab if (x->data == i)\\
+\tab \tab return ERROR;\\
+}
+
+Avšak rovanko ako pri práci s dátami priamo, ani v tomto prípade nie je možné meniť hodnotu premennej. Preto takúto premennú môžme považovať za konštantu.
+
+\section{Použitie aplikácie}
+TODO -h
 
 \section{Zaujímavé vlastnosti}
 \label{sec_features}
