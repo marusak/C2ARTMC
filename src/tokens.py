@@ -30,6 +30,19 @@ class TokenGroups:
              TokenEnum.TInt,
              TokenEnum.TDouble]
 
+    DataOperators = [TokenEnum.TUnaryAdd,
+                     TokenEnum.TUnarySub,
+                     TokenEnum.TAddE,
+                     TokenEnum.TSubE,
+                     TokenEnum.TMulE,
+                     TokenEnum.TDivE,
+                     TokenEnum.TModE]
+
+    DataComparators = [TokenEnum.TLE,
+                       TokenEnum.TL,
+                       TokenEnum.TGE,
+                       TokenEnum.TG]
+
 TokenType = {
         '+':            TokenEnum.TAdd,
         '-':            TokenEnum.TSub,

@@ -103,6 +103,13 @@ class Parser:
         while (t != TokenEnum.TS):
             t = self.s.get_token()
 
+    def skip_subexpression(self):
+        """Read and ignore all tokens creating subexpression."""
+        t = self.s.get_token()
+        while (t not in [TokenEnum.TPZ, TokenEnum.TAnd, TokenEnum.TOr]):
+            t = self.s.get_token()
+        self.s.unget_token(t)
+
     def parse_new_definition_of_structure(self):
         """Parse line on which definition(s) or declaration(s) are.
 
@@ -178,6 +185,16 @@ class Parser:
                 return
 
             # only support == and !=
+            if (processing_data and t in TokenGroups.DataComparators):
+                if (self.ignore):
+                    self.g.new_i_if_star(succ_label, fail_label)
+                    self.skip_subexpression()
+                    return
+                else:
+                    FatalError(("Unsupported comparing on line {0}. Comparing "
+                                "data can only be == or !=. Try -i to ignore.")
+                               .format(self.s.get_current_line()))
+
             if (t not in [TokenEnum.TE, TokenEnum.TNE]):
                 FatalError("Unsupported operator on line {0}"
                            .format(self.s.get_current_line()))
@@ -486,6 +503,15 @@ class Parser:
                     name = tmp
                     pointer = p
                     t = self.s.get_token()
+
+                if (t in TokenGroups.DataOperators):
+                    if (self.ignore):
+                        self.skip_until_semicolon()
+                        return TokenEnum.TS
+                    else:
+                        FatalError(("Data manipulation is not supported on "
+                                   "line {0}. Try -i for ignoring data.")
+                                   .format(self.s.get_current_line()))
 
                 if (t != TokenEnum.TAss):
                     FatalError("Unknown token in assignment on line {0}."
