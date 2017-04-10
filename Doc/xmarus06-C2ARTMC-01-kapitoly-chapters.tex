@@ -742,12 +742,108 @@ optional arguments:
   -i          Ignore data
 \end{verbatim}
 
-\section{Zaujímavé vlastnosti}
+\section{Neštandardné vlastnosti}
 \label{sec_features}
+V tejto kapitole sú popísané vybrané vlastnosti prekladača, ktoré sú navrch zadania a implementujú užitočné vlastnosti.
+\subsection{Preskakovanie (častí) príkazov}
+Nakoľko nástroj ARTMC neobsahuje žiadnu podporu pre volanie funkcií je nutné byť schopný adekvátne zareagovať na výskyt volania funkcie. Riešením je ohlásiť chybu pri nájdení volania funkcie. Avšak počas testovania sa ukázalo, že výhodnejšie je priamo takéto príkazy preskakovať. Preto bol na to aj prekladač upravený. Momentálne prekladač upozorní na fakt, že sa volanie funkcie preskakuje. Očakáva sa od používateľa, že na tieto varovania zareaguje a ak niektorá funkcia menila premenné podstatné pre analýzu tak tieto príkazy adekvátne upraví.
 
-TODO aj netypicke C clastnosti, prekakovanie return ak tam nie je ERROR, preskakovanie mallock(...), preskakovanie funkcii atd...skip unknown stuff...
+Prekladač rovnako preskakuje aj časti príkazov, ak dopredu vie, že nesledujúcu informáciu nepotrebuje. Jedná sa napríklad o príkaz \texttt{return}. Ak sa za príkazom \texttt{return} nevyskytuje kľúčové slovo \texttt{ERROR} tak prekladač môže zahodiť zvyšok príkazu. Obdobne to funguje aj pri funkciách \texttt{malloc} a \texttt{random\_alloc} kde ich argumenty sú neprekladané.
 
-TODO fetury ake mame, skratove, more
+\subsection{Preklad viacnásobných pointrov}
+V prekladači je implementovaná podpora pre preklad viacnásobného prístupu cez ukazateľ či sa už jedná o zápis alebo čítanie. Je teda možné preložiť príkaz typu:\\
+
+\noindent
+\texttt{
+x->next->next = y->prev->next->prev;\\
+}
+
+Nakoľko nástroj ARTMC nemá podporu pre takýto prístup, je nutné príkaz rozdeliť na viacero jednoduchých prístupov. Vyššie uvedený program by sa teda dal za pomoci pomocných premenných napísať ako:\\
+
+\noindent
+\texttt{
+tmp1 = x->next;\\
+tmp2 = y->prev;\\
+tmp3 = tmp2->next;\\
+tmp4 = tmp3->prev;\\
+tmp1->next=tmp4;\\
+}
+
+čo už je možné preložiť aj do nástroja ARTMC.
+
+\subsection{Vyhodnocovanie neúplných podmienok}
+
+TODO if (x), if (x->data)
+
+\subsection{Skratové vyhodnocovanie podmienok}
+V jazyku C je zaužívané využívať skratové vyhodnocovanie podmienok pre jednoduchší zápis. Veľmi často sa tento prístup používa práve pri dynamicky viazaných dátových štruktúrach. Pre lepšie porozumenie uveďme príklad:\\
+
+\noindent
+\texttt{
+if (x \&\& x->next)\{\\
+\tab x->next->next = y;\\
+\}\\
+}
+
+Pri tomto zápise máme istotu, že nepristúpime alebo nezapíšeme do nealokovaného uzla, nakoľko sa najskôr overí, že je  alokované \texttt{x} a ak je tak potom \texttt{x->next}. A iba ak oba uzly sú alokované, môžme bezpečne zapísať aj do \texttt{x->next->next}.
+
+Implementovaný prekladač dokáže takéto podmienky preložiť. Je k tomu použitý relatívne jednoduchý algoritmus, ktorý rozdelí výraz na podvýrazy oddelené skupinami logických operátorov. Následne sa prechádza cez skupiny \texttt{or}-ov a \texttt{and}-ov. Pre skupinu podvýrazov oddelených \texttt{||} platí, že po úspechu jednotlivých podvýrazov sa pokračuje za posledným podvýrazom v skupine a pri neúspechu nasledujúcim. Pri skupine spojenej logickým operátorom \texttt{\&\&} je to presne naopak. Tento algoritmus je znázornený na obrázku \ref{fig:scrat} kde čiarkovane sú označené podvýrazy, bodkovane skupiny, plnou šípkou splnenie podmienky a čiarkovanou šípkou nesplnenie.
+
+\begin{center}
+\begin{figure}[h]
+\begin{tikzpicture}[auto,>=latex', node distance=1mm]
+
+    \node [subexpression] (t1) {p1};
+    \node [operand, right=of t1] (l1) {\&\&};
+    \node [subexpression, right=of l1] (t2) {p2};
+    \node [operand, right=of t2] (l2) {\&\&};
+    \node [subexpression, right=of l2] (t3) {p3};
+    \node [draw,dotted, ellipse, inner xsep=-2.25em, fit=(t1) (l1) (t2) (l2) (t3)] {};
+    
+	\draw [->] (t1) to [out=30,in=150] (t2);
+	\draw [->] (t2) to [out=30,in=150] (t3);
+
+
+    \node [operand, right=of t3] (l3) {||};
+    \node [subexpression, right=of l3] (t4) {p4};
+    \node [operand, right=of t4] (l4) {||};
+    \node [subexpression, right=of l4] (t5) {p5};
+    \node [draw,dotted, ellipse, inner xsep=-1.25em, inner ysep=0em, fit=(l3) (t4) (l4) (t5)] {};    
+    \draw [->,dashed] (t3) to [out=30,in=150] (t4);
+    \draw [->,dashed] (t1) to [out=45,in=135] (t4);
+    \draw [->,dashed] (t2) to [out=45,in=140] (t4);
+    
+
+    \node [operand, right=of t5] (l5) {\&\&};
+    \node [subexpression, right=of l5] (t6) {p6};
+    
+     \node [draw,dotted, ellipse, inner xsep=-0.75em, inner ysep=0em, fit=(l5) (t6)] {}; 
+     \draw [->] (t3) to [out=315,in=240] (t6);
+     \draw [->] (t4) to [out=315,in=230] (t6);
+     \draw [->,dashed] (t4) to [out=30,in=150] (t5);
+     
+     \node [subexpression, right=of t6, fill=black!30, yshift=-1cm] (T) {True};
+     \node [subexpression, right=of t6, fill=black!30, yshift=1cm] (F) {False};
+     
+     \draw [->,dashed] (t5) to [out=30,in=180] (F);
+     \draw [->] (t5) to [out=315,in=220] (t6);
+     
+     \draw [->,dashed] (t6) to [out=10,in=270] (F);
+     \draw [->] (t6) to [out=-10,in=90] (T);
+     
+     
+
+    
+
+\end{tikzpicture}
+\caption{Schéma fungovania prekladu skratového vyhodnocovania}
+\label{fig:scrat}
+
+\end{figure}
+\end{center}
+
+
+
 
 \section{Testy}
 TODO
