@@ -5,7 +5,10 @@ Parse the whole file and return writable structure of ARTMC instructions.
 
 from src.tokens import TokenEnum, TokenGroups
 from src.scanner import Scanner
-from src.error import FatalError, Warning
+from src.error import fatal_error, warning
+
+# there is never too-many ;)
+# pylint: disable=R0911,R0912,R0915
 
 
 class Parser:
@@ -13,17 +16,14 @@ class Parser:
 
     def __init__(self, file_name, generate, ignore):
         """The init."""
-        self.s = Scanner(file_name)
-        self.g = generate
+        self.scanner = Scanner(file_name)
+        self.gen = generate
 
         # The name of the structure
         self.structure_name = ""
 
         # counter to provide unique numbers or labels
-        self.unique_counter = 0
-
-        # counter to provide unique numbers or variables
-        self.unique_counter_v = 0
+        self.unique_counters = [0, 0]
 
         self.ignore = ignore
 
@@ -32,105 +32,106 @@ class Parser:
 
     def generate_unique_label_name(self):
         """Return string that is unique."""
-        self.unique_counter += 1
-        return "label-{0}".format(str(self.unique_counter - 1))
+        self.unique_counters[0] += 1
+        return "label-{0}".format(str(self.unique_counters[0] - 1))
 
     def generate_unique_variable(self):
         """Create new unique variable."""
-        self.unique_counter_v += 1
-        name = "v{0}".format(str(self.unique_counter_v - 1))
-        self.g.save_new_variable(name,
-                                 self.s.get_current_line())
+        self.unique_counters[1] += 1
+        name = "v{0}".format(str(self.unique_counters[1] - 1))
+        self.gen.save_new_variable(name,
+                                   self.scanner.get_current_line())
         return name
 
     def verify_token(self, expected_token):
         """Read next token and compare with expected token."""
-        if (self.s.get_token() != expected_token):
-            FatalError("Unexpected token on line {0}."
-                       .format(self.s.get_current_line()))
+        if self.scanner.get_token() != expected_token:
+            fatal_error("Unexpected token on line {0}."
+                        .format(self.scanner.get_current_line()))
 
     def verify_identifier(self, expected_identifier):
         """Read next token, expect identifier and compare with expected."""
-        if (self.s.get_token() != TokenEnum.TIden):
-            FatalError("Unexpected identifier on line {0}."
-                       .format(self.s.get_current_line()))
+        if self.scanner.get_token() != TokenEnum.TIden:
+            fatal_error("Unexpected identifier on line {0}."
+                        .format(self.scanner.get_current_line()))
 
-        if (self.s.get_value() != expected_identifier):
-            FatalError("Unexpected identifier '{0}' on line {1}."
-                       .format(expected_identifier,
-                               self.s.get_current_line()))
+        if self.scanner.get_value() != expected_identifier:
+            fatal_error("Unexpected identifier '{0}' on line {1}."
+                        .format(expected_identifier,
+                                self.scanner.get_current_line()))
 
     def parse_typedef(self):
         """Parse one typedef."""
         self.verify_token(TokenEnum.KWStruct)
         self.verify_token(TokenEnum.TIden)
-        struct_name = self.s.get_value()
+        struct_name = self.scanner.get_value()
         self.verify_token(TokenEnum.TLZZ)
-        token = self.s.get_token()
+        token = self.scanner.get_token()
 
-        while (token != TokenEnum.TPZZ):
+        while token != TokenEnum.TPZZ:
             # next pointer
-            if (token == TokenEnum.KWStruct):
+            if token == TokenEnum.KWStruct:
                 self.verify_identifier(struct_name)
                 self.verify_token(TokenEnum.TMul)
                 self.verify_token(TokenEnum.TIden)
-                next_pointer = self.s.get_value()
+                next_pointer = self.scanner.get_value()
                 self.verify_token(TokenEnum.TS)
-                self.g.add_pointer_to_structure(next_pointer,
-                                                self.s.get_current_line())
+                current_line = self.scanner.get_current_line()
+                self.gen.add_pointer_to_structure(next_pointer,
+                                                  current_line)
             # data
-            elif (token in TokenGroups.DataTypes):
+            elif token in TokenGroups.DataTypes:
                 # parse data element
                 self.verify_token(TokenEnum.TIden)
-                data = self.s.get_value()
+                data = self.scanner.get_value()
                 self.verify_token(TokenEnum.TS)
-                self.g.add_data_to_structure(data,
-                                             self.s.get_current_line())
+                self.gen.add_data_to_structure(data,
+                                               self.scanner.get_current_line())
             else:
-                FatalError("Unknown item in structure on line {0}."
-                           .format(self.s.get_current_line()))
+                fatal_error("Unknown item in structure on line {0}."
+                            .format(self.scanner.get_current_line()))
 
-            token = self.s.get_token()
+            token = self.scanner.get_token()
 
         self.verify_token(TokenEnum.TMul)
         self.verify_token(TokenEnum.TIden)
-        self.structure_name = self.s.get_value()
+        self.structure_name = self.scanner.get_value()
         self.verify_token(TokenEnum.TS)
 
     def skip_until_semicolon(self):
         """Read and ignore all tokens until semicolon."""
-        t = self.s.get_token()
-        while (t != TokenEnum.TS):
-            t = self.s.get_token()
+        token = self.scanner.get_token()
+        while token != TokenEnum.TS:
+            token = self.scanner.get_token()
 
     def skip_subexpression(self):
         """Read and ignore all tokens creating subexpression."""
-        t = self.s.get_token()
-        while (t not in [TokenEnum.TPZ, TokenEnum.TAnd, TokenEnum.TOr]):
-            t = self.s.get_token()
-        self.s.unget_token(t)
+        token = self.scanner.get_token()
+        while (token not in [TokenEnum.TPZ, TokenEnum.TAnd, TokenEnum.TOr]):
+            token = self.scanner.get_token()
+        self.scanner.unget_token(token)
 
-    def parse_new_definition_of_structure(self):
+    def parse_struct_definition(self):
         """Parse line on which definition(s) or declaration(s) are.
 
         Expects that the variables are of the structure type.
         """
         self.verify_token(TokenEnum.TIden)
-        self.g.save_new_variable(self.s.get_value(),
-                                 self.s.get_current_line())
+        self.gen.save_new_variable(self.scanner.get_value(),
+                                   self.scanner.get_current_line())
 
-        t = self.s.get_token()
-        if (t == TokenEnum.TAss):
-            t = self.parse_assignment(self.s.get_value())
+        token = self.scanner.get_token()
+        if token == TokenEnum.TAss:
+            token = self.parse_assignment(self.scanner.get_value())
 
-        while (t != TokenEnum.TS):
+        while token != TokenEnum.TS:
             self.verify_token(TokenEnum.TIden)
-            name = self.s.get_value()
-            self.g.save_new_variable(name, self.s.get_current_line())
-            t = self.s.get_token()
+            name = self.scanner.get_value()
+            self.gen.save_new_variable(name, self.scanner.get_current_line())
+            token = self.scanner.get_token()
 
-            if (t == TokenEnum.TAss):
-                t = self.parse_assignment(name)
+            if token == TokenEnum.TAss:
+                token = self.parse_assignment(name)
 
     def parse_subexpression(self,
                             succ_label,
@@ -141,125 +142,128 @@ class Parser:
         fail_label: label to jump if the expression is unsuccessful
         """
         processing_data = False
-        t = self.s.get_token()
+        token = self.scanner.get_token()
 
         # ! means negation - switch labels
-        if (t == TokenEnum.TN):
+        if token == TokenEnum.TN:
             (succ_label, fail_label) = (fail_label, succ_label)
-            t = self.s.get_token()
+            token = self.scanner.get_token()
 
-        if (t == TokenEnum.TIden):
-            x = self.s.get_value()
-            t = self.s.get_token()
+        if token == TokenEnum.TIden:
+            xname = self.scanner.get_value()
+            token = self.scanner.get_token()
 
-            while (t == TokenEnum.TP):
+            while token == TokenEnum.TP:
                 self.verify_token(TokenEnum.TIden)
-                pointer = self.s.get_value()
+                pointer = self.scanner.get_value()
 
                 # it may be just comparing data
-                if (pointer == self.g.get_data_name()):
+                if pointer == self.gen.get_data_name():
                     processing_data = True
-                    t = self.s.get_token()
+                    token = self.scanner.get_token()
                     break
                 else:
                     tmp = self.generate_unique_variable()
-                    self.g.new_i_x_ass_y_next(tmp, x, pointer)
-                    x = tmp
+                    self.gen.new_i_x_ass_y_next(tmp, xname, pointer)
+                    xname = tmp
 
-                t = self.s.get_token()
+                token = self.scanner.get_token()
 
             # using short comparing e.g if(x) or if(x->data) etc.
-            if (t in [TokenEnum.TPZ, TokenEnum.TOr, TokenEnum.TAnd]):
+            if (token in [TokenEnum.TPZ, TokenEnum.TOr, TokenEnum.TAnd]):
                 if processing_data:
-                    if (self.ignore):
-                        self.g.new_i_if_star(succ_label, fail_label)
+                    if self.ignore:
+                        self.gen.new_i_if_star(succ_label, fail_label)
                     else:
-                        self.g.new_i_ifdata(x,
-                                            0,
-                                            fail_label,
-                                            succ_label)
+                        self.gen.new_i_ifdata(xname,
+                                              0,
+                                              fail_label,
+                                              succ_label)
                 else:
-                    self.g.new_i_x_eq_null(x, fail_label, succ_label)
+                    self.gen.new_i_x_eq_null(xname, fail_label, succ_label)
 
-                self.s.unget_token(t)
+                self.scanner.unget_token(token)
                 return
 
             # only support == and !=
-            if (processing_data and t in TokenGroups.DataComparators):
-                if (self.ignore):
-                    self.g.new_i_if_star(succ_label, fail_label)
+            if processing_data and token in TokenGroups.DataComparators:
+                if self.ignore:
+                    self.gen.new_i_if_star(succ_label, fail_label)
                     self.skip_subexpression()
                     return
                 else:
-                    FatalError(("Unsupported comparing on line {0}. Comparing "
-                                "data can only be == or !=. Try -i to ignore.")
-                               .format(self.s.get_current_line()))
+                    fatal_error(("Unsupported comparing on line {0}. "
+                                 "Comparing data can only be == or !=. "
+                                 "Try -i to ignore.")
+                                .format(self.scanner.get_current_line()))
 
-            if (t not in [TokenEnum.TE, TokenEnum.TNE]):
-                FatalError("Unsupported operator on line {0}"
-                           .format(self.s.get_current_line()))
-            if (t == TokenEnum.TNE):
+            if token not in [TokenEnum.TE, TokenEnum.TNE]:
+                fatal_error("Unsupported operator on line {0}"
+                            .format(self.scanner.get_current_line()))
+            if token == TokenEnum.TNE:
                 (succ_label, fail_label) = (fail_label, succ_label)
 
-            t = self.s.get_token()
+            token = self.scanner.get_token()
 
             # x == NULL
-            if (t == TokenEnum.KWNull):
-                self.g.new_i_x_eq_null(x, succ_label, fail_label)
+            if token == TokenEnum.KWNull:
+                self.gen.new_i_x_eq_null(xname, succ_label, fail_label)
 
             # x = y
-            elif (t == TokenEnum.TIden):
-                y = self.s.get_value()
+            elif token == TokenEnum.TIden:
+                yname = self.scanner.get_value()
 
-                if (processing_data):
-                    if (self.ignore):
-                        self.g.new_i_if_star(succ_label, fail_label)
+                if processing_data:
+                    if self.ignore:
+                        self.gen.new_i_if_star(succ_label, fail_label)
                     else:
-                        self.g.new_i_ifdata(x,
-                                            y,
-                                            succ_label,
-                                            fail_label)
+                        self.gen.new_i_ifdata(xname,
+                                              yname,
+                                              succ_label,
+                                              fail_label)
                     return
 
-                t = self.s.get_token()
-                while (t == TokenEnum.TP):
+                token = self.scanner.get_token()
+                while token == TokenEnum.TP:
                     self.verify_token(TokenEnum.TIden)
                     tmp = self.generate_unique_variable()
-                    self.g.new_i_x_ass_y_next(tmp, y, self.s.get_value())
-                    y = tmp
-                    t = self.s.get_token()
+                    self.gen.new_i_x_ass_y_next(tmp,
+                                                yname,
+                                                self.scanner.get_value())
+                    yname = tmp
+                    token = self.scanner.get_token()
 
-                self.g.new_i_x_eq_y(x, y, succ_label, fail_label)
-                self.s.unget_token(t)
+                self.gen.new_i_x_eq_y(xname, yname, succ_label, fail_label)
+                self.scanner.unget_token(token)
 
-            elif (t in TokenGroups.Datas and processing_data):
-                if (self.ignore):
-                    self.g.new_i_if_star(succ_label, fail_label)
+            elif token in TokenGroups.Datas and processing_data:
+                if self.ignore:
+                    self.gen.new_i_if_star(succ_label, fail_label)
                 else:
-                    self.g.new_i_ifdata(x,
-                                        self.s.get_value(),
-                                        succ_label,
-                                        fail_label)
+                    self.gen.new_i_ifdata(xname,
+                                          self.scanner.get_value(),
+                                          succ_label,
+                                          fail_label)
 
             else:
-                FatalError("Unsupported operand on line {0}"
-                           .format(self.s.get_current_line()))
+                fatal_error("Unsupported operand on line {0}"
+                            .format(self.scanner.get_current_line()))
 
-        elif (t == TokenEnum.TLZ):
+        elif token == TokenEnum.TLZ:
             self.parse_expression(succ_label, fail_label)
 
-        elif (t in TokenGroups.Nondeterministic):
-            self.g.new_i_if_star(succ_label, fail_label)
+        elif token in TokenGroups.Nondeterministic:
+            self.gen.new_i_if_star(succ_label, fail_label)
 
-        elif (t == TokenEnum.KWTrue):
-            self.g.new_i_goto(succ_label)
+        elif token == TokenEnum.KWTrue:
+            self.gen.new_i_goto(succ_label)
 
-        elif (t == TokenEnum.KWFalse):
-            self.g.new_i_goto(fail_label)
+        elif token == TokenEnum.KWFalse:
+            self.gen.new_i_goto(fail_label)
 
         else:
-            FatalError("Unknown type in expression on line {0}."
-                       .format(self.s.get_current_line()))
+            fatal_error("Unknown type in expression on line {0}."
+                        .format(self.scanner.get_current_line()))
 
     def parse_expression(self,
                          succ_label,
@@ -274,76 +278,76 @@ class Parser:
         # keeping label for repeating binary operator
         until = None
 
-        while (True):
+        while True:
             local_succ = self.generate_unique_label_name()
             local_fail = self.generate_unique_label_name()
             self.parse_subexpression(local_succ, local_fail)
 
-            t = self.s.get_token()
+            token = self.scanner.get_token()
 
             # )
-            if (t == TokenEnum.TPZ):
-                if (last_op):
+            if token == TokenEnum.TPZ:
+                if last_op:
                     # last operator was &&
-                    if (last_op == TokenEnum.TAnd):
-                        self.g.label_alias(until, fail_label)
+                    if last_op == TokenEnum.TAnd:
+                        self.gen.label_alias(until, fail_label)
 
                     # last operator was ||
                     else:
-                        self.g.label_alias(until, succ_label)
+                        self.gen.label_alias(until, succ_label)
 
-                self.g.label_alias(local_succ, succ_label)
-                self.g.label_alias(local_fail, fail_label)
+                self.gen.label_alias(local_succ, succ_label)
+                self.gen.label_alias(local_fail, fail_label)
                 return
 
             # &&
-            elif (t == TokenEnum.TAnd):
+            elif token == TokenEnum.TAnd:
                 # case 1 -> first and
                 if not last_op:
-                    last_op = t
+                    last_op = token
                     until = self.generate_unique_label_name()
 
-                    self.g.label_alias(local_succ, 'next_line')
-                    self.g.label_alias(local_fail, until)
+                    self.gen.label_alias(local_succ, 'next_line')
+                    self.gen.label_alias(local_fail, until)
 
                 # case 2 -> repeating and
-                elif (last_op == t):
-                    self.g.label_alias(local_succ, 'next_line')
-                    self.g.label_alias(local_fail, until)
+                elif last_op == token:
+                    self.gen.label_alias(local_succ, 'next_line')
+                    self.gen.label_alias(local_fail, until)
 
                 # case 3 -> switching to and from or
                 else:
-                    self.g.new_label(until)
-                    last_op = t
+                    self.gen.new_label(until)
+                    last_op = token
                     until = self.generate_unique_label_name()
-                    self.g.label_alias(local_succ, 'next_line')
-                    self.g.label_alias(local_fail, until)
+                    self.gen.label_alias(local_succ, 'next_line')
+                    self.gen.label_alias(local_fail, until)
 
             # ||
-            elif (t == TokenEnum.TOr):
+            elif token == TokenEnum.TOr:
                 # case 1 -> first or
                 if not last_op:
-                    last_op = t
+                    last_op = token
                     until = self.generate_unique_label_name()
-                    self.g.label_alias(local_succ, until)
-                    self.g.label_alias(local_fail, 'next_line')
+                    self.gen.label_alias(local_succ, until)
+                    self.gen.label_alias(local_fail, 'next_line')
 
                 # case 2 -> repeating or
-                elif (last_op == t):
-                    self.g.label_alias(local_succ, until)
-                    self.g.label_alias(local_fail, 'next_line')
+                elif last_op == token:
+                    self.gen.label_alias(local_succ, until)
+                    self.gen.label_alias(local_fail, 'next_line')
 
                 # case 3 -> switching to or from and
                 else:
-                    self.g.new_label(until)
-                    last_op = t
+                    self.gen.new_label(until)
+                    last_op = token
                     until = self.generate_unique_label_name()
-                    self.g.label_alias(local_succ, until)
-                    self.g.label_alias(local_fail, 'next_line')
+                    self.gen.label_alias(local_succ, until)
+                    self.gen.label_alias(local_fail, 'next_line')
 
             else:
-                FatalError("Unknown token in expression on line {0}."
-                           .format(self.s.get_current_line()))
+                fatal_error("Unknown token in expression on line {0}."
+                            .format(self.scanner.get_current_line()))
 
     def parse_while(self):
         """Parse a while statement."""
@@ -354,23 +358,23 @@ class Parser:
         self.last_begining.append(beginning)
         self.last_end.append(fail)
 
-        self.g.new_label(beginning)
+        self.gen.new_label(beginning)
 
         self.verify_token(TokenEnum.TLZ)
         self.parse_expression(succ, fail)
-        self.g.new_label(succ)
+        self.gen.new_label(succ)
 
-        t = self.s.get_token()
+        token = self.scanner.get_token()
         # { a new block starts
-        if (t == TokenEnum.TLZZ):
-            t = self.s.get_token()
-            while (t != TokenEnum.TPZZ):
-                self.parse_command(t)
-                t = self.s.get_token()
+        if token == TokenEnum.TLZZ:
+            token = self.scanner.get_token()
+            while token != TokenEnum.TPZZ:
+                self.parse_command(token)
+                token = self.scanner.get_token()
         else:
-            self.parse_command(t)
-        self.g.new_i_goto(beginning)
-        self.g.new_label(fail)
+            self.parse_command(token)
+        self.gen.new_i_goto(beginning)
+        self.gen.new_label(fail)
         self.last_begining.pop()
         self.last_end.pop()
 
@@ -380,28 +384,28 @@ class Parser:
         fail = self.generate_unique_label_name()
         beginning = self.generate_unique_label_name()
 
-        self.g.new_label(succ)
+        self.gen.new_label(succ)
         self.last_begining.append(beginning)
         self.last_end.append(fail)
 
-        t = self.s.get_token()
+        token = self.scanner.get_token()
         # { a new block starts
-        if (t == TokenEnum.TLZZ):
-            t = self.s.get_token()
-            while (t != TokenEnum.TPZZ):
-                self.parse_command(t)
-                t = self.s.get_token()
+        if token == TokenEnum.TLZZ:
+            token = self.scanner.get_token()
+            while token != TokenEnum.TPZZ:
+                self.parse_command(token)
+                token = self.scanner.get_token()
         else:
-            self.parse_command(t)
+            self.parse_command(token)
 
         self.verify_token(TokenEnum.KWWhile)
         self.verify_token(TokenEnum.TLZ)
 
-        self.g.new_label(beginning)
+        self.gen.new_label(beginning)
 
         self.parse_expression(succ, fail)
 
-        self.g.new_label(fail)
+        self.gen.new_label(fail)
         self.last_begining.pop()
         self.last_end.pop()
 
@@ -414,50 +418,50 @@ class Parser:
 
         self.verify_token(TokenEnum.TLZ)
         self.parse_expression(succ, fail)
-        self.g.new_label(succ)
-        t = self.s.get_token()
+        self.gen.new_label(succ)
+        token = self.scanner.get_token()
         # { a new block starts
-        if (t == TokenEnum.TLZZ):
-            t = self.s.get_token()
-            while (t != TokenEnum.TPZZ):
-                self.parse_command(t)
-                t = self.s.get_token()
+        if token == TokenEnum.TLZZ:
+            token = self.scanner.get_token()
+            while token != TokenEnum.TPZZ:
+                self.parse_command(token)
+                token = self.scanner.get_token()
         else:
-            self.parse_command(t)
-        self.g.new_i_goto(end)
-        self.g.new_label(fail)
+            self.parse_command(token)
+        self.gen.new_i_goto(end)
+        self.gen.new_label(fail)
 
         # try a else branch
-        t = self.s.get_token()
-        if (t != TokenEnum.KWElse):
-            self.s.unget_token(t)
+        token = self.scanner.get_token()
+        if token != TokenEnum.KWElse:
+            self.scanner.unget_token(token)
         else:
-            t = self.s.get_token()
-            if (t == TokenEnum.TLZZ):
-                t = self.s.get_token()
-                while (t != TokenEnum.TPZZ):
-                    self.parse_command(t)
-                    t = self.s.get_token()
+            token = self.scanner.get_token()
+            if token == TokenEnum.TLZZ:
+                token = self.scanner.get_token()
+                while token != TokenEnum.TPZZ:
+                    self.parse_command(token)
+                    token = self.scanner.get_token()
             else:
-                self.parse_command(t)
+                self.parse_command(token)
 
-        self.g.new_label(end)
+        self.gen.new_label(end)
 
     def parse_return(self):
         """Parse a return statement."""
-        t = self.s.get_token()
-        if (t == TokenEnum.KWError):
+        token = self.scanner.get_token()
+        if token == TokenEnum.KWError:
             self.skip_until_semicolon()
-            self.g.new_i_error()
+            self.gen.new_i_error()
         else:
-            self.s.unget_token(t)
+            self.scanner.unget_token(token)
             self.skip_until_semicolon()
-            self.g.new_i_goto("exit")
+            self.gen.new_i_goto("exit")
 
     def parse_goto(self):
         """Parse a goto statement."""
         self.verify_token(TokenEnum.TIden)
-        self.g.new_i_goto("custom_" + self.s.get_value())
+        self.gen.new_i_goto("custom_" + self.scanner.get_value())
         self.verify_token(TokenEnum.TS)
 
     def parse_assert(self):
@@ -467,307 +471,309 @@ class Parser:
 
         self.verify_token(TokenEnum.TLZ)
         self.parse_expression(succ, fail)
-        self.g.new_label(fail)
-        self.g.new_i_error()
-        self.g.new_label(succ)
+        self.gen.new_label(fail)
+        self.gen.new_i_error()
+        self.gen.new_label(succ)
         self.verify_token(TokenEnum.TS)
 
     def parse_assignment(self, name=None):
         """Parse a variable assignment.
 
-        If 'name' was not passed, name is is self.s.get_value().
+        If 'name' was not passed, name is is self.scanner.get_value().
         When 'name' was passed, it must be direct assignment name = ...,
         otherwise it can be x->y = ... .
 
         After this command ',' or ';' may follow. It must return this symbol.
         """
-        if (name is None):
-            name = self.s.get_value()
-            t = self.s.get_token()
-            if (t == TokenEnum.TP):
-                if (name not in self.g.get_variables()):
-                    FatalError("Accessing item of invalid var on line {0}."
-                               .format(self.s.get_current_line()))
+        if name is None:
+            name = self.scanner.get_value()
+            token = self.scanner.get_token()
+            if token == TokenEnum.TP:
+                if name not in self.gen.get_variables():
+                    fatal_error("Accessing item of invalid var on line {0}."
+                                .format(self.scanner.get_current_line()))
 
                 self.verify_token(TokenEnum.TIden)
-                pointer = self.s.get_value()
+                pointer = self.scanner.get_value()
 
-                t = self.s.get_token()
-                while (t == TokenEnum.TP):
+                token = self.scanner.get_token()
+                while token == TokenEnum.TP:
                     self.verify_token(TokenEnum.TIden)
-                    p = self.s.get_value()
+                    ptr = self.scanner.get_value()
                     tmp = self.generate_unique_variable()
-                    self.g.new_i_x_ass_y_next(tmp,
-                                              name,
-                                              pointer)
+                    self.gen.new_i_x_ass_y_next(tmp,
+                                                name,
+                                                pointer)
                     name = tmp
-                    pointer = p
-                    t = self.s.get_token()
+                    pointer = ptr
+                    token = self.scanner.get_token()
 
-                if (t in TokenGroups.DataOperators):
-                    if (self.ignore):
+                if token in TokenGroups.DataOperators:
+                    if self.ignore:
                         self.skip_until_semicolon()
                         return TokenEnum.TS
                     else:
-                        FatalError(("Data manipulation is not supported on "
-                                   "line {0}. Try -i for ignoring data.")
-                                   .format(self.s.get_current_line()))
+                        fatal_error(("Data manipulation is not supported on "
+                                     "line {0}. Try -i for ignoring data.")
+                                    .format(self.scanner.get_current_line()))
 
-                if (t != TokenEnum.TAss):
-                    FatalError("Unknown token in assignment on line {0}."
-                               .format(self.s.get_current_line()))
+                if token != TokenEnum.TAss:
+                    fatal_error("Unknown token in assignment on line {0}."
+                                .format(self.scanner.get_current_line()))
 
-                t = self.s.get_token()
+                token = self.scanner.get_token()
 
                 # x.next = NULL
-                if (t == TokenEnum.KWNull):
-                    self.g.new_i_x_next_ass_null(name, pointer)
+                if token == TokenEnum.KWNull:
+                    self.gen.new_i_x_next_ass_null(name, pointer)
 
                 # x.next = y
-                elif (t == TokenEnum.TIden):
-                    if (pointer == self.g.get_data_name()):
-                        if (not self.ignore):
-                            self.g.new_i_setdata(name,
-                                                 pointer,
-                                                 self.s.get_value(),
-                                                 self.s.get_current_line())
+                elif token == TokenEnum.TIden:
+                    if pointer == self.gen.get_data_name():
+                        if not self.ignore:
+                            current_line = self.scanner.get_current_line()
+                            self.gen.new_i_setdata(name,
+                                                   pointer,
+                                                   self.scanner.get_value(),
+                                                   current_line)
                     else:
-                        y = self.s.get_value()
-                        t = self.s.get_token()
+                        yname = self.scanner.get_value()
+                        token = self.scanner.get_token()
 
-                        while (t == TokenEnum.TP):
+                        while token == TokenEnum.TP:
                             self.verify_token(TokenEnum.TIden)
-                            p = self.s.get_value()
+                            ptr = self.scanner.get_value()
                             tmp = self.generate_unique_variable()
-                            self.g.new_i_x_ass_y_next(tmp,
-                                                      y,
-                                                      p)
-                            y = tmp
-                            t = self.s.get_token()
+                            self.gen.new_i_x_ass_y_next(tmp,
+                                                        yname,
+                                                        ptr)
+                            yname = tmp
+                            token = self.scanner.get_token()
 
-                        self.s.unget_token(t)
-                        self.g.new_i_x_next_ass_y(name, pointer, y)
+                        self.scanner.unget_token(token)
+                        self.gen.new_i_x_next_ass_y(name, pointer, yname)
 
                 # x.next = malloc(..);
-                elif (t == TokenEnum.KWMalloc):
+                elif token == TokenEnum.KWMalloc:
                     self.skip_until_semicolon()
-                    self.g.new_i_x_next_new(name, pointer)
+                    self.gen.new_i_x_next_new(name, pointer)
                     return TokenEnum.TS
 
-                elif (t in TokenGroups.Datas):
-                    if (not self.ignore):
-                        self.g.new_i_setdata(name,
-                                             pointer,
-                                             self.s.get_value(),
-                                             self.s.get_current_line())
+                elif token in TokenGroups.Datas:
+                    if not self.ignore:
+                        self.gen.new_i_setdata(name,
+                                               pointer,
+                                               self.scanner.get_value(),
+                                               self.scanner.get_current_line())
 
                 else:
-                    FatalError("Unknown assignment on line {0}"
-                               .format(self.s.get_current_line()))
-                return self.s.get_token()
+                    fatal_error("Unknown assignment on line {0}"
+                                .format(self.scanner.get_current_line()))
+                return self.scanner.get_token()
 
-            elif (t == TokenEnum.TCO):
-                self.g.new_label("custom_" + name)
+            elif token == TokenEnum.TCO:
+                self.gen.new_label("custom_" + name)
 
         # skip assignment to variables of different types
-        if (name not in self.g.get_variables()):
-            if (name in self.g.get_constants() and not self.ignore):
-                FatalError(("Changing value of standard variable on line {0}. "
-                            "These operation are not permitted. "
-                            "Use -i to ignore.")
-                           .format(self.s.get_current_line()))
-            Warning("Skipping command beginning with '{0}' on line {1}."
-                    .format(name, self.s.get_current_line()))
+        if name not in self.gen.get_variables():
+            if name in self.gen.get_constants() and not self.ignore:
+                fatal_error(("Changing value of standard variable on line {0}."
+                             " These operation are not permitted. "
+                             "Use -i to ignore.")
+                            .format(self.scanner.get_current_line()))
+            warning("Skipping command beginning with '{0}' on line {1}."
+                    .format(name, self.scanner.get_current_line()))
             self.skip_until_semicolon()
             return TokenEnum.TS
 
         # command beginning with 'x ='
-        t = self.s.get_token()
+        token = self.scanner.get_token()
         # x = null
-        if (t == TokenEnum.KWNull):
-            self.g.new_i_x_ass_null(name)
-            return self.s.get_token()
+        if token == TokenEnum.KWNull:
+            self.gen.new_i_x_ass_null(name)
+            return self.scanner.get_token()
 
         # x = y
-        elif (t == TokenEnum.TIden):
-            second_var = self.s.get_value()
-            if (second_var not in self.g.get_variables()):
-                FatalError("Unknown variable '{0}' on line {1}."
-                           .format(second_var, self.s.get_current_line()))
+        elif token == TokenEnum.TIden:
+            second_var = self.scanner.get_value()
+            if second_var not in self.gen.get_variables():
+                fatal_error("Unknown variable '{0}' on line {1}."
+                            .format(second_var,
+                                    self.scanner.get_current_line()))
 
-            t = self.s.get_token()
-            if (t in [TokenEnum.TS, TokenEnum.TC]):
-                self.g.new_i_x_ass_y(name, second_var)
-                return t
+            token = self.scanner.get_token()
+            if (token in [TokenEnum.TS, TokenEnum.TC]):
+                self.gen.new_i_x_ass_y(name, second_var)
+                return token
 
             # x = y->next->next...
-            elif (t == TokenEnum.TP):
+            elif token == TokenEnum.TP:
                 self.verify_token(TokenEnum.TIden)
-                pointer = self.s.get_value()
+                pointer = self.scanner.get_value()
 
-                t = self.s.get_token()
-                while (t == TokenEnum.TP):
+                token = self.scanner.get_token()
+                while token == TokenEnum.TP:
                     self.verify_token(TokenEnum.TIden)
-                    p = self.s.get_value()
+                    ptr = self.scanner.get_value()
                     tmp = self.generate_unique_variable()
-                    self.g.new_i_x_ass_y_next(tmp,
-                                              second_var,
-                                              pointer)
+                    self.gen.new_i_x_ass_y_next(tmp,
+                                                second_var,
+                                                pointer)
                     second_var = tmp
-                    pointer = p
-                    t = self.s.get_token()
+                    pointer = ptr
+                    token = self.scanner.get_token()
 
-                self.g.new_i_x_ass_y_next(name, second_var, pointer)
-                return t
+                self.gen.new_i_x_ass_y_next(name, second_var, pointer)
+                return token
 
-        elif (t == TokenEnum.KWMalloc):
+        elif token == TokenEnum.KWMalloc:
             self.skip_until_semicolon()
-            self.g.new_i_new(name)
+            self.gen.new_i_new(name)
             return TokenEnum.TS
 
-        elif (t == TokenEnum.KWRandomAlloc):
+        elif token == TokenEnum.KWRandomAlloc:
             self.skip_until_semicolon()
-            self.g.new_i_random_alloc(name)
+            self.gen.new_i_random_alloc(name)
             return TokenEnum.TS
 
         else:
-            FatalError("Unknown assignment on line {0}"
-                       .format(self.s.get_current_line()))
+            fatal_error("Unknown assignment on line {0}"
+                        .format(self.scanner.get_current_line()))
 
     def parse_command(self, first_token):
         """Parse one single command."""
         # definition/declaration of the structure type
         if (first_token == TokenEnum.TIden and
-           self.s.get_value() == self.structure_name):
-            self.parse_new_definition_of_structure()
+                self.scanner.get_value() == self.structure_name):
+            self.parse_struct_definition()
 
         # definition/declaration of the standard types
-        elif (first_token in TokenGroups.DataTypes):
+        elif first_token in TokenGroups.DataTypes:
             self.verify_token(TokenEnum.TIden)
-            self.g.add_standard_variable(self.s.get_value(),
-                                         self.s.get_current_line())
+            self.gen.add_standard_variable(self.scanner.get_value(),
+                                           self.scanner.get_current_line())
             self.skip_until_semicolon()
 
         # a while statement
-        elif (first_token == TokenEnum.KWWhile):
+        elif first_token == TokenEnum.KWWhile:
             self.parse_while()
 
         # a do-while statement
-        elif (first_token == TokenEnum.KWDo):
+        elif first_token == TokenEnum.KWDo:
             self.parse_do()
 
         # a if statement
-        elif (first_token == TokenEnum.KWIf):
+        elif first_token == TokenEnum.KWIf:
             self.parse_if()
 
         # a return statement
-        elif (first_token == TokenEnum.KWReturn):
+        elif first_token == TokenEnum.KWReturn:
             self.parse_return()
 
         # a variable assignment
-        elif (first_token == TokenEnum.TIden):
+        elif first_token == TokenEnum.TIden:
             self.parse_assignment()
 
         # a break statement
-        elif (first_token == TokenEnum.KWBreak):
-            self.g.new_i_goto(self.last_end[-1])
+        elif first_token == TokenEnum.KWBreak:
+            self.gen.new_i_goto(self.last_end[-1])
             self.verify_token(TokenEnum.TS)
 
         # a continue statement
-        elif (first_token == TokenEnum.KWContinue):
-            self.g.new_i_goto(self.last_begining[-1])
+        elif first_token == TokenEnum.KWContinue:
+            self.gen.new_i_goto(self.last_begining[-1])
             self.verify_token(TokenEnum.TS)
 
-        elif (first_token == TokenEnum.KWAssert):
+        elif first_token == TokenEnum.KWAssert:
             self.parse_assert()
 
-        elif (first_token == TokenEnum.KWGoto):
+        elif first_token == TokenEnum.KWGoto:
             self.parse_goto()
 
     def parse_function(self):
         """Parse function. It is already read for the first '('."""
-        t = self.s.get_token()
+        token = self.scanner.get_token()
 
         # parse function arguments
-        while (t != TokenEnum.TPZ):
+        while token != TokenEnum.TPZ:
             # argument of the main structure
-            if (t == TokenEnum.TIden and
-               self.s.get_value() == self.structure_name):
+            if (token == TokenEnum.TIden and
+                    self.scanner.get_value() == self.structure_name):
                 self.verify_token(TokenEnum.TIden)
-                self.g.save_new_variable(self.s.get_value(),
-                                         self.s.get_current_line())
+                self.gen.save_new_variable(self.scanner.get_value(),
+                                           self.scanner.get_current_line())
 
             # argument of other types
-            elif (t in TokenGroups.DataTypes):
+            elif token in TokenGroups.DataTypes:
                 self.verify_token(TokenEnum.TIden)
-                self.g.add_standard_variable(self.s.get_value(),
-                                             self.s.get_current_line())
+                self.gen.add_standard_variable(self.scanner.get_value(),
+                                               self.scanner.get_current_line())
 
             else:
-                FatalError("Unknown argument type on line {0}."
-                           .format(self.s.get_current_line()))
+                fatal_error("Unknown argument type on line {0}."
+                            .format(self.scanner.get_current_line()))
 
-            t = self.s.get_token()
-            if (t == TokenEnum.TC):
-                t = self.s.get_token()
+            token = self.scanner.get_token()
+            if token == TokenEnum.TC:
+                token = self.scanner.get_token()
 
         self.verify_token(TokenEnum.TLZZ)
 
-        t = self.s.get_token()
-        while (t != TokenEnum.TPZZ):
-            self.parse_command(t)
-            t = self.s.get_token()
+        token = self.scanner.get_token()
+        while token != TokenEnum.TPZZ:
+            self.parse_command(token)
+            token = self.scanner.get_token()
 
     def run(self):
         """Parse the file and convert to ARTMC instructions."""
-        t = self.s.get_token()
-        while (t != TokenEnum.XEOF):
+        token = self.scanner.get_token()
+        while token != TokenEnum.XEOF:
             # a typedef
-            if (t == TokenEnum.KWTypedef):
+            if token == TokenEnum.KWTypedef:
                 self.parse_typedef()
 
             # a function on variable of the main strucutre
-            elif (t == TokenEnum.TIden and
-                  self.s.get_value() == self.structure_name or
-                  t in TokenGroups.DataTypes):
+            elif (token == TokenEnum.TIden and
+                  self.scanner.get_value() == self.structure_name or
+                  token in TokenGroups.DataTypes):
 
-                standard = True if t in TokenGroups.DataTypes else False
+                standard = True if token in TokenGroups.DataTypes else False
 
                 self.verify_token(TokenEnum.TIden)
-                name = self.s.get_value()
-                t = self.s.get_token()
+                name = self.scanner.get_value()
+                token = self.scanner.get_token()
 
                 # variable declaration(s)
-                if (t in [TokenEnum.TC, TokenEnum.TS]):
+                if (token in [TokenEnum.TC, TokenEnum.TS]):
+                    current_line = self.scanner.get_current_line()
                     if standard:
-                        self.g.add_standard_variable(name,
-                                                     self.s.get_current_line())
+                        self.gen.add_standard_variable(name,
+                                                       current_line)
                     else:
-                        self.g.save_new_variable(name,
-                                                 self.s.get_current_line())
-                    while (t != TokenEnum.TS):
+                        self.gen.save_new_variable(name, current_line)
+                    while token != TokenEnum.TS:
                         self.verify_token(TokenEnum.TIden)
-                        name = self.s.get_value()
-                        line = self.s.get_current_line()
+                        name = self.scanner.get_value()
+                        line = self.scanner.get_current_line()
                         if standard:
-                            self.g.add_standard_variable(name, line)
+                            self.gen.add_standard_variable(name, line)
                         else:
-                            self.g.save_new_variable(name, line)
-                        t = self.s.get_token()
+                            self.gen.save_new_variable(name, line)
+                        token = self.scanner.get_token()
 
-                        if (t == TokenEnum.TAss):
-                            t = self.parse_assignment(name)
+                        if token == TokenEnum.TAss:
+                            token = self.parse_assignment(name)
 
                 # a function
-                elif (t == TokenEnum.TLZ):
+                elif token == TokenEnum.TLZ:
                     self.parse_function()
                     break
 
                 else:
-                    FatalError("Unsupported construction on line {0}."
-                               .format(self.s.get_current_line()))
+                    fatal_error("Unsupported construction on line {0}."
+                                .format(self.scanner.get_current_line()))
 
             else:
-                FatalError("Unknown construction on line {0}."
-                           .format(self.s.get_current_line()))
-            t = self.s.get_token()
+                fatal_error("Unknown construction on line {0}."
+                            .format(self.scanner.get_current_line()))
+            token = self.scanner.get_token()

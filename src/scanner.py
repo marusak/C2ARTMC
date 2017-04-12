@@ -6,7 +6,10 @@ Then calling get_token returns new token or None if EOF.
 
 import re
 from src.tokens import TokenEnum, TokenType
-from src.error import FatalError
+from src.error import fatal_error
+
+# there is never too-many ;)
+# pylint: disable=R0911,R0912,R0915
 
 
 class Scanner:
@@ -42,7 +45,7 @@ class Scanner:
 
     def get_token(self):
         """Get new token."""
-        if (self.ungeted):
+        if self.ungeted:
             token = self.ungeted
             self.ungeted = None
             return token
@@ -56,7 +59,7 @@ class Scanner:
         # Check if not end of file
         if first_char == '\t':
             if self.end:
-                FatalError("EOF found to early.")
+                fatal_error("EOF found to early.")
             self.end = True
             return TokenEnum.XEOF
 
@@ -83,8 +86,8 @@ class Scanner:
         # Check for ||
         elif first_char == '|':
             if self.source[1] != first_char:
-                FatalError("No support for bitwise operators at {0]."
-                           .format(self.line_number))
+                fatal_error("No support for bitwise operators at {0}."
+                            .format(self.line_number))
             else:
                 self.source = self.source[2:]
                 return TokenType[first_char+first_char]
@@ -116,7 +119,7 @@ class Scanner:
         # Check for digit
         elif first_char.isdigit():
             i = 0
-            while (self.source[i].isdigit() or self.source[i] == '.'):
+            while self.source[i].isdigit() or self.source[i] == '.':
                 i += 1
             self.last_value = self.source[0:i]
             self.source = self.source[i:]
@@ -128,7 +131,7 @@ class Scanner:
         # Check for identifier or keyword
         elif first_char.isalpha() or first_char == '_':
             i = 0
-            while (self.source[i].isalnum() or self.source[i] == '_'):
+            while self.source[i].isalnum() or self.source[i] == '_':
                 i += 1
             self.last_value = self.source[0:i]
             self.source = self.source[i:]
@@ -141,15 +144,15 @@ class Scanner:
         #      be only one character is ignored
         elif first_char in ['"', '\'']:
             i = 1
-            while (self.source[i] != first_char):
+            while self.source[i] != first_char:
                 i += 1
             self.last_value = self.source[0:i+1]
             self.source = self.source[i+1:]
             return TokenEnum.TStr
 
         else:
-            FatalError("Unknown character in file: '{0}' on {1}."
-                       .format(first_char, self.line_number))
+            fatal_error("Unknown character in file: '{0}' on {1}."
+                        .format(first_char, self.line_number))
 
 
 def preprocess(file_name):
@@ -162,8 +165,11 @@ def preprocess(file_name):
         - Simplify expressions
     """
     # Read file into variable
-    with open(file_name, 'r') as source_file:
-        data = source_file.read()
+    try:
+        with open(file_name, 'r') as source_file:
+            data = source_file.read()
+    except IOError:
+        fatal_error("Could not open input file")
 
     # Delete all one line comments - starting with //
     for comm in re.findall(r'\/\/.*?\n', data):

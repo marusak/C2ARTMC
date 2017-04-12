@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""The main executbale."""
+
 import sys
 import argparse
 
 from src.parser import Parser
 from src.generate import Generate
-from src.error import Warning
+from src.error import warning
 
 
 def parse_arguments():
@@ -30,21 +32,21 @@ def parse_arguments():
 def main():
     """The main function."""
     args = parse_arguments()
-    g = Generate(args.d)
-    p = Parser(args.INPUT_FILE, g, args.i)
-    p.run()
+    gen = Generate(args.d)
+    parser = Parser(args.INPUT_FILE, gen, args.i)
+    parser.run()
 
     if not args.o:
         args.o = "program.py"
 
     try:
-        f = open(args.o, "w")
-    except:
-        Warning("Cannot open output file. Using stdout instead")
-        f = sys.stdout
+        input_file = open(args.o, "w")
+    except IOError:
+        warning("Cannot open output file. Using stdout instead")
+        input_file = sys.stdout
 
-    f.write(g.get_full_result())
-    f.close()
+    input_file.write(gen.get_full_result())
+    input_file.close()
 
 if __name__ == "__main__":
     main()

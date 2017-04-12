@@ -3,12 +3,12 @@
 import sys
 
 
-def FatalError(msg):
+def fatal_error(msg):
     """Print error and exit."""
-    print ("Fatal Error: {0}".format(msg))
+    print("Fatal Error: {0}".format(msg))
     sys.exit(1)
 
 
-def Warning(msg):
+def warning(msg):
     """Print warning."""
-    print ("Warning: {0}".format(msg))
+    print("Warning: {0}".format(msg))
