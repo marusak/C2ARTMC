@@ -536,7 +536,7 @@ chyba, alebo bude treba doplniť funkcionalitu a to umožní aby iný autor tút
 vykonal.
 Táto práca využíva GitHub a je dostupná na \texttt{https://github.com/marusak/C2ARTMC}.
 
-\subsection{Unittest}
+\subsection{Hromadné testy}
 Pri pridávaní novej funkcionality sa môže stať, že sa zavedie chyba vrámci inej
 funkcionality. Preto je najvhodnejšie, po každej zmene otestovať všetky predtým
 naprogramované funkcionality. To je prirodzene takmer nemožné. Preto sa píšu testy,
@@ -544,10 +544,11 @@ ktoré sa dajú spúšťať hromadne a je ľahko a rýchlo možné overiť, že 
 zavedeniu chyby.
 
 \subsection{Tox}
-Aby bolo možné spúšťať unittesty pod rôznymi verziami pythonu a overiť, že všetky testy
+\label{sec_tox}
+Aby bolo možné spúšťať testy pod rôznymi verziami pythonu a overiť, že všetky testy
 uspejú na všetkých podporovaných verziách Pythonu v práci bude použitý nástroj tox.
 Jedná sa o program, ktorý potrebuje iba jeden jednoduchý konfiguračný súbor, ktorý
-obsahuj spôsob ako sa spúšťajú unittesty a verzie Pythonov, pod ktorými chceme
+obsahuj spôsob ako sa spúšťajú testy a verzie Pythonov, pod ktorými chceme
 aby program fungoval. Následne zavolaním programu tox bez argumentov sa testy
 spustia pod všetkými požadovanými verziami a prehľadný výpis oznámi, či všetky
 testy boli úspešné, prípadne ktorý test neuspel v ktorej verzii.
@@ -842,7 +843,11 @@ Implementovaný prekladač dokáže takéto podmienky preložiť. Je k tomu pou�
 \end{center}
 
 \section{Testy}
-TODO
+Na overenie funkcionality prekladača boli vytvorené testovacie vstupné súbory. Jedná sa o sadu programov v jazyku C, ktoré obsahujú rôzne konštrukcie. Cieľom je overiť, že preklad vyprodukuje rovnaký kód, aký je očakávaný. Všetky očakávané programy v jazyku pre nástroj ARTMC sú taktiež súčasťou testov.
+
+Testy boli produkované postupne a pre každú dôležitú zmenu bol vytvorený test, ktorý testoval tú danú konštrukciu. Zároveň existujúce testy overili, že zmenou kódu neboli zanesené žiadne chyby.
+
+Aby bolo možné testovať prenosieľnosť programu medzi rôznymi verziami Pythonu, bol využitý nástroj tox. Funkcionalita tohoto nástroja je popísaná v podsekcii \ref{sec_tox}.
 
 \section{Nedostatky a známe chyby}
 Vo výslednej aplikácií nie sú žiadne známe chyby a všetky požiadavky boli implementované.
