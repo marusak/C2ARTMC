@@ -516,7 +516,7 @@ musíme uvažovať dva druhy:
 \label{subsec_python}
 Python je vysokoúrovňový skriptovací programovací jazyk. Podporuje viacero programovacích
 paradigmat. Pre túto prácu bude použité objektovo orientované. Zároveň Python podporuje
-dynamickú typovú kontrolu. TODO more
+dynamickú typovú kontrolu.
 Python má dve hlavné verzie. Python 2.X a Python 3.X. Ďalej tieto verzie sa delia na podverzie.
 Verzie a podverzie nemusia (a ani nie sú) medzi sebou kompatibilné. To prináša problém
 pre programátorov, ktorý chcú písať program tak, aby fungoval pre rôzne verzie.
@@ -772,8 +772,11 @@ tmp1->next=tmp4;\\
 čo už je možné preložiť aj do nástroja ARTMC.
 
 \subsection{Vyhodnocovanie neúplných podmienok}
+V jazyku C sa ako nepravda v podmienke považuje číslica \texttt{0} rovnako ako aj ukazateľ \texttt{NULL}. Tento fakt sa často využíva pri zápise podmienok, kde podmienka typu \texttt{if (x)} je totožná s podmienkou \texttt{if (x != NULL)}. Obdobne sa to dá využiť aj pri číslach a teda podmienka \texttt{if (!x)} je totožná s podmienkou \texttt{if (x == 0)}.
 
-TODO if (x), if (x->data)
+Podpora takéhoto zápisu bola implementovaná aj pre vytváraného prekladača. Umožňuje to prekladať väčšiu škálu existujúcich programov v jazyku C bez ich upravovania.
+
+Samotná implementácia využíva možnosť vrátenia prečítaného tokenu späť do zoznamu tokenov. Pri spracovaní podmienky keď je očakávané znamienko rovnosti alebo nerovnosti a namiesto toho je nájdená pravá zátvorka (znamená koniec podmienky), logický operátor alebo identifikátor tak sa tento prečítaný token vráti späť a vygeneruje sa podmienka podľa jej prvej časti.
 
 \subsection{Skratové vyhodnocovanie podmienok}
 V jazyku C je zaužívané využívať skratové vyhodnocovanie podmienok pre jednoduchší zápis. Veľmi často sa tento prístup používa práve pri dynamicky viazaných dátových štruktúrach. Pre lepšie porozumenie uveďme príklad:\\
@@ -831,19 +834,12 @@ Implementovaný prekladač dokáže takéto podmienky preložiť. Je k tomu pou�
      \draw [->,dashed] (t6) to [out=10,in=270] (F);
      \draw [->] (t6) to [out=-10,in=90] (T);
      
-     
-
-    
-
 \end{tikzpicture}
 \caption{Schéma fungovania prekladu skratového vyhodnocovania}
 \label{fig:scrat}
 
 \end{figure}
 \end{center}
-
-
-
 
 \section{Testy}
 TODO
@@ -855,5 +851,13 @@ Vo výslednej aplikácií nie sú žiadne známe chyby a všetky požiadavky bol
 Všetky požadované vlastnosti pre výslednú aplikáciu boli implementované. Avšak je možné, že časom si používanie ARTMC bude vyžadovať ďalšie funkcie, napríklad nové konštrukcie z jazyka C a teda bude potrebné daný kód doplniť. 
 
 \chapter{Záver}
-TODO
+Cieľom tejto práce bol návrh a implementácia prekladača z jazyka C do jazyka pre nástroj ARTMC. Text práce, ako aj samotná práca sa dá rozdeliť do dvoch častí, teoretickej a praktickej. Vrámci praktickej časti bol naštudovaný nástroj ARTMC hlavne  z pohľadu používania so zameraním na formát vstupu. Následne boli preštudovaná a analyzovaná tvorba prekladačov. Po výbere technológií a postupov pri tvorbe prekladača sa prešlo k časti praktickej - implementácií samotného prekladača.
+
+Ako implementačný jazyk bol zvolený Python. Program sa vyznačuje objektovo orientovaným prístupom, čistou kódu a nezávislosťou ako na verzii Pythonu tak na neštandardných balíčkoch. Samotný kód je rozdelený na viacero modulov podľa jednotlivých celkov prekladača (scanner, parser, generátor kódu). Do prekladača bolo implementovaných viacero neštandardných a pokročilých funkcionalít, ktoré tvoria prekladač ako aj nástroj ARTMC lepšie použiteľným.
+
+Na overenie správnej funkcionality bolo vytvorených 15 komplexných testov. Každý test testuje celý priebeh prekladu. Testy je možné spúšťať naraz. Rovnako je možné spustiť všetky testy pre vybrané verzie Pythonu cez nástroj tox.
+
+Aplikácia spĺňa všetky požiadavky zadania a implementuje aj funkcionalitu navyše. Aplikáciu plánujem aj naďalej udržiavať a v prípade chyby alebo potreby pre ďalšiu funkcionalitu tieto zmeny vykonať. Aplikácia je verejne dostupná v službe GitHub a preto je možné aby záujemcovi taktiež vykonávali zmeny.
+
+
 %=========================================================================
