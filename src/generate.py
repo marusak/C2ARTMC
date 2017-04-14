@@ -85,12 +85,9 @@ class Generate:
         # Save new item
         self.data_name = data_name
 
-    def save_new_variable(self, variable_name, current_line):
+    def save_new_variable(self, variable_name):
         """Add new variable and generate it's unique ID."""
         # Save new item
-        if variable_name in self.variables.keys():
-            fatal_error("Redefinition of variable {0} on line {1}"
-                        .format(variable_name, current_line))
         self.variables[variable_name] = str(self.variables_counter)
         self.variables_counter += 1
 

@@ -39,8 +39,7 @@ class Parser:
         """Create new unique variable."""
         self.unique_counters[1] += 1
         name = "v{0}".format(str(self.unique_counters[1] - 1))
-        self.gen.save_new_variable(name,
-                                   self.scanner.get_current_line())
+        self.gen.save_new_variable(name)
         return name
 
     def verify_token(self, expected_token):
@@ -117,8 +116,7 @@ class Parser:
         Expects that the variables are of the structure type.
         """
         self.verify_token(TokenEnum.TIden)
-        self.gen.save_new_variable(self.scanner.get_value(),
-                                   self.scanner.get_current_line())
+        self.gen.save_new_variable(self.scanner.get_value())
 
         token = self.scanner.get_token()
         if token == TokenEnum.TAss:
@@ -127,7 +125,7 @@ class Parser:
         while token != TokenEnum.TS:
             self.verify_token(TokenEnum.TIden)
             name = self.scanner.get_value()
-            self.gen.save_new_variable(name, self.scanner.get_current_line())
+            self.gen.save_new_variable(name)
             token = self.scanner.get_token()
 
             if token == TokenEnum.TAss:
@@ -700,8 +698,7 @@ class Parser:
             if (token == TokenEnum.TIden and
                     self.scanner.get_value() == self.structure_name):
                 self.verify_token(TokenEnum.TIden)
-                self.gen.save_new_variable(self.scanner.get_value(),
-                                           self.scanner.get_current_line())
+                self.gen.save_new_variable(self.scanner.get_value())
 
             # argument of other types
             elif token in TokenGroups.DataTypes:
@@ -750,7 +747,7 @@ class Parser:
                         self.gen.add_standard_variable(name,
                                                        current_line)
                     else:
-                        self.gen.save_new_variable(name, current_line)
+                        self.gen.save_new_variable(name)
                     while token != TokenEnum.TS:
                         self.verify_token(TokenEnum.TIden)
                         name = self.scanner.get_value()
@@ -758,7 +755,7 @@ class Parser:
                         if standard:
                             self.gen.add_standard_variable(name, line)
                         else:
-                            self.gen.save_new_variable(name, line)
+                            self.gen.save_new_variable(name)
                         token = self.scanner.get_token()
 
                         if token == TokenEnum.TAss:
