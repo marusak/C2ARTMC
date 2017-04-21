@@ -184,7 +184,10 @@ class Parser:
                                               abstr)
                         abstr = False
                 else:
-                    self.gen.new_i_x_eq_null(xname, fail_label, succ_label, abstr)
+                    self.gen.new_i_x_eq_null(xname,
+                                             fail_label,
+                                             succ_label,
+                                             abstr)
                     abstr = False
 
                 self.scanner.unget_token(token)
@@ -245,7 +248,11 @@ class Parser:
                     yname = tmp
                     token = self.scanner.get_token()
 
-                self.gen.new_i_x_eq_y(xname, yname, succ_label, fail_label, abstr)
+                self.gen.new_i_x_eq_y(xname,
+                                      yname,
+                                      succ_label,
+                                      fail_label,
+                                      abstr)
                 abstr = False
                 self.scanner.unget_token(token)
 
