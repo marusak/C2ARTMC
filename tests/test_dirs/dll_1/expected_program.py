@@ -1,4 +1,4 @@
-# pointer variables are : tmp=1, v0=5, v1=6, v2=7, v3=8, x=2, y=3, z=4
+# pointer variables are : tmp=1, v0=5, x=2, y=3, z=4
 # next pointers are : next=0, prev=1
 # data values are : 
 def get_program():
@@ -23,24 +23,24 @@ def get_program():
         ("if*","00010001",18,20,"NOABSTR"),
         ("x=y.next","00010010",3,3,0,19,"NOABSTR"),
         ("goto","00010011",15,"NOABSTR"),
-        ("x=y.next","00010100",6,3,0,21,"NOABSTR"),
-        ("ifx==null","00010101",6,26,22,"NOABSTR"),
+        ("x=y.next","00010100",5,3,0,21,"NOABSTR"),
+        ("ifx==null","00010101",5,26,22,"NOABSTR"),
         ("x=y.next","00010110",1,3,0,23,"NOABSTR"),
         ("x=y.next","00010111",4,1,0,24,"NOABSTR"),
         ("x.next=y","00011000",3,4,0,25,5,"NOABSTR"),
         ("goto","00011001",26,"NOABSTR"),
         ("goto","00011010",13,"NOABSTR"),
-        ("x=y.next","00011011",7,2,0,28),
-        ("ifx==null","00011100",7,34,29,"NOABSTR"),
+        ("x=y.next","00011011",5,2,0,28),
+        ("ifx==null","00011100",5,34,29,"NOABSTR"),
         ("x=y.next","00011101",3,2,0,30,"NOABSTR"),
         ("x=y.next","00011110",1,2,0,31,"NOABSTR"),
-        ("x=y.next","00011111",8,1,0,32,"NOABSTR"),
-        ("x.next=y","00100000",2,8,0,33,6,"NOABSTR"),
+        ("x=y.next","00011111",5,1,0,32,"NOABSTR"),
+        ("x.next=y","00100000",2,5,0,33,6,"NOABSTR"),
         ("goto","00100001",27,"NOABSTR"),
         ("goto","00100010",35,"NOABSTR"),
         ("exit","00100011","NOABSTR")]
-    node_width=26
-    pointer_num=9
+    node_width=23
+    pointer_num=6
     desc_num=7
     next_num=2
     err_line="11111111"

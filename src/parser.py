@@ -8,7 +8,7 @@ from src.scanner import Scanner
 from src.error import fatal_error, warning
 
 # there is never too-many ;)
-# pylint: disable=R0911,R0912,R0915
+# pylint: disable=R0911,R0912,R0915,R0904,R0902
 
 
 class Parser:
@@ -29,6 +29,8 @@ class Parser:
 
         self.last_begining = []
         self.last_end = []
+        self.unique_variables = []
+        self.unique_context = 0
 
     def generate_unique_label_name(self):
         """Return string that is unique."""
@@ -37,10 +39,20 @@ class Parser:
 
     def generate_unique_variable(self):
         """Create new unique variable."""
+        if len(self.unique_variables) > self.unique_context:
+            self.unique_context += 1
+            return self.unique_variables[self.unique_context - 1]
+
         self.unique_counters[1] += 1
         name = "v{0}".format(str(self.unique_counters[1] - 1))
         self.gen.save_new_variable(name)
+        self.unique_variables.append(name)
+        self.unique_context += 1
         return name
+
+    def restart_unique_context(self):
+        """Restart unique context - tmp variables can be reused."""
+        self.unique_context = 0
 
     def verify_token(self, expected_token):
         """Read next token and compare with expected token."""
@@ -121,6 +133,7 @@ class Parser:
         token = self.scanner.get_token()
         if token == TokenEnum.TAss:
             token = self.parse_assignment(self.scanner.get_value())
+            self.restart_unique_context()
 
         while token != TokenEnum.TS:
             self.verify_token(TokenEnum.TIden)
@@ -130,6 +143,7 @@ class Parser:
 
             if token == TokenEnum.TAss:
                 token = self.parse_assignment(name)
+                self.restart_unique_context()
 
     def parse_subexpression(self,
                             succ_label,
@@ -311,6 +325,7 @@ class Parser:
             local_fail = self.generate_unique_label_name()
             self.parse_subexpression(local_succ, local_fail, abstr)
             abstr = False
+            self.restart_unique_context()
 
             token = self.scanner.get_token()
 
@@ -702,6 +717,7 @@ class Parser:
         # a variable assignment
         elif first_token == TokenEnum.TIden:
             self.parse_assignment()
+            self.restart_unique_context()
 
         # a break statement
         elif first_token == TokenEnum.KWBreak:
@@ -791,6 +807,7 @@ class Parser:
 
                         if token == TokenEnum.TAss:
                             token = self.parse_assignment(name)
+                            self.restart_unique_context()
 
                 # a function
                 elif token == TokenEnum.TLZ:

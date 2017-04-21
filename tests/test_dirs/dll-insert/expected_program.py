@@ -1,4 +1,4 @@
-# pointer variables are : v0=4, v1=5, v2=6, x=1, y=2, z=3
+# pointer variables are : v0=4, x=1, y=2, z=3
 # next pointers are : next=0, prev=1
 # data values are : 0="00000001"
 def get_program():
@@ -23,10 +23,10 @@ def get_program():
         ("x.next=y","00010001",3,4,0,18,5,"NOABSTR"),
         ("x.next=y","00010010",3,2,1,19,6,"NOABSTR"),
         ("x.next=y","00010011",2,3,0,20,7,"NOABSTR"),
-        ("x=y.next","00010100",5,3,0,21,"NOABSTR"),
-        ("ifx==null","00010101",5,25,22,"NOABSTR"),
-        ("x=y.next","00010110",6,3,0,23,"NOABSTR"),
-        ("x.next=y","00010111",6,3,1,24,8,"NOABSTR"),
+        ("x=y.next","00010100",4,3,0,21,"NOABSTR"),
+        ("ifx==null","00010101",4,25,22,"NOABSTR"),
+        ("x=y.next","00010110",4,3,0,23,"NOABSTR"),
+        ("x.next=y","00010111",4,3,1,24,8,"NOABSTR"),
         ("goto","00011000",25,"NOABSTR"),
         ("goto","00011001",29,"NOABSTR"),
         ("goto","00011010",27,"NOABSTR"),
@@ -38,8 +38,8 @@ def get_program():
         ("goto","00100000",29,"NOABSTR"),
         ("goto","00100001",34,"NOABSTR"),
         ("exit","00100010","NOABSTR")]
-    node_width=26
-    pointer_num=7
+    node_width=24
+    pointer_num=5
     desc_num=9
     next_num=2
     err_line="11111111"
