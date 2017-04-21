@@ -1,0 +1,56 @@
+
+typedef struct Top
+/*? x ?*/
+{
+  struct Inner * left ;
+  struct Inner * right ;
+  struct Any * back ; /*? null ?*/
+} 
++
+{
+  struct Inner * left ; /*? null ?*/
+  struct Inner * right ; /*? null ?*/
+  struct Any * back ; /*? null ?*/
+}
++
+{
+  struct Inner * left ; 
+  struct Inner * right ; /*? null ?*/
+  struct Any * back ; /*? null ?*/
+}
++
+{
+  struct Inner * left ; /*? null ?*/
+  struct Inner * right ;
+  struct Any * back ; /*? null ?*/
+};
+
+
+typedef struct Inner
+{
+  struct Inner * left ;
+  struct Inner * right ;
+  struct Any * back ; /*? -left + -right  ?*/
+} 
++
+{
+  struct Inner * left ; /*? null ?*/
+  struct Inner * right ; /*? null ?*/
+  struct Any * back ; /*? -left + -right ?*/
+}
++
+{
+  struct Inner * left ; /*? null ?*/
+  struct Inner * right ; 
+  struct Any * back ; /*? -left + -right ?*/
+}
++
+{
+  struct Inner * left ; 
+  struct Inner * right ; /*? null ?*/
+  struct Any * back ; /*? -left + -right ?*/
+};
+
+
+
+
