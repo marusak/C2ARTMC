@@ -5,7 +5,7 @@ from os.path import dirname, abspath, join
 from src.error import fatal_error
 
 # there is never too-many ;)
-# pylint: disable=R0902,R0904
+# pylint: disable=R0902,R0904,R0913
 
 
 class Generate:
@@ -125,22 +125,24 @@ class Generate:
         self.current_line += 1
         return '"' + bin(self.current_line - 1)[2:].zfill(8) + '"'
 
-    def new_i_x_ass_y(self, xname, yname):
+    def new_i_x_ass_y(self, xname, yname, abstr=False):
         """Add new instruction of type 'x = y'."""
         self.instructions.append(["\"x=y\"",
                                   self.get_line(),
                                   self.variables[xname],
                                   self.variables[yname],
-                                  "to: next_line"])
+                                  "to: next_line",
+                                  "" if abstr else '"NOABSTR"'])
 
-    def new_i_x_ass_null(self, xname):
+    def new_i_x_ass_null(self, xname, abstr=False):
         """Add new instruction of type 'x = null'."""
         self.instructions.append(['"x=null"',
                                   self.get_line(),
                                   self.variables[xname],
-                                  "to: next_line"])
+                                  "to: next_line",
+                                  "" if abstr else '"NOABSTR"'])
 
-    def new_i_x_ass_y_next(self, xname, yname, pointer):
+    def new_i_x_ass_y_next(self, xname, yname, pointer, abstr=False):
         """Add new instruction of type 'x = y->pointer'."""
         name = self.structure_pointers.get(pointer, None)
         if name is None:
@@ -152,9 +154,10 @@ class Generate:
                                   self.variables[xname],
                                   self.variables[yname],
                                   str(name),
-                                  "to: next_line"])
+                                  "to: next_line",
+                                  "" if abstr else '"NOABSTR"'])
 
-    def new_i_x_next_ass_null(self, xname, pointer):
+    def new_i_x_next_ass_null(self, xname, pointer, abstr=False):
         """Add new instruction of type 'x->pointer = null'."""
         name = self.structure_pointers.get(pointer, None)
         if name is None:
@@ -165,9 +168,10 @@ class Generate:
                                   self.get_line(),
                                   self.variables[xname],
                                   str(name),
-                                  "to: next_line"])
+                                  "to: next_line",
+                                  "" if abstr else '"NOABSTR"'])
 
-    def new_i_x_next_ass_y(self, xname, pointer, yname):
+    def new_i_x_next_ass_y(self, xname, pointer, yname, abstr=False):
         """Add new instruction of type 'x->pointer = y'."""
         name = self.structure_pointers.get(pointer, None)
         if name is None:
@@ -180,9 +184,10 @@ class Generate:
                                   self.variables[yname],
                                   str(name),
                                   "to: next_line",
-                                  self.get_descr_num()])
+                                  self.get_descr_num(),
+                                  "" if abstr else '"NOABSTR"'])
 
-    def new_i_x_next_new(self, xname, pointer):
+    def new_i_x_next_new(self, xname, pointer, abstr=False):
         """Add new instruction of type 'x->pointer = malloc(...)'."""
         name = self.structure_pointers.get(pointer, None)
         if name is None:
@@ -195,46 +200,52 @@ class Generate:
                                   str(name),
                                   "to: next_line",
                                   self.get_descr_num(),
-                                  str(1)])
+                                  str(1),
+                                  "" if abstr else '"NOABSTR"'])
 
-    def new_i_x_eq_null(self, xname, succ, fail):
+    def new_i_x_eq_null(self, xname, succ, fail, abstr=False):
         """Add new instruction of type 'if x == null'."""
         self.instructions.append(['"ifx==null"',
                                   self.get_line(),
                                   self.variables[xname],
                                   "to: {0}".format(succ),
-                                  "to: {0}".format(fail)])
+                                  "to: {0}".format(fail),
+                                  "" if abstr else '"NOABSTR"'])
 
-    def new_i_x_eq_y(self, xname, yname, succ, fail):
+    def new_i_x_eq_y(self, xname, yname, succ, fail, abstr=False):
         """Add new instruction of type 'if x == y'."""
         self.instructions.append(['"ifx==y"',
                                   self.get_line(),
                                   self.variables[xname],
                                   self.variables[yname],
                                   "to: {0}".format(succ),
-                                  "to: {0}".format(fail)])
+                                  "to: {0}".format(fail),
+                                  "" if abstr else '"NOABSTR"'])
 
-    def new_i_goto(self, label_name):
+    def new_i_goto(self, label_name, abstr=False):
         """Add new instruction of type 'goto'."""
         self.instructions.append(["\"goto\"",
                                   self.get_line(),
-                                  "to: {0}".format(label_name)])
+                                  "to: {0}".format(label_name),
+                                  "" if abstr else '"NOABSTR"'])
 
-    def new_i_new(self, xname):
+    def new_i_new(self, xname, abstr=False):
         """Add new instruction of type 'x=malloc(..)'."""
         self.instructions.append(['"new"',
                                   self.get_line(),
                                   self.variables[xname],
-                                  "to: next_line"])
+                                  "to: next_line",
+                                  "" if abstr else '"NOABSTR"'])
 
-    def new_i_if_star(self, succ, fail):
+    def new_i_if_star(self, succ, fail, abstr=False):
         """Add new instruction of type 'if *'."""
         self.instructions.append(['"if*"',
                                   self.get_line(),
                                   "to: {0}".format(succ),
-                                  "to: {0}".format(fail)])
+                                  "to: {0}".format(fail),
+                                  "" if abstr else '"NOABSTR"'])
 
-    def new_i_setdata(self, xname, pointer, data, line_num):
+    def new_i_setdata(self, xname, pointer, data, line_num, abstr=False):
         """Add new instruction of type 'x.data = "something"."""
         data = self.get_artmc_data(data)
         if pointer != self.data_name:
@@ -244,9 +255,10 @@ class Generate:
                                   self.get_line(),
                                   self.variables[xname],
                                   data,
-                                  "to: next_line"])
+                                  "to: next_line",
+                                  "" if abstr else '"NOABSTR"'])
 
-    def new_i_ifdata(self, xname, data, succ, fail):
+    def new_i_ifdata(self, xname, data, succ, fail, abstr=False):
         """Add new instruction of type 'if (x.data == "something")."""
         data = self.get_artmc_data(data)
         self.instructions.append(['"ifdata"',
@@ -254,20 +266,23 @@ class Generate:
                                   self.variables[xname],
                                   data,
                                   "to: {0}".format(succ),
-                                  "to: {0}".format(fail)])
+                                  "to: {0}".format(fail),
+                                  "" if abstr else '"NOABSTR"'])
 
-    def new_i_random_alloc(self, xname):
+    def new_i_random_alloc(self, xname, abstr=False):
         """Add new instruction of type 'x=random_alloc()'."""
         self.instructions.append(['"x=random"',
                                   self.get_line(),
                                   self.variables[xname],
-                                  "to: next_line"])
+                                  "to: next_line",
+                                  "" if abstr else '"NOABSTR"'])
 
-    def new_i_error(self):
+    def new_i_error(self, abstr=False):
         """Add new instruction of type 'return ERROR'."""
         self.get_line()
         self.instructions.append(['"exit"',
-                                  "1"*8])
+                                  "1"*8,
+                                  "" if abstr else '"NOABSTR"'])
 
     def new_label(self, label_name):
         """Add new label."""
@@ -295,7 +310,8 @@ class Generate:
 
         self.new_label("exit")
         self.instructions.append(['"exit"',
-                                  self.get_line()])
+                                  self.get_line(),
+                                  '"NOABSTR"'])
 
         # find all jumps to labels
         for i in range(len(self.instructions)):
@@ -343,7 +359,7 @@ class Generate:
         self.finish_instructions()
         code = "\ndef get_program():\n    program=[\n"
         for i in self.instructions:
-            code += "        (" + ",".join(i) + "),\n"
+            code += "        (" + ",".join(filter(None, i)) + "),\n"
         code = code[:-2] + "]\n"
 
         # get the 6 variables

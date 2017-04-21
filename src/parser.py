@@ -133,11 +133,13 @@ class Parser:
 
     def parse_subexpression(self,
                             succ_label,
-                            fail_label):
+                            fail_label,
+                            abstr):
         """Parse subexpression.
 
         suc_label: label to jump if the expression is successful
         fail_label: label to jump if the expression is unsuccessful
+        abstr: if true, first command does not include NO_ABSTR
         """
         processing_data = False
         token = self.scanner.get_token()
@@ -162,7 +164,8 @@ class Parser:
                     break
                 else:
                     tmp = self.generate_unique_variable()
-                    self.gen.new_i_x_ass_y_next(tmp, xname, pointer)
+                    self.gen.new_i_x_ass_y_next(tmp, xname, pointer, abstr)
+                    abstr = False
                     xname = tmp
 
                 token = self.scanner.get_token()
@@ -171,14 +174,18 @@ class Parser:
             if (token in [TokenEnum.TPZ, TokenEnum.TOr, TokenEnum.TAnd]):
                 if processing_data:
                     if self.ignore:
-                        self.gen.new_i_if_star(succ_label, fail_label)
+                        self.gen.new_i_if_star(succ_label, fail_label, abstr)
+                        abstr = False
                     else:
                         self.gen.new_i_ifdata(xname,
                                               0,
                                               fail_label,
-                                              succ_label)
+                                              succ_label,
+                                              abstr)
+                        abstr = False
                 else:
-                    self.gen.new_i_x_eq_null(xname, fail_label, succ_label)
+                    self.gen.new_i_x_eq_null(xname, fail_label, succ_label, abstr)
+                    abstr = False
 
                 self.scanner.unget_token(token)
                 return
@@ -186,7 +193,8 @@ class Parser:
             # only support == and !=
             if processing_data and token in TokenGroups.DataComparators:
                 if self.ignore:
-                    self.gen.new_i_if_star(succ_label, fail_label)
+                    self.gen.new_i_if_star(succ_label, fail_label, abstr)
+                    abstr = False
                     self.skip_subexpression()
                     return
                 else:
@@ -205,7 +213,8 @@ class Parser:
 
             # x == NULL
             if token == TokenEnum.KWNull:
-                self.gen.new_i_x_eq_null(xname, succ_label, fail_label)
+                self.gen.new_i_x_eq_null(xname, succ_label, fail_label, abstr)
+                abstr = False
 
             # x = y
             elif token == TokenEnum.TIden:
@@ -213,12 +222,15 @@ class Parser:
 
                 if processing_data:
                     if self.ignore:
-                        self.gen.new_i_if_star(succ_label, fail_label)
+                        self.gen.new_i_if_star(succ_label, fail_label, abstr)
+                        abstr = False
                     else:
                         self.gen.new_i_ifdata(xname,
                                               yname,
                                               succ_label,
-                                              fail_label)
+                                              fail_label,
+                                              abstr)
+                        abstr = False
                     return
 
                 token = self.scanner.get_token()
@@ -227,21 +239,27 @@ class Parser:
                     tmp = self.generate_unique_variable()
                     self.gen.new_i_x_ass_y_next(tmp,
                                                 yname,
-                                                self.scanner.get_value())
+                                                self.scanner.get_value(),
+                                                abstr)
+                    abstr = False
                     yname = tmp
                     token = self.scanner.get_token()
 
-                self.gen.new_i_x_eq_y(xname, yname, succ_label, fail_label)
+                self.gen.new_i_x_eq_y(xname, yname, succ_label, fail_label, abstr)
+                abstr = False
                 self.scanner.unget_token(token)
 
             elif token in TokenGroups.Datas and processing_data:
                 if self.ignore:
-                    self.gen.new_i_if_star(succ_label, fail_label)
+                    self.gen.new_i_if_star(succ_label, fail_label, abstr)
+                    abstr = False
                 else:
                     self.gen.new_i_ifdata(xname,
                                           self.scanner.get_value(),
                                           succ_label,
-                                          fail_label)
+                                          fail_label,
+                                          abstr)
+                    abstr = False
 
             else:
                 fatal_error("Unsupported operand on line {0}"
@@ -251,13 +269,16 @@ class Parser:
             self.parse_expression(succ_label, fail_label)
 
         elif token in TokenGroups.Nondeterministic:
-            self.gen.new_i_if_star(succ_label, fail_label)
+            self.gen.new_i_if_star(succ_label, fail_label, abstr)
+            abstr = False
 
         elif token == TokenEnum.KWTrue:
-            self.gen.new_i_goto(succ_label)
+            self.gen.new_i_goto(succ_label, abstr)
+            abstr = False
 
         elif token == TokenEnum.KWFalse:
-            self.gen.new_i_goto(fail_label)
+            self.gen.new_i_goto(fail_label, abstr)
+            abstr = False
 
         else:
             fatal_error("Unknown type in expression on line {0}."
@@ -265,11 +286,13 @@ class Parser:
 
     def parse_expression(self,
                          succ_label,
-                         fail_label):
+                         fail_label,
+                         abstr=False):
         """Parse a expression.
 
         suc_label: label to jump if the expression is successful
         fail_label: label to jump if the expression is unsuccessful
+        no_abstr: if true, first command does not include NO_ABSTR
         """
         # keeping last binary operator
         last_op = None
@@ -279,7 +302,8 @@ class Parser:
         while True:
             local_succ = self.generate_unique_label_name()
             local_fail = self.generate_unique_label_name()
-            self.parse_subexpression(local_succ, local_fail)
+            self.parse_subexpression(local_succ, local_fail, abstr)
+            abstr = False
 
             token = self.scanner.get_token()
 
@@ -359,7 +383,7 @@ class Parser:
         self.gen.new_label(beginning)
 
         self.verify_token(TokenEnum.TLZ)
-        self.parse_expression(succ, fail)
+        self.parse_expression(succ, fail, True)
         self.gen.new_label(succ)
 
         token = self.scanner.get_token()
@@ -401,7 +425,7 @@ class Parser:
 
         self.gen.new_label(beginning)
 
-        self.parse_expression(succ, fail)
+        self.parse_expression(succ, fail, True)
 
         self.gen.new_label(fail)
         self.last_begining.pop()
