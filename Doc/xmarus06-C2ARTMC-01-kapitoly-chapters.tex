@@ -296,7 +296,6 @@ Prekladač je nástroj, ktorý číta zdrojový program a~prekladá ho na cieľo
 Zdrojový a~cieľový program sú si vzájomne funkčne ekvivalentné\cite{meduna}.
 Prekladač pozostáva z~viacerých častí. Schéma bežného prekladača je na obrázku \ref{fig:sch}.
 
-
 \begin{figure}
 \begin{center}
 \begin{tikzpicture}[align=center, auto]
@@ -305,14 +304,14 @@ Prekladač pozostáva z~viacerých častí. Schéma bežného prekladača je na 
     \node [cloud, above=of lex, align=center] (zdroj) {Zdrojový\\program};
     \node [block, below=of lex, yshift=-1cm] (synta) {Syntaktický analyzátor};
     \node [block, right=of synta, xshift=3.0cm, align=center] (sema) {Sémantický\\analýzátor};
-    \node [block, below=of synta, yshift=-1cm] (gen) {Generátor vnútorného kódu};
+    \node [block, below=of synta] (gen) {Generátor vnútorného kódu};
     \node [block, below=of gen] (opti) {Op\-ti\-ma\-li\-zá\-tor};
     \node [block, below=of opti, align=center] (gen_ciel) {Generátor cieľového kódu};
     \node [cloud, below=of gen_ciel, align=center] (ciel) {Cieľový\\program};
     
     \node [label, left=of synta, xshift=-0.75cm, yshift=0.5cm] (xlbl) {};
     
-    \node [label, left=of synta, xshift=-1.4cm, yshift=0.5cm,align=center](lbl){Syntaxou\\riadený\\preklad};
+    \node [label, left=of synta, xshift=0.3cm, yshift=0.5cm,align=center](lbl){Syntaxou\\riadený\\preklad};
     
     \node[draw,dashed, inner xsep=2em, inner ysep=2em, fit=(synta) (sema) (gen) (xlbl)] {};
     
@@ -338,18 +337,30 @@ Prekladač pozostáva z~viacerých častí. Schéma bežného prekladača je na 
 \end{center}
 \end{figure}
 
-
 \section{Lexikálny analyzátor}
 \label{sec_lex}
-Lexikálny analyzátor, scanner, má na vstupe zdrojový program. Tento program
-rozdeľuje na lexémy - logicky oddelené lexikálne jednotky. Na výstupe je reťazec
-tokenov, pričom token reprezentuje lexémy a~môže obsahovať ďalšie atribúty.
-Pre lepšie porozumenie viď obrázok \ref{fig:lex}.
+Lexikálny analyzátor, scanner, má na vstupe program zapísaný v~zdrojovom jazyku. Tento program
+je scannerom delený na lexémy - logicky oddelené lexikálne jednotky. Na výstupe je reťazec
+tokenov, pričom token reprezentuje lexémy a~môže obsahovať ďalšie atribúty. \cite{meduna} 
+Tento proces je znázornený v obrázku \ref{fig:lex}.
+
+\section{Syntaktický analyzátor}
+Syntaktický analyzátor, parser, má na vstupe reťazec tokenov, ktoré získal
+z~lexikálneho analyzátora. Úlohou je skontrolovať, či
+reťazec tokenov reprezentuje syntakticky správne napísaný program. Táto kontrola
+prebieha za pomoci konštrukcie derivačného stromu. Ak je možné zostrojiť derivačný strom
+jedná sa o~program validný. Konštrukcia môže prebiehať dvoma spôsobmi a~to zhora
+nadol a~zdola nahor\cite{meduna}. 
+
+\subsection{Analýza zhora-nadol}
+Metóda zhora-nadol sa snaží skonštruovať derivačný strom od najvyššej úrovne a~postupne prechádza derivačný strom dole za využita formálnych pravidiel gramatiky. To znamená, že derivačný strom sa konštruje od koreňa smerom k~listom, zľava doprava, poďla ľavej derivácie. Syntaktická analýza zhora dole využíva pre svoju prácu LL syntaktické analyzátory\cite{aho}.
+
+\subsection{Analýza zdola-nahor}
+Metóda zdola-nahor sa snaží skonštruovať derivačný strom od najnižšej úrovne a~postupne prechádza derivačný strom smerom ku koreni za využitia formálnych pravidiel gramatiky. To znamená, že sa najskôr identifikujú jednotlivé symboly, z~ktorých sa následne vytvára derivačný strom. Táto metóda využíva precedenčnú tabuľku\cite{aho}.
 
 \begin{center}
 \begin{figure}
 \begin{tikzpicture}[auto]
-
 	\node [small_block] (s3) {y};
 	\node[single arrow,draw=black,fill=white,minimum height=1cm, shape border rotate=-180, above=of s3] (ar1) {};	
 	
@@ -357,10 +368,8 @@ Pre lepšie porozumenie viď obrázok \ref{fig:lex}.
     \node [small_block, left=of s3] (s2) {=};
     \node [small_block, left=of s2] (s1) {x};
 
-
     \node [small_block, right=of s3] (s4) {*};
     \node [small_block, right=of s4] (s5) {2};  
-	   
 	   
 	\node [data, below of=s1] (p1) {id \nodepart{second} x};    
 	\node [data, below of=s2] (p2) {=};  
@@ -371,28 +380,11 @@ Pre lepšie porozumenie viď obrázok \ref{fig:lex}.
 	\node [label, left of=s1, xshift=-1cm] (t1) {Lexémy:};   
     \node [label, left of=p1, xshift=-1cm] (t2) {Tokeny:};  
 
-
 \end{tikzpicture}
 \caption{Schéma rozdeľovania na lexémy a~tokeny}
 \label{fig:lex}
-
 \end{figure}
 \end{center}
-
-
-\section{Syntaktický analyzátor}
-Syntaktický analyzátor, parser, má na vstupe reťazec tokenov, ktoré získal
-z~lexikálneho analyzátora. Úlohou je skontrolovať, či
-reťazec tokenov reprezentuje syntakticky správne napísaný program. Táto kontrola
-prebieha za pomoci konštrukcie derivačného stromu. Ak je možné zostrojiť derivačný strom
-jedná sa o~program validný. Konštrukcia môže prebiehať dvoma spôsobmi a~to zhora
-nadol a~zdola nahor. \cite{meduna} 
-
-\subsection{Analýza zhora-nadol}
-Metóda zhora-nadol sa snaží skonštruovať derivačný strom od najvyššej úrovne a~postupne prechádza derivačný strom dole za využita formálnych pravidiel gramatiky. To znamená, že derivačný strom sa konštruje od koreňa smerom k~listom, zľava doprava, poďla ľavej derivácie. Syntaktická analýza zhora dole využíva pre svoju prácu LL syntaktické analyzátory. \cite{aho}
-
-\subsection{Analýza zdola-nahor}
-Metóda zdola-nahor sa snaží skonštruovať derivačný strom od najnižšej úrovne a~postupne prechadza derivačný strom smerom ku koreni za využitia formálnych pravidiel gramatiky. To znamená, že sa najskôr identifikujú jednotlivé symboly z~ktorých sa následne vytvára derivačný strom. Táto metóda využíva precedenčnú tabuľku. \cite{aho}
 
 \section{Sémantický analyzátor}
 Na vstupe sémantického analyzátoru je derivačný strom, ktorý bol získaný od
@@ -423,66 +415,67 @@ Medzi optimalizácie môžu patriť:
     \item Šírenie konštanty
 \end{itemize}
 
-\section{Generovanie cieľového kódu}
-Optimalizovaný kód získaný z~optimalizátora je prevedený na cieľový program.
+\section{Generátor cieľového kódu}
+Generátor cieľového kódu prevádza vnútornú reprezentáciu programu do funkčne ekvivalentného cieľového programu a teda ukončuje proces kompilácie. Tento posledný krok je závislý od cieľového jazyka ale aj konkrétnej platformy pre ktorú sa preklad vykonáva. Najčastejšie je cieľovým jazykom strojový kód alebo assambler, avšak je možný preklad aj medzi dvoma vyššími programovacími jazykmi\cite{meduna}. 
 
 \section{Syntaxou riadený preklad}
 \label{sec_synta}
-Jedná sa o~prístup, keď celý prekladač je riadený procesom parsovania. Teda ku každému pravidlu gramatiky sú priradené ďalšie akcie, ktoré pokrývajú ostatné fázy prekladu. Medzi akcie môže napríklad patriť:
+Jedná sa o~prístup, keď celý preklad je riadený procesom parsovania. Teda ku každému pravidlu gramatiky sú priradené ďalšie akcie, ktoré pokrývajú ostatné fázy prekladu. Medzi akcie môže napríklad patriť:
 \begin{itemize}
     \item Vyvolanie sémantickej kontroly
     \item Ukladanie informácií napr. do tabuľky symbolov alebo tabuľky návestí
     \item Generovanie kódu
 \end{itemize}
-Prevažne pri využití tejto techniky postačuje jeden priechod cez zdrojový program.
+Prevažne pri využití tejto techniky postačuje jeden priechod cez zdrojový program\cite{aho}.
 
 
 \chapter{Súčasný stav prekladača pre ARTMC}
 \label{kap_averiles}
-Pre ARTMC bol vytvorený prekladač z~jazyka C s~názvom AVERILES. Jedná sa
-o~prekladač napísaný v~jazyku Java. Snahou tejto práce nie je tento prekladač
+Pre nástroj ARTMC bol vytvorený prekladač z~jazyka C vrámci projektu AVERILES\footnote{http://www.lsv.fr/Projects/rntl-averiles/}. Jedná sa
+o~študentský projekt napísaný v~jazyku Java. Snahou tejto práce nie je tento prekladač
 upraviť ale napísať úplne nový. Hlavné dôvody prečo je potrebné vytvoriť nový
 prekladač sú:
 \begin{itemize}
     \item Chyby v~prekladači\\
-        Prekladač nedokázal spracovať určité výrazy. Niektoré výrazy prekladal nesprávne.
-        Preto bolo potrebné pri zložitejších programoch manuálne kontrolovať výsledný
+        Prekladač nedokáže spracovať určité výrazy. Niektoré výrazy sú prekladané nesprávne.
+        Preto je potrebné pri zložitejších programoch manuálne kontrolovať výsledný
         program a~editovať vstupný program do takej formy, aby ho prekladač dokázal
         preložiť.
-    \item Tažko rozšíriteľný\\
-        Prekladač bol napísaný v~jazyku Java dosť zložitým a~nečitateľným spôsobom. Takýto
+    \item Ťažko rozšíriteľný\\
+        Prekladač je napísaný v~jazyku Java zložitým a~nečitateľným spôsobom. Takýto
         kód sa veľmi ťažko modifikuje a~rozširuje o~ďalšie vlastnosti. Prekladač,
         ktorý je výstupom tejto práce si dáva za cieľ čitateľný kód, do ktorého
         sa jednoducho dopĺňajú ďalšie funkcionality.
     \item Nepraktické používanie\\
-        Proces prekladu za pomoci Averlis pozostáva z~dvoch krokov
+        Proces prekladu za pomoci AVERILES pozostáva z~dvoch krokov:
         \begin{enumerate}
-            \item Tvorba XML zo zdrojového kódu v~C
-            \item Preklad XML do ARTMC
+            \item Tvorba XML súboru zo zdrojového programu v jazyku C
+            \item Preklad XML súboru do vstupného formátu nástroja ARTMC
         \end{enumerate}
         Takýto postup je zložitejší, nakoľko je potrebné volať dva programy.
-        Zároveň programy nemajú prepínače na modifikáciu ich správania. Teda
-        ich použitie je možné len v~jednom užívateľskom prípade
+        Zároveň programy nemajú prepínače na modifikáciu ich správania, teda
+        použitie je možné len v~jednom užívateľskom prípade.
 \end{itemize}
 
-\chapter{Implementácia}
+\chapter{Návrh implementácie}
 \label{kap_imp}
-Táto kapitola sa venuje návrhu a~implementácii samotného prekladača.
+Táto kapitola sa venuje návrhu implementácie samotného prekladača.
 Ako implementačný jazyk bol zvolený Python. Kritériá, ktoré by mala výsledná
-aplikácia spĺňať sa dajú rozdeliť do dvoch kategórií:
+aplikácia spĺňať sa dajú rozdeliť do troch kategórií:
 \begin{enumerate}
     \item Použiteľnosť a~prenositeľnosť
-    \item Moderný vývoj
+    \item Udržiavateľnosť a~rozširovateľnosť
+    \item Testovateľnosť
 \end{enumerate}
 
 \section{Použiteľnosť a~prenositeľnosť}
 Výsledná aplikácia by mala byť jednoducho použiteľná. Tak ako bolo spomenuté
 v~kapitole \ref{kap_averiles}, momentálne existujúci prekladač má nie jednoduché používanie. Zároveň
-neumožňuje špecifikovať ďalšie voľby, ktoré by užívateľ mohol potrebovať. Voľby,
+neumožňuje špecifikovať ďalšie voľby, ktoré by užívateľ mohol potrebovať. Medzi voľby,
 ktoré by užívateľ mohol potrebovať mimo iné patria hlavne:
 \begin{itemize}
     \item Možnosť špecifikovať výstupný súbor\\
-        Implicitný výstupný súbor sa uloží na rovnaké miesto ako vstupný a~je
+        Výstupný súbor je implicitne uložený na rovnaké miesto ako vstupný a~je
         pomenovaný \texttt{program.py}. Avšak užívateľ si môže zvoliť ľubovoľné umiestenie
         a~názov súboru.
     \item Možnosť špecifikovať vstupný deskriptor\\
@@ -491,11 +484,11 @@ ktoré by užívateľ mohol potrebovať mimo iné patria hlavne:
         užívateľ túto hodnotu poskytnúť.
     \item Možnosť ignorácie dát\\
         Nakoľko podpora práce s~dátami v~ARTMC je výrazne obmedzená, môže byť
-        vhodné nechať prekladač aby prácu s~dátami neprekladal.
+        vhodné nechať prekladač aby prácu s~dátami neprekladal.Výsledok prekladu je potom avšak	  nadaproximáciou vstupu.
 \end{itemize}
 
-Rovnako medzi hlavné požiadavky patrí aj prenositeľnosť. V~rámci prenositeľnosti
-musíme uvažovať dva druhy:
+Rovnako medzi hlavné požiadavky patrí aj prenositeľnosť. V~rámci tohoto bodu
+musíme uvažovať dva druhy prenositeľnosti:
 \begin{itemize}
     \item Operačný systém\\
         Program by mal byť spustiteľný a~správne bežať aspoň na Linux-och a~Windows-och.
@@ -510,38 +503,42 @@ Python je vysokoúrovňový skriptovací programovací jazyk. Podporuje viacero 
 paradigmat. Pre túto prácu bude použité objektovo orientované. Zároveň Python podporuje
 dynamickú typovú kontrolu.
 Python má dve hlavné verzie. Python 2.X a~Python 3.X. Ďalej tieto verzie sa delia na podverzie.
-Verzie a~podverzie nemusia (a~ani nie sú) medzi sebou kompatibilné. To prináša problém
+Verzie a~podverzie nemusia byť (a~ani nie sú) medzi sebou kompatibilné. To prináša problém
 pre programátorov, ktorý chcú písať program tak, aby fungoval pre rôzne verzie.
 C2ARTMC by mal fungovať aspoň pre verzie \texttt{2.6, 2.7, 3.3, 3.4, 3.5}.
 
-\section{Moderný vývoj}
-Táto časť sa venuje postupom a~metódam, ktoré pri vývoji budú použité. Jedná sa
-o~prevažne o~technológie, ktoré určujú kvalitný projekt v~dnešnej dobe.
+\section{Udržiavateľnosť a~rozširovateľnosť}
+Program by mal byť napísaný tak, aby bolo možné neskôr dopĺňať ďalšiu funkcionalitu a~prípadne opravovať chyby. Mal by byť logicky rozdelený na menšie celky (moduly, triedy, funkcie). Očakáva sa dostatočná miera komentárov, aspoň pri každom celku. Tieto vlastnosti by mali umožniť jednoduchú orientáciu v~kóde a~teda schopnosť neskôr upravovať tento prekladač.
+
+Okrem vyššie spomenutých vlastností v~projekt by mal byť program verzovaný za pomoci nástroja Git, ktorý umožňuje spoluprácu viacerých autorov ako aj sledovanie a~vyhľadávanie zmien v~celej histórii projektu.
 
 \subsection{Git}
-Verzovací systém git umožňuje sledovať vývoj projektu a~v~jednotlivých zmenách
+Verzovací systém Git umožňuje sledovať vývoj projektu a~v~jednotlivých zmenách
 v~histórií sa posúvať. Teda v~prípade chyby je jednoduché zistiť kedy a~ako chyba
 vznikla. Zároveň je jednoduché sa vrátiť do stavu pred chybou.
-Git umožňuje rovnako jednoduchú spoluprácu viacerých autorov. Táto práca je
-prirodzene dielom jedného autora, avšak je možné, že po dokončení práce sa nájde
+Git umožňuje rovnako jednoduchú spoluprácu viacerých autorov. Táto práca je dielom jedného autora, avšak je možné, že po dokončení práce sa nájde
 chyba, alebo bude treba doplniť funkcionalitu a~to umožní aby iný autor túto zmenu
 vykonal.
+
 Táto práca využíva GitHub a~je dostupná na \texttt{https://github.com/marusak/C2ARTMC}.
+
+\section{Testovateľnosť}
+Vývoj väčších aplikácii si vyžaduje overovanie správnej funkcionality programu. Overovanie sa vykonáva za pomoci hromadných testov, kde jedným príkazom je vyvolaných viacero testov a ako výsledok je poskytnuté zhrnutie zo všetkých testov. Táto práca takéto testy by mala obsahovať a za využitia nástroja Tox by mala overovať správne fungovania aj na rôznych verziách Pythonu.
 
 \subsection{Hromadné testy}
 Pri pridávaní novej funkcionality sa môže stať, že sa zavedie chyba vrámci inej
-funkcionality. Preto je najvhodnejšie, po každej zmene otestovať všetky predtým
-naprogramované funkcionality. To je prirodzene takmer nemožné. Preto sa píšu testy,
+funkcionality. Preto je vhodné po každej zmene otestovať všetky predtým
+naprogramované vlastnosti. To je prirodzene takmer nemožné. Preto sa píšu testy,
 ktoré sa dajú spúšťať hromadne a~je ľahko a~rýchlo možné overiť, že neprišlo
-k~zavedeniu chyby.
+k~zavedeniu chyby. Rovnako je odporúčané na každú novú funkcionalitu napísať test, ktorý overí, že táto vlastnosť bola správne implementovaná. Neskôr tento test bude overovať, že táto funkcia stále funguje správne a nebola narušená.
 
 \subsection{Tox}
 \label{sec_tox}
-Aby bolo možné spúšťať testy pod rôznymi verziami pythonu a~overiť, že všetky testy
-uspejú na všetkých podporovaných verziách Pythonu v~práci bude použitý nástroj tox.
+Aby bolo možné spúšťať testy pod rôznymi verziami Pythonu a~overiť, že všetky testy
+uspejú na všetkých podporovaných verziách, v~práci bude použitý nástroj Tox.
 Jedná sa o~program, ktorý potrebuje iba jeden jednoduchý konfiguračný súbor, ktorý
 obsahuj spôsob ako sa spúšťajú testy a~verzie Pythonov, pod ktorými chceme
-aby program fungoval. Následne zavolaním programu tox bez argumentov sa testy
+aby program fungoval. Následne zavolaním programu Tox sa testy
 spustia pod všetkými požadovanými verziami a~prehľadný výpis oznámi, či všetky
 testy boli úspešné, prípadne ktorý test neuspel v~ktorej verzii.
 
