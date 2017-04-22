@@ -8,14 +8,14 @@ Jedným z~aktívnych subjektov pre verifikáciu a~automatizovanú analýzu je aj
 
 Cieľom tejto práce je implementovať prekladač, ktorý dokáže z~validného programu napísanom v~jazyku C vytvoriť validný funkčne rovnaký program vo vstupnom formáte nástroja ARTMC. ARTMC bol hlavne vyvíjaný na ukázanie možností verifikácie programov, ktoré pracujú s~dynamicky viazanými dátovými štruktúrami. Počas vývoja sa nekládol dôraz na použiteľnosť ale skôr na funkčnosť. Od začiatku vývoja sa počítalo s~prekladačom, ktorý ale nikdy nevznikol. Tento fakt má za následok veľmi obtiažne manuálne tvoriteľný vstupný formát. 
 
-Prekladač by mal byť dostatočne robustný aj napriek veľmi malej podmnožine jazyka C, ktorú je nástroj ARTMC schopný spracovať. V~prípade konštrukcie, ktorá nie je podporovaná zo strany ARTMC sa zachovať adekvátne, či to už znamená skončenie chybou a~oznámením čo konkrétne nie je možné spracovať, alebo dané príkazy preskočiť. Ďalej sa očakáva čitateľnosť a~udržiavateľnosť napísaného prekladača pre ďalšie vylepšovanie a~dopĺňanie funkcionality. V~neposlednom rade je dôležitá aj prenositeľnosť.
+Prekladač by mal byť dostatočne robustný aj napriek veľmi malej podmnožine jazyka C, ktorú je nástroj ARTMC schopný spracovať. V~prípade konštrukcie, ktorá nie je podporovaná zo strany ARTMC, by sa mal  zachovať adekvátne, či to už znamená skončenie chybou a~oznámením čo konkrétne nie je možné spracovať, alebo dané príkazy preskočiť. Ďalej sa očakáva čitateľnosť a~udržiavateľnosť napísaného prekladača pre ďalšie vylepšovanie a~dopĺňanie funkcionality. V~neposlednom rade je dôležitá aj prenositeľnosť.
 
 
 \chapter{Nástroj ARTMC}
 \label{kap_artmc}
 ARTMC je nástroj na formálnu verifikáciu programov, ktoré manipulujú
 s~dynamicky viazanými dátovými štruktúrami. Tento nástroj bol vyvinutý na Fakulte
-Informatiky Vysokého Učení Technického v~Brne vrámci výskumnej skupiny VeriFit,
+informačných technológií Vysokého Učení Technického v~Brne vrámci výskumnej skupiny VeriFIT,
 ktorá sa zaoberá verifikáciou programov. V~tejto kapitole je tento nástroj
 popísaný z~dvoch hľadísk. Najskôr je stručný prehľad funkcionality jazyka
 a~následne je popísaná štruktúra vstupného súboru, ktorý je pre túto prácu
@@ -28,16 +28,16 @@ nemôžu nastať nedovolené operácie (napr. zápis do null ukazateľa, použit
 nedefinovaného alebo už zmazaného prvku atď.)\cite{artmc1}.
 
 Verifikačná metóda, ktorá je použitá v~tomto nástroji je založená na abstraktom
-regulárnom stromovom model checkingu \cite{artmc2}.
+regulárnom stromovom model checkingu. Vrámci tejto metódy je konfigurácia pamäte programu reprezentovaná stromom nad konečnou abecedou. Nekonečná množina konfigurácií je reprezentovaná stromovými automatmi. Technika následne počíta množinu dosiahnuteľných konfigurácií reprezenotavaných opäť stromovým automatom\cite{artmc2}.
 
 Schéma fungovania nástroja ARTMC je znázornená na obrázku \ref{fig:ARTMC_schema}.
 
 
-\begin{figure}
+\begin{figure}[h]
 \begin{tikzpicture}[align=center, node distance = 1cm and 0.5cm, auto, >=latex']
     % Place nodes
     \node [block] (program) {program.py};
-    \node [block, below=of program] (typedef) {typedef};
+    \node [block, below=of program] (typedef) {typedefs};
     
     \node [block, right=of program, fill=black!30] (generator) {run\_generator.t.sh};
     \node [block, right=of typedef, fill=black!30] (parse) {parse\_typedef.t.sh};
@@ -80,96 +80,100 @@ Schéma fungovania nástroja ARTMC je znázornená na obrázku \ref{fig:ARTMC_sc
 \end{tikzpicture}
 \caption{Schéma práce nástroja ARTMC}
 \label{fig:ARTMC_schema}
-
 \end{figure}
 
 
 \section{Formát vstupného súboru}
-Nástroj ARTMC potrebuje pre svoju analýzu dva súbory. Jedná sa o~súbor \texttt{typedefs}, ktorý obsahuje definíciu množiny počiatočnej konfigurácie a~súbor \texttt{program.py} obsahujúci definíciu programu vo formáte vytvorenom pre potreby tohto nástroja.
+Nástroj ARTMC potrebuje pre svoju analýzu dva súbory. Jedná sa o~súbor \texttt{typedefs}, ktorý obsahuje definíciu množiny počiatočnej konfigurácie a~súbor \texttt{program.py}, obsahujúci definíciu programu vo formáte vytvorenom pre potreby tohto nástroja.
 
 \subsection{typedefs}
-Tento súbor sa používa na špecifikáciu množiny počiatočnej konfigurácie. Súbor obsahuje množinu typov. Následne sa pamäť zostavuje z~uzlov špecifikovaných typov, ktoré sú prepojené za pomoci selektorov.
+Tento súbor sa používa na špecifikáciu množiny počiatočnej konfigurácie, ktorá môže byť obecne nekonečná (napr. zoznam ľubovoľnej dĺžky). Súbor obsahuje množinu typov. Následne sa pamäť zostavuje z~uzlov špecifikovaných typov, ktoré sú prepojené za pomoci selektorov.
+\newpage
 
 Existujú dva druhy selektorov:
 \begin{itemize}
 \item \textit{Priame spojenia}
-\item \textit{Nepriame spojenia} sú popísané za pomoci cesty cez priame spojenia. Za pomoci symbola ``-'' pred priamym spojením sa značí nasledovanie spojenia späť.
+\item \textit{Nepriame spojenia} sú popísané za pomoci cesty cez priame spojenia. Za pomoci symbola ``-'' pred priamym spojením sa značí nasledovanie spojenia smerom späť.
 \end{itemize}
 
-Súbor typedefs pre obojsmerne viazaný list by mohol vyzerať nasledovne: \textit{(+ znamená \uv{alebo})}
+Súbor \texttt{typedefs} pre obojsmerne viazané listy ľubovoľnej dĺžky, ktorých začiatok je odkazovaný premennou \uv{\texttt{x}}, by vyzeral nasledovne: \textit{(+ znamená \uv{alebo})}
 
-\texttt{
+\code{%
 typedef struct Tinit\\                                                            
 /*? x ?*/\\                                                                       
 \{\\
-  struct T2 * next ;\\                                                           
-  struct T2 * back ; /*? null ?*/\\                                               
+\tab struct T2 * next ;\\                                                           
+\tab struct T2 * back ; /*? null ?*/\\                                               
 \};
                                                                                 \\
 typedef struct T2                                                           
 \{\\
-  struct T2 * next ; /*? null ?*/\\                                               
-  struct Any * back ; /*? -next ?*/\\
+\tab struct T2 * next ; /*? null ?*/\\                                               
+\tab struct Any * back ; /*? -next ?*/\\
 \}
 +
 \{\\
-  struct T2 * next ;\\                                                           
-  struct Any * back ; /*? -next ?*/\\                                             
+\tab struct T2 * next ;\\                                                           
+\tab struct Any * back ; /*? -next ?*/\\                                             
 \};
 }
 
 \subsection{program.py}
-Zdrojový súbor obsahujúci jednu funkciu v~jazyku Python, ktorá vracia dvojicu \texttt{(program, env)}.
-Prvý prvok \textit{program} je zoznam n-tíc, kde každá n-tica je jeden príkaz jazyka ARTMC. V~tabuľke \ref{table:prikazy} sú popísané jednotlivé podporované konštrukcie.
-\begin{table}[]
-\begin{tabular}{ll}
-x:=null             & (``x=null'',``line\_num'',x,next\_line)\\
-x:=y                & (``x=y'',``line\_num'',x,y,next\_line)\\
-x:=y.next           & (``x=y.next'',``line\_num'',x,y,next,next\_line)\\
-x.next=y            & (``x.next=y'',``line\_num'',x,y,next,next\_line,descr\_num)\\
-if x==NULL          & (``ifx==null'',``line\_num'',x,next\_line\_then,next\_line\_else)\\
-if x==y             & (``ifx==y'',``line\_num'',x,y,next\_line\_then,next\_line\_else)\\
-if *                & (``if*'',``line\_num'',next\_line\_then,next\_line\_else)\\
+Jedná sa o súbor obsahujúci jednu funkciu v~jazyku Python, ktorá vracia dvojicu \texttt{(program, env)}.
+Prvý prvok \texttt{program} je zoznam n-tíc, kde každá n-tica je jeden príkaz jazyka ARTMC. V~tabuľke \ref{table:prikazy} sú popísané jednotlivé podporované konštrukcie.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l|l}
+\multicolumn{1}{c|}{\textbf{konštrukcia}} & \multicolumn{1}{c}{\textbf{zápis pre ARTMC}} \\ \hline
+x := NULL             & (``x=null'',``line\_num'',x,next\_line)\\
+x := y                & (``x=y'',``line\_num'',x,y,next\_line)\\
+x := y.next           & (``x=y.next'',``line\_num'',x,y,next,next\_line)\\
+x.next = y            & (``x.next=y'',``line\_num'',x,y,next,next\_line,descr\_num)\\
+if (x == NULL)          & (``ifx==null'',``line\_num'',x,next\_line\_then,next\_line\_else)\\
+if (x == y)             & (``ifx==y'',``line\_num'',x,y,next\_line\_then,next\_line\_else)\\
+if (*)                & (``if*'',``line\_num'',next\_line\_then,next\_line\_else)\\
 goto                & (``goto'',``line\_num'',next\_line)\\
 exit                & (``exit'',``line\_num'')\\
-x.next=null         & (``x.next=null'',``line\_num'',x,next,next\_line)\\
-x.next=new           & (``x.next=new'',``line\_num'',x,next,next\_line, descr\_num, gen\_descr)\\
-setdata             & (``setdata'',``line\_num",x,``data'',next\_line)\\
-if x.data==``\dots'' & (``ifdata'',``line\_num'',x,``data'',next\_line\_then,next\_line\_else)\\
-x:=random\_position & (``x=random'',``line\_num'',x,next\_line)\\
+x.next = NULL         & (``x.next=null'',``line\_num'',x,next,next\_line)\\
+x.next = new           & (``x.next=new'',``line\_num'',x,next,next\_line, descr\_num, gen\_descr)\\
+setdata             & (``setdata'',``line\_num'',x,``data'',next\_line)\\
+if (x.data == ``\dots'') & (``ifdata'',``line\_num'',x,``data'',next\_line\_then,next\_line\_else)\\
+x := random\_pos & (``x=random'',``line\_num'',x,next\_line)\\
 new                 & (``new'',``line\_num'',x,next\_line)\\
-\end{tabular}[]
+\end{tabular}
 \caption{Podporované príkazy v~ARTMC}
 \label{table:prikazy}
 \end{table}
+
 \subsection{Popis príkazov jazyka pre ARTMC}
 \begin{itemize}
     \item \textit{Identifikátor} - Prvá položka je vždy reťazec obsahujúci identifikátor inštrukcie.
-    \item \textit{Číslo príkazu} - Druhá položka značená ako \textit{line\_num} identifikuje príkaz
+    \item \textit{Číslo príkazu} - Druhá položka označená ako \uv{\texttt{line\_num}} identifikuje príkaz
         vrámci celého programu. Jedná sa o~reťazec skladajúci sa z~postupnosti
         núl a~jedničiek, ktorý musí byť vrámci celého  programu jedinečný.
-        Ideálny postup je číslovať inštrukcie od 0 až po N a~previesť tieto
+        Najvhodnejší postup je číslovať inštrukcie od 0 až po N a~previesť tieto
         čísla do binárnej podoby. Zároveň je dôležité, aby všetky výsledné binárne čísla mali rovnako znakov.
-    \item \textit{Premenné} - Označené ako \textit{x} a~\textit{b}. V~programe sú značené prirodzenými číslami.
-    \item \textit{Ukazateľové premenné} - Označené ako \textit{next}. V~programe sú číslované od 0.
-    \item \textit{Ukazateľ na dalšiu inštrukciu} - Označené ako \textit{next\_line}. Označuje
+    \item \textit{Premenné} - Označené ako \uv{\texttt{x}} a~\uv{\texttt{y}}. V~programe sú reprezentované prirodzenými číslami začínajúce od 1.
+    \item \textit{Ukazateľové položky} - Označené ako \uv{\texttt{next}}. V~programe sú reprezentované prirodzenými číslami začínajúce od 0.
+    \item \textit{Ukazateľ na ďalšiu inštrukciu} - Označené ako \uv{\texttt{next\_line}}. Označuje
         číslo riadku inštrukcie, na ktorej sa po skončení bude pokračovať. Inštrukcie
-        sú číslované od nuly. Ak je použitá prípona \textit{\_then} alebo \textit{\_else}
+        sú číslované od nuly. Ak je použitá prípona \uv{\texttt{\_then}} alebo \uv{\texttt{\_else}}
         jedná sa o~miesto pokračovania v~prípade splnenia alebo nesplnenia podmienky danej inštrukcie.
-    \item \textit{Deskriptory 1} - Označené ako \textit{descr\_num}. Jedinečný deskriptor použitý pri vykonávaní danej inštrukcie. Deskriptory sú číslované od 1. Viac o~nastavovaní hodnôt tohto deskriptoru je v~podsekcii \ref{kap_descr}.
-    \item \textit{Desktirpty 2} - Označené ako \textit{gen\_num}. Využíva sa iba pri príkaze \texttt{x.next=new} a~označuje automatickú generáciu počiatočného deskriptoru. Nadobúda hodnoty 0 (vypnuté) a~1 (zapnuté).
+    \item \textit{Deskriptory 1} - Označené ako \uv{\texttt{descr\_num}}. Jedinečný deskriptor použitý pri vykonávaní danej inštrukcie. Deskriptory sú číslované od 1. Viac o~nastavovaní hodnôt tohto deskriptoru je v~podsekcii \ref{kap_descr}.
+    \item \textit{Deskriptory 2} - Označené ako \uv{\texttt{gen\_descr}}. Využíva sa iba pri príkaze \texttt{x.next=new} a~označuje automatickú generáciu počiatočného deskriptoru. Nadobúda hodnoty 0 (vypnuté) a~1 (zapnuté).
 \end{itemize}
 
 \subsection{env}
-Jedná sa o~6ticu \texttt{node\_width, pointer\_num, desc\_num, next\_num, err\_line, restrict\_var} obsahujúcu informácie o~programe.
+Jedná sa o~6ticu (\texttt{node\_width, pointer\_num, descr\_num, next\_num, err\_line,\\ restrict\_var}) obsahujúcu informácie o~programe.
 Význam jednotlivých položiek je nasledovný:
 
 \begin{itemize}
 \item \texttt{node\_width = pointer\_num + descr\_num + 2 + } šírka dát  
 \item \texttt{pointer\_num} = Počet ukazateľových premenných zvýšený o~1
-\item \texttt{desc\_num} = Počet ukazateľových deskriptorov zvýšený o~1. Viac v~podsekcii\ref{kap_descr}.
+\item \texttt{desc\_num} = Počet ukazateľových položiek zvýšený o~1 (viď podsekciu \ref{kap_descr})
 \item \texttt{next\_num} = Počet next pointerov použitých v~programe
-\item \texttt{err\_line} = Označenie riadku, na ktorý sa skáče v~prípade chyby.
+\item \texttt{err\_line} = Označenie riadku, na ktorý sa skáče v~prípade chyby
 \item \texttt{restrict\_var} = Automatické generovanie automatu, ktorý garantuje iba jeden výskyt programovej premennej v~konfigurácii. Nadobúda hodnoty 0 (vypnuté) a~1 (zapnuté).
 \end{itemize}
 
@@ -178,75 +182,65 @@ Význam jednotlivých položiek je nasledovný:
 \label{kap_descr}
 Deskriptor pozostáva z~dvoch častí:
 \begin{enumerate}
-\item Deskriptory v~konfigurácii - Jedná sa o~deskriptory, ktoré sú použité v~súbore \textit{typedefs}. Tieto deskriptory už nemôžu byť znova použité. Číslo najvyššieho použitého deskriptoru je možné získať zo skriptu \texttt{get\_typedef\_descr.t.sh}, ktorý je šírení v~distribúcii ARTMC.
-\item Vlastné deskriptory - Každý príkaz typu \texttt{x.next=y} alebo \texttt{x.next=new} dostane vlastný deskriptor, ktorý ešte nebol použitý. Nemôže byť použitý ani v~konfigurácii.
+\item \textit{Deskriptory v~konfigurácii} - Jedná sa o~deskriptory, ktoré sú použité v~súbore \textit{typedefs}. Tieto deskriptory už nemôžu byť znova použité. Číslo najvyššieho použitého deskriptoru je možné získať zo skriptu \texttt{get\_typedef\_descr.t.sh}, ktorý je súčasťou distribúcie ARTMC.
+\item \textit{Vlastné deskriptory} - Každému príkazu typu \texttt{x.next=y} alebo \texttt{x.next=new} je priradení vlastný deskriptor, ktorý ešte nebol použitý. Nemôže byť použitý ani v~konfigurácii.
 \end{enumerate}
 
 \subsection{Podpora práce s~dátami v~ARTMC}
-Jazyk pre nástroj ARTMC obsahuje iba dve inštrukcie pre prácu s~dátami. Jedná sa o~príkazy \texttt{setdata} a~\texttt{ifdata}. Existujú teda iba funkcie na priradenie hodnoty a~na porovnanie hodnoty. Ako si je možné v~tabuľke \ref{table:prikazy} všimnúť, tieto funkcie berú iba jednú premennú \texttt{x}. Je to preto, lebo sa predpokladá, že štruktúra, ktorej je premenná \texttt{x} má práve jednu dátovú položku. V~jazyku C môžu tieto dáta byť ľubovoľného typu, avšak pre ARTMC musia byť kódované ako postupnosť núl a~jedničiek. Na skutočnej reprezentácii v~binárnej podobe nezáleží, tak je napríklad vhodné prvým dátam dať napr. 	``00000001'' ďalším ``00000010'' atď. Je len potrebné aby rovnaká hodnota nebola kódovaná viackrát pod rôznymi kódmi.
+Jazyk pre nástroj ARTMC obsahuje iba dve inštrukcie pre prácu s~dátami. Jedná sa o~príkazy \texttt{setdata} a~\texttt{ifdata}. Existujú teda iba funkcie na priradenie hodnoty a~na porovnanie hodnoty. Ako si je možné v~tabuľke \ref{table:prikazy} všimnúť, tieto funkcie berú iba jednú premennú. Je to z dôvodu, že nástroj ARTMC predpokladá, že štruktúra ktorého typu je daná premenná obsahuje práve jednu dátovú položku. V~jazyku C môžu tieto dáta byť ľubovoľného typu, avšak pre ARTMC musia byť kódované ako postupnosť núl a~jedničiek. Na skutočnej reprezentácii v~binárnej podobe nezáleží, tak je vhodné prvým dátam dať napríklad postupnosť ``00000001'' ďalším ``00000010'' atď. Avšak je potrebné aby jedna hodnota nebola kódovaná viackrát pod rôznymi kódmi.
 
-Problematické je avšak spracovanie zložitejších výrazov nakoľko neexistujú funkcie na sčítanie, odčítanie a~pod.. Teda napríklad výraz\\
-\tab \texttt{if (x->data - 1 > y->data)}\\
-sa nedá zapísať do nástroja ARTMC. Je možná určitá analýza a~za pomoci sledovania šírenia konštánt alebo úpravy výrazov je možné niektoré konštrukcie preložiť. Napríklad kód:\\
-\texttt{
-if (x->data -1 == 0)\\
-\tab \dots
-}  
-
+Problematické je avšak spracovanie zložitejších výrazov nakoľko neexistujú funkcie na sčítanie, odčítanie a~pod.. Teda napríklad výraz
+\codeline{if (x->data - 1 > y->data)}
+sa nedá zapísať do nástroja ARTMC. Je možná určitá analýza a~za pomoci sledovania šírenia konštánt alebo úpravy výrazov je možné niektoré konštrukcie preložiť.
+\newpage
 \noindent
-po úprave výrazu je možné prepísať ako:\\
-\texttt{
-if (x->data == 1)\\
-\tab \dots
-}  
+Ako príklad uveďme výraz: \codeline{if (x->data -1 == 0)} po úprave výrazu je možné prepísať ako: \codeline{if (x->data == 1)}
+A~napríklad kód:
 
-\noindent
-a~napríklad kód:\\
-\texttt{
+\code{%
 y->data = 0\\
 \dots \textit{ak sa nezmení y a~ani y->data}\\
 if (x->data == y->data)\\
 \tab \dots
-}  
+}
 
 \noindent
-po sledovaní šírenia konštánt je možné zaísať ako:\\
-\texttt{
+po sledovaní šírenia konštánt je možné zapísať ako:
+
+\code{%
 y->data = 0\\
 \dots\\
 if (x->data == 0)\\ 
 \tab \dots
 }  
 
-Avšak takéto úpravy nie sú vždy možné, hlavne ak sa upravujú hodnoty vo while cykloch. Potom ostáva už len \textit{ignorácia práce s~dátami}. Pri takomto postupe sa neuvažujú žiadne inštrukcie kde sa nastavuje hodnota dát a~všetky podmienky, ktoré porovnávajú dáta sú nahradené inštrukciou \texttt{if*}.
+Avšak takéto úpravy nie sú vždy možné, hlavne ak sa menia hodnoty vo while cykloch. Potom je možná len \uv{ignorácia} práce s~dátami. Pri takomto postupe sa neuvažujú žiadne inštrukcie kde sa nastavuje hodnota dát a~všetky podmienky, ktoré porovnávajú dáta, sú nahradené inštrukciou \texttt{if*}. Tento prístup avšak môže viesť k falošným protipríkladom (tvrdenie že program obsahuje chybu ak ju v skutočnosti neobsahuje), ale nespôsobí falošné pozitíva (tvrdenie že neobsahuje chybu ak ju v skutočnosti obsahuje).
 
 \section{Tvorba programu v~ARTMC}
-Tvorba programu pre nástroj ARTMC je zložitá, ľahko sa v~nom tvoria chyby a~je zložité
+Tvorba programu pre nástroj ARTMC je zložitá, ľahko sa v~ňom tvoria chyby a~je komplikované
 upravovať napísaný program.
-Ako príklad uveďme jednoduchý program, ktorý by v~jazyku C mohol vyzerať nasledovne:\\
-\noindent
-\texttt{
-\\
+Ako príklad uveďme jednoduchý program, ktorý by v~jazyku C mohol vyzerať nasledovne:
+
+\code{%
 while(x->next != NULL)\\
 \tab x = x->next;
-\\
-}
-\noindent
-Takýto program by sa do nástroja ARTMC prepísal ako:\\
-\texttt{ 
-\\
-\tab (``x=y.next'',``00000000'',2,1,0,1),\\
-\tab (``ifx==null'',``00000001'',2,4,2),\\
-\tab (``x=y.next'',``00000010'',1,1,0,3),\\
-\tab (``goto'',``00000011'',0),\\
 }
 
-Okrem tohoto kódu avšak je potrebné napísať celú triedu, ktorá vracia tento kód a~dané prostredie.
+\noindent
+Takýto program by sa do nástroja ARTMC prepísal ako:
+
+\code{%
+(``x=y.next'',``00000000'',2,1,0,1),\\
+(``ifx==null'',``00000001'',2,4,2),\\
+(``x=y.next'',``00000010'',1,1,0,3),\\
+(``goto'',``00000011'',0)
+}
+
+\noindent
+Okrem tohoto kódu avšak je potrebné napísať celú funkciu, ktorá vracia tento kód a~dané prostredie.
 Teda celý vstupný súbor by vyzeral nasledovne.
 
-
-\texttt{
-\\
+\code{%
 def get\_program()$\colon$\\
 \tab program=[\\
 \tab \tab (``x=y.next'',``00000000'',2,1,0,1),\\
@@ -264,33 +258,31 @@ def get\_program()$\colon$\\
 \tab return(program, env)
 }
 
-Ako je na prvý pohľad zrejmé, napísať program v~jazyku C je výrazne jednoduchšie ako pre nástroj ARTMC. Rovnako je v~C značne menšia šanca zavedenia chyby. Pri tvorbe v~ARTMC je potrebné počítať premenné a~správne ich značiť, počítať riadky pre pokračovanie inštrukcií atď.. Ešte zložitejšia je úprava kódu, kde len pridaním jednej drobnej zmeny je častokrát potrebné prepísať takmer celý program. Predstavme si že sa rozhodneme mierne zmeniť predchádzajúci program na:\\
 \noindent
-\texttt{
-\\
+Ako je na prvý pohľad zrejmé, napísať program v~jazyku C je výrazne jednoduchšie ako pre nástroj ARTMC. Rovnako je v~jazyku C výrazne menšia šanca zavedenia chyby. Pri tvorbe programu v~nástroji ARTMC je potrebné počítať premenné a~správne ich značiť, počítať riadky pre pokračovanie inštrukcií atď.. Ešte zložitejšia je úprava kódu, kde len pridaním jednej malej zmeny je častokrát potrebné prepísať takmer celý program. Predstavme si, že sa rozhodneme mierne zmeniť predchádzajúci program na:
+
+\code{%
 while(x->next != NULL)\{\\
 \tab x->next = malloc(sizeof(x));\\
 \tab x = x->next;\\
 \}
-\\
 }
 
-Výstup by sa výrazne zmenil. Podčiarknuté sú všetky riadky, ktoré sa zmenili alebo pribudli.
+\noindent
+výstup by sa výrazne zmenil. Podčiarknuté sú všetky riadky, ktoré sa zmenili alebo pribudli.
 
-
-\texttt{
-\\
+\code{%
 def get\_program()$\colon$\\
 \tab program=[\\
 \tab \tab (``x=y.next'',``00000000'',2,1,0,1),\\
-\underline{\tab \tab (``ifx==null'',``00000001'',2,5,2),}\\
-\underline{\tab \tab (``x.next=new'',``00000010'',1,0,3,3,1),}\\
-\underline{\tab \tab (``x=y.next'',``00000011'',1,1,0,4),}\\
-\underline{\tab \tab (``goto'',``00000100'',0),}\\
-\underline{\tab \tab (``exit'',``00000101'')]}\\
-\underline{\tab node\_width=17}\\
+\tab \tab \underline{(``ifx==null'',``00000001'',2,5,2),}\\
+\tab \tab \underline{(``x.next=new'',``00000010'',1,0,3,3,1),}\\
+\tab \tab \underline{(``x=y.next'',``00000011'',1,1,0,4),}\\
+\tab \tab \underline{(``goto'',``00000100'',0),}\\
+\tab \tab \underline{(``exit'',``00000101'')]}\\
+\tab \underline{node\_width=17}\\
 \tab pointer\_num=3\\
-\underline{\tab desc\_num=4}\\
+\tab \underline{desc\_num=4}\\
 \tab next\_num=1\\
 \tab err\_line="11111111"\\
 \tab restrict\_var=1\\
