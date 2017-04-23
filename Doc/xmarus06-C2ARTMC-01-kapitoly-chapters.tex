@@ -119,7 +119,7 @@ typedef struct T2
 }
 
 \subsection{program.py}
-Jedná sa o súbor obsahujúci jednu funkciu v~jazyku Python, ktorá vracia dvojicu \texttt{(program, env)}.
+Jedná sa o~súbor obsahujúci jednu funkciu v~jazyku Python, ktorá vracia dvojicu \texttt{(program, env)}.
 Prvý prvok \texttt{program} je zoznam n-tíc, kde každá n-tica je jeden príkaz jazyka ARTMC. V~tabuľke \ref{table:prikazy} sú popísané jednotlivé podporované konštrukcie.
 
 \begin{table}[h]
@@ -187,7 +187,7 @@ Deskriptor pozostáva z~dvoch častí:
 \end{enumerate}
 
 \subsection{Podpora práce s~dátami v~ARTMC}
-Jazyk pre nástroj ARTMC obsahuje iba dve inštrukcie pre prácu s~dátami. Jedná sa o~príkazy \texttt{setdata} a~\texttt{ifdata}. Existujú teda iba funkcie na priradenie hodnoty a~na porovnanie hodnoty. Ako si je možné v~tabuľke \ref{table:prikazy} všimnúť, tieto funkcie berú iba jednú premennú. Je to z dôvodu, že nástroj ARTMC predpokladá, že štruktúra ktorého typu je daná premenná obsahuje práve jednu dátovú položku. V~jazyku C môžu tieto dáta byť ľubovoľného typu, avšak pre ARTMC musia byť kódované ako postupnosť núl a~jedničiek. Na skutočnej reprezentácii v~binárnej podobe nezáleží, tak je vhodné prvým dátam dať napríklad postupnosť ``00000001'' ďalším ``00000010'' atď. Avšak je potrebné aby jedna hodnota nebola kódovaná viackrát pod rôznymi kódmi.
+Jazyk pre nástroj ARTMC obsahuje iba dve inštrukcie pre prácu s~dátami. Jedná sa o~príkazy \texttt{setdata} a~\texttt{ifdata}. Existujú teda iba funkcie na priradenie hodnoty a~na porovnanie hodnoty. Ako si je možné v~tabuľke \ref{table:prikazy} všimnúť, tieto funkcie berú iba jednú premennú. Je to z~dôvodu, že nástroj ARTMC predpokladá, že štruktúra ktorého typu je daná premenná obsahuje práve jednu dátovú položku. V~jazyku C môžu tieto dáta byť ľubovoľného typu, avšak pre ARTMC musia byť kódované ako postupnosť núl a~jedničiek. Na skutočnej reprezentácii v~binárnej podobe nezáleží, tak je vhodné prvým dátam dať napríklad postupnosť ``00000001'' ďalším ``00000010'' atď. Avšak je potrebné aby jedna hodnota nebola kódovaná viackrát pod rôznymi kódmi.
 
 Problematické je avšak spracovanie zložitejších výrazov nakoľko neexistujú funkcie na sčítanie, odčítanie a~pod.. Teda napríklad výraz
 \codeline{if (x->data - 1 > y->data)}
@@ -214,7 +214,7 @@ if (x->data == 0)\\
 \tab \dots
 }  
 
-Avšak takéto úpravy nie sú vždy možné, hlavne ak sa menia hodnoty vo while cykloch. Potom je možná len \uv{ignorácia} práce s~dátami. Pri takomto postupe sa neuvažujú žiadne inštrukcie kde sa nastavuje hodnota dát a~všetky podmienky, ktoré porovnávajú dáta, sú nahradené inštrukciou \texttt{if*}. Tento prístup avšak môže viesť k falošným protipríkladom (tvrdenie že program obsahuje chybu ak ju v skutočnosti neobsahuje), ale nespôsobí falošné pozitíva (tvrdenie že neobsahuje chybu ak ju v skutočnosti obsahuje).
+Avšak takéto úpravy nie sú vždy možné, hlavne ak sa menia hodnoty vo while cykloch. Potom je možná len \uv{ignorácia} práce s~dátami. Pri takomto postupe sa neuvažujú žiadne inštrukcie kde sa nastavuje hodnota dát a~všetky podmienky, ktoré porovnávajú dáta, sú nahradené inštrukciou \texttt{if*}. Tento prístup avšak môže viesť k~falošným protipríkladom (tvrdenie že program obsahuje chybu ak ju v~skutočnosti neobsahuje), ale nespôsobí falošné pozitíva (tvrdenie že neobsahuje chybu ak ju v~skutočnosti obsahuje).
 
 \section{Tvorba programu v~ARTMC}
 Tvorba programu pre nástroj ARTMC je zložitá, ľahko sa v~ňom tvoria chyby a~je komplikované
@@ -342,7 +342,7 @@ Prekladač pozostáva z~viacerých častí. Schéma bežného prekladača je na 
 Lexikálny analyzátor, scanner, má na vstupe program zapísaný v~zdrojovom jazyku. Tento program
 je scannerom delený na lexémy - logicky oddelené lexikálne jednotky. Na výstupe je reťazec
 tokenov, pričom token reprezentuje lexémy a~môže obsahovať ďalšie atribúty. \cite{meduna} 
-Tento proces je znázornený v obrázku \ref{fig:lex}.
+Tento proces je znázornený v~obrázku \ref{fig:lex}.
 
 \section{Syntaktický analyzátor}
 Syntaktický analyzátor, parser, má na vstupe reťazec tokenov, ktoré získal
@@ -416,7 +416,7 @@ Medzi optimalizácie môžu patriť:
 \end{itemize}
 
 \section{Generátor cieľového kódu}
-Generátor cieľového kódu prevádza vnútornú reprezentáciu programu do funkčne ekvivalentného cieľového programu a teda ukončuje proces kompilácie. Tento posledný krok je závislý od cieľového jazyka ale aj konkrétnej platformy pre ktorú sa preklad vykonáva. Najčastejšie je cieľovým jazykom strojový kód alebo assambler, avšak je možný preklad aj medzi dvoma vyššími programovacími jazykmi\cite{meduna}. 
+Generátor cieľového kódu prevádza vnútornú reprezentáciu programu do funkčne ekvivalentného cieľového programu a~teda ukončuje proces kompilácie. Tento posledný krok je závislý od cieľového jazyka ale aj konkrétnej platformy pre ktorú sa preklad vykonáva. Najčastejšie je cieľovým jazykom strojový kód alebo assambler, avšak je možný preklad aj medzi dvoma vyššími programovacími jazykmi\cite{meduna}. 
 
 \section{Syntaxou riadený preklad}
 \label{sec_synta}
@@ -449,7 +449,7 @@ prekladač sú:
     \item Nepraktické používanie\\
         Proces prekladu za pomoci AVERILES pozostáva z~dvoch krokov:
         \begin{enumerate}
-            \item Tvorba XML súboru zo zdrojového programu v jazyku C
+            \item Tvorba XML súboru zo zdrojového programu v~jazyku C
             \item Preklad XML súboru do vstupného formátu nástroja ARTMC
         \end{enumerate}
         Takýto postup je zložitejší, nakoľko je potrebné volať dva programy.
@@ -523,14 +523,14 @@ vykonal.
 Táto práca využíva GitHub a~je dostupná na \texttt{https://github.com/marusak/C2ARTMC}.
 
 \section{Testovateľnosť}
-Vývoj väčších aplikácii si vyžaduje overovanie správnej funkcionality programu. Overovanie sa vykonáva za pomoci hromadných testov, kde jedným príkazom je vyvolaných viacero testov a ako výsledok je poskytnuté zhrnutie zo všetkých testov. Táto práca takéto testy by mala obsahovať a za využitia nástroja Tox by mala overovať správne fungovania aj na rôznych verziách Pythonu.
+Vývoj väčších aplikácii si vyžaduje overovanie správnej funkcionality programu. Overovanie sa vykonáva za pomoci hromadných testov, kde jedným príkazom je vyvolaných viacero testov a~ako výsledok je poskytnuté zhrnutie zo všetkých testov. Táto práca takéto testy by mala obsahovať a~za využitia nástroja Tox by mala overovať správne fungovania aj na rôznych verziách Pythonu.
 
 \subsection{Hromadné testy}
 Pri pridávaní novej funkcionality sa môže stať, že sa zavedie chyba vrámci inej
 funkcionality. Preto je vhodné po každej zmene otestovať všetky predtým
 naprogramované vlastnosti. To je prirodzene takmer nemožné. Preto sa píšu testy,
 ktoré sa dajú spúšťať hromadne a~je ľahko a~rýchlo možné overiť, že neprišlo
-k~zavedeniu chyby. Rovnako je odporúčané na každú novú funkcionalitu napísať test, ktorý overí, že táto vlastnosť bola správne implementovaná. Neskôr tento test bude overovať, že táto funkcia stále funguje správne a nebola narušená.
+k~zavedeniu chyby. Rovnako je odporúčané na každú novú funkcionalitu napísať test, ktorý overí, že táto vlastnosť bola správne implementovaná. Neskôr tento test bude overovať, že táto funkcia stále funguje správne a~nebola narušená.
 
 \subsection{Tox}
 \label{sec_tox}
@@ -544,31 +544,30 @@ testy boli úspešné, prípadne ktorý test neuspel v~ktorej verzii.
 
 
 \chapter{Výsledná aplikácia}
-Aplikácia bola vytvorená s~ohľadom na zadanie bakalárskej práce. Boli dodržané všetky body zadania. Pri vývoji som sa držal požadovaných vlastností na kód a~vývoj spomenutých v~kapitole \ref{kap_imp}. Hneď po vytvorení prvej skutočne funkčnej časti kódu boli vytvárané automatické testy pre overenie skutočne fungujúcich implementovaných častí a~overenie že počas pridávania novej funkcionality neprišlo k~regresii v~inej časti kódu. 
+Aplikácia bola vytvorená s~ohľadom na zadanie bakalárskej práce. Boli dodržané všetky body zadania. Pri vývoji boli dodržané vlastnosti kódu a~vývoja spomenuté v~kapitole \ref{kap_imp}. Hneď po vytvorení prvej skutočne funkčnej časti kódu boli vytvárané automatické testy pre overenie  funkcionality implementovaných častí a~overenie, že počas pridávania ďalších vlastností neprišlo k~regresii v~inej časti programu. 
 
-Kód bol od začiatku publikovaný na GitHub-e s~ohľadom na odporúčané praktiky pri využívaní verzovacieho systému git. História je prehľadná a~je možné v~nej jednoducho sa vracať alebo zisťovať ktorá časť kódu bola kedy implementovaná.
+Kód bol od začiatku publikovaný na GitHub-e s~ohľadom na odporúčané praktiky pri využívaní verzovacieho systému Git. História je prehľadná a~je možné v~nej jednoducho sa vracať alebo zisťovať ktorá časť kódu bola kedy a~prečo implementovaná.
 
 Výsledný program bol poriadne otestovaný na sade testov. Pre zoznam testov viď prílohu \ref{priloha:testy}. Všetky testy prešli úspešne na všetkých požadovaných operačných systémoch ako aj verziách Pythonu.
 
 \section{Výsledná implementácia}
 V~tejto časti textu je popis implementácie. Jedná sa o~spojenie znalostí z~kapitoly \ref{kap_prekladace} o~prekladačoch so skutočne použitými vlastnosťami a~ich implementáciou v~jazyku Python.
 \subsection{Lexikálny analyzátor}
-Ako prvá časť bol implementovaný lexikálny analyzátor. Jedná sa o~samotnú triedu \texttt{Scanner}, ktorá v~inicializácii berie názov súboru z~programom v~jazyku C. Následne je vstupný program načítaný a~predspracovaný. Jedná sa hlavne o~odstránenie komentárov a~nahradenie skupín bielych znakov jednou medzerou. Tieto úpravy následne umožňujú jednoduchšie delenie kódu na tokeny. Trieda lexikálneho analyzátora poskytuje metódu \texttt{get\_token}, ktorá vráti práve jeden token. Na delenie sa nevyužívajú regulárne výrazy, ale podľa prvého neprečítaného znaku sa scanner rozhoduje o~aký token sa môže jednať. Následne po rozpoznaní tokenu, je vrátený token, ktorý je reprezentovaný jedným číslom - jedná sa o~imitáciu \texttt{enum} pre jazyk Python. Konkrétna hodnota tokenu sa nevracia priamo a~je možné ju získať volaním funkcie \texttt{get\_value}. Scanner poskytuje aj metódu \texttt{unget\_token}, ktorá vráti jeden token späť do vstupného reťazca. Nakoľko je ale scanner ako aj celý prekladač jednopriechodový, je táto funkcia implementovaná inštančnou premennou, ktorá drží vrátenú hodnotu. Výhodou je jednoduchá implementácia, nevýhodou je možné vrátiť iba jeden token.
+Ako prvá časť bol implementovaný lexikálny analyzátor. Jedná sa o~samotnú triedu \texttt{Scanner}, ktorá v~inicializácii berie názov súboru z~programom v~jazyku C. Následne je vstupný program načítaný a~predspracovaný. Jedná sa hlavne o~odstránenie komentárov a~nahradenie skupín bielych znakov jednou medzerou. Tieto úpravy následne umožňujú jednoduchšie delenie kódu na tokeny. Trieda lexikálneho analyzátora poskytuje metódu \texttt{get\_token}, ktorá vráti práve jeden token. Na delenie sa nevyužívajú regulárne výrazy, ale podľa prvého neprečítaného znaku sa scanner rozhoduje o~aký token sa môže jednať. Následne po rozpoznaní tokenu, je vrátený token, ktorý je reprezentovaný jedným číslom - jedná sa o~imitáciu \texttt{enum} pre jazyk Python. Konkrétna hodnota tokenu sa nevracia priamo a~je možné ju získať volaním funkcie \texttt{get\_value}. Scanner poskytuje aj metódu \texttt{unget\_token}, ktorá vráti jeden token späť do vstupného reťazca. Nakoľko je ale scanner ako aj celý prekladač jednopriechodový, je táto funkcia implementovaná inštančnou premennou, ktorá drží vrátenú hodnotu. Výhodou je jednoduchá implementácia, teoretickou nevýhodou je možné vrátiť iba jeden token, avšak vrámci implementácie tohoto prekladača nebolo nikdy potrebné vracať viac za sebou idúcich tokenov.
 
 \subsection{Syntaktický analyzátor}
-Následne bol tvorený syntaktický analyzátor, ktorý je implementovaný ako trieda \texttt{Parser}. Jedná sa o~syntaxou riadený preklad a~preto je samotný analyzátor najdlhšia časť kódu. Napriek svojej veľkosti sa jedná o~pomerne jednoduchý program. V~princípe je celá analýza jeden while cyklus, ktorý čaká až skončí vstupný súbor a~scanner vráti EOF. V~tomto cykle sa prečíta prvý token a~sa rozhodne o~aký príkaz sa jedná. V~tejto úrovni sa môže jednať iba o~definíciu alebo deklaráciu funkcie alebo premennej. Spracovanie premennej je priamočiara záležitosť. Spracovanie funkcie obsluhuje funkcia \texttt{parse\_function}, ktorá je obdobne jeden while cyklus, ktorý volá funkciu \texttt{parse\_command} až pokiaľ nenarazí na ukončujúcu zloženú zátvorku. Funkcia \texttt{parse\_command}
+Následne bol tvorený syntaktický analyzátor, ktorý je implementovaný ako trieda \texttt{Parser}. Jedná sa o~syntaxou riadený preklad a~preto je samotný analyzátor najdlhšia časť kódu. Napriek svojej veľkosti sa jedná o~pomerne jednoduchý program. V~princípe je celá analýza jeden while cyklus, ktorý čaká až skončí vstupný súbor a~\texttt{scanner} vráti \texttt{EOF}. V~tomto cykle sa prečíta prvý token a~na základe neho sa rozhodne o~aký príkaz sa jedná. V~tejto úrovni sa môže jednať iba o~definíciu alebo deklaráciu funkcie alebo premennej. Spracovanie premennej je priamočiara záležitosť. Spracovanie funkcie obsluhuje funkcia \texttt{parse\_function}, ktorá je obdobne jeden while cyklus, ktorý volá funkciu \texttt{parse\_command} až pokiaľ nenarazí na ukončujúcu zloženú zátvorku. Funkcia \texttt{parse\_command}
 na základe prvého tokenu zavolá funkcie na spracovanie príkazu, napríklad \texttt{parse\_if} alebo \texttt{parse\_assignment}. Ak sa jedná o~príkaz, ktorý vytvára ďalšiu úroveň zanorenia ako napríklad \texttt{if} alebo \texttt{while}, celá úroveň je spracovaná touto funkciou za volania  \texttt{parse\_command} na spracovanie jednotlivých príkazov. Hovoríme teda o~rekurzívnom zanorovaní.
 
 Ako bolo spomenuté v~sekcii \ref{sec_synta} ohľadom syntaxou riadenom preklade, počas syntaktickej analýzy sa vykonávajú aj ďalšie akcie. Medzi takéto akcie patrí napríklad vloženie premennej do tabuľky symbolov po nájdení novej premennej. Tabuľku symbolov vlastní trieda \texttt{Parser} a~poskytuje sadu inštrukcií na prácu s~ňou. Medzi ďalšie akcie patrí vygenerovanie inštrukcie vo vnútornom kóde po prečítaní celého príkazu. 
 
 \subsection{Sémantický analyzátor}
-Sémantický analyzátor nie je implicitne oddelený od zvyšku kódu ako je napríklad lexikálny alebo syntaktický analyzátor. Sémantická analýza sa vykonáva len v~tak obmedzenej forme, že všetky potrebné kontroly boli priamo zahrnuté do parsera. Hlavný dôvod je málo kontrol súvisiaci s~nepodporovaním dát v~jazyku ARTMC a~teda takmer všetky inštrukcie, kde je potrebná sémantická analýza sa nevyskytujú vo vstupnom súbore. Je prirodzene ošetrené aj správanie v~prípade výskytu takejto konštrukcie. To je popísané v~sekcii \ref{sec_features}.
+Sémantický analyzátor nie je implicitne oddelený od zvyšku kódu ako je napríklad lexikálny alebo syntaktický analyzátor. Sémantická analýza sa vykonáva len v~tak obmedzenej forme, že všetky potrebné kontroly boli priamo zahrnuté do parsera. Hlavný dôvod málo kontrol súvisí s~nepodporovaním dát v~jazyku ARTMC a~teda takmer všetky inštrukcie, kde je potrebná sémantická analýza sa nevyskytujú vo vstupnom súbore. Je prirodzene ošetrené aj správanie v~prípade výskytu takejto konštrukcie. Toto správanie je opísané v~sekcii \ref{sec_features}.
 
 \subsection{Generovanie kódu}
-Na spracovanie vnútorného kódu bola vytvorená trieda \texttt{Generate}. Tento názov napovedá, že trieda nie len že príma od parseru inštrukcie vo vnútornej reprezentácií, ale aj generuje cieľový kód. Trieda poskytuje celú radu funkcií pre vkladanie inštrukcií, ktoré začínajú prefixom \texttt{new\_i\_}. Okrem toho obsahuje funkciu \texttt{get\_full\_result}, ktorá má za úlohu vrátiť kód vo výstupnom jazyku pripravený na výpis alebo zápis do súboru. Táto funkcia volá všetky potrebné funkcie na generovanie a~dokončovanie inštrukcií z~vnútorného kódu do výsledného kódu.
+Na spracovanie vnútorného kódu bola vytvorená trieda \texttt{Generate}. Tento názov napovedá, že trieda nie len príma od parseru inštrukcie vo vnútornej reprezentácií, ale aj generuje cieľový kód. Trieda poskytuje celú radu funkcií pre vkladanie inštrukcií, ktoré začínajú prefixom \texttt{new\_i\_}. Okrem toho obsahuje funkciu \texttt{get\_full\_result}, ktorá má za úlohu vrátiť kód vo výstupnom jazyku pripravený na výpis alebo zápis do súboru. Táto funkcia volá všetky potrebné funkcie na generovanie a~dokončovanie inštrukcií z~vnútorného kódu do výsledného kódu.
 
 Schéma fungovania výslednej implementácie je znázornená na obrázku \ref{fig:imp}.
-
 \begin{center}
 \begin{figure}[h]
 \begin{tikzpicture}[auto,>=latex']
@@ -579,7 +578,6 @@ Schéma fungovania výslednej implementácie je znázornená na obrázku \ref{fi
     
     \node [block, below=of vystup, xshift=-1.75cm] (generate) {Generate};
 
-
     \path [line] (vstup) -- (c2artmc);
 
     \draw [->] (c2artmc.20) -- (vystup.160);
@@ -588,28 +586,23 @@ Schéma fungovania výslednej implementácie je znázornená na obrázku \ref{fi
     \draw [->, dashed] (generate.70) |- node[near start, xshift=3.5cm, yshift=-0.5cm]{výstupný program}  (c2artmc);
     
     \node [block, below=of vstup, xshift=1.75cm] (parser) {Parser};
-    \draw [->] (c2artmc.260) |- node[near end]{init} (parser);
-    \draw [->] (c2artmc.240) |- node[near end]{run} (parser.20);
-    \draw [->] (parser.-20) |- node[near end, yshift=-0.5cm]{new\_i\_<insturction>}  (generate.200);
-    
-    
+    \draw [->] (c2artmc.260) |- node[near end]{run} (parser);
+    \draw [->] (c2artmc.240) |- node[near end]{init} (parser.20);
+    \draw [->] (parser.-20) |- node[near end, yshift=-0.5cm]{new\_i\_<instruction>}  (generate.200);
+ 
     \node [block, below=of parser, yshift=-1.5cm] (scanner) {Scanner};
     \draw [->] (parser.218) -- node[near start, rotate=-90, yshift=-0.16cm, xshift=-0.5cm]{init} (scanner.142);
     \draw [->] (parser.240) -- node[near start, rotate=-90, yshift=-0.16cm, xshift=-0.5cm]{get\_token} (scanner.120);
     \draw [->] (parser.275) -- node[near start, rotate=-90, yshift=-0.16cm, xshift=-0.5cm]{unget\_token} (scanner.85);
     
         \draw [->, dashed] (scanner.50) -- node[near start, rotate=-90, yshift=-0.16cm, xshift=-0.5cm]{token} (parser.310);
-
-
-
 \end{tikzpicture}
 \caption{Schéma fungovania implementovaného prekladača}
 \label{fig:imp}
-
 \end{figure}
 \end{center}
 
-
+\newpage
 \section{Vstupný program}
 Na vstupe sa očakáva platný program v~jazyku C s~určitými výnimkami. Výnimky môžme rozdeliť na štyri skupiny:\\
 \begin{enumerate}
@@ -620,7 +613,7 @@ Na vstupe sa očakáva platný program v~jazyku C s~určitými výnimkami. Výni
 \end{enumerate}
 
 \subsection{Nepodporované konštrukcie}
-Ako bolo spomenuté v~kapitole \ref{kap_artmc}, nástroj ARTMC má obmedzenú sadu príkazov a~preto nie je možné preložiť ľubovoľné konštrukcie. Avšak prekladač bol implementovaný tak, aby nebolo nutné program príliš upravovať. Je to dosiahnuté tým, že príkazy, ktoré nemenia používané premenné sú preskočené. Viac o~tejto vlastnosti je v~sekcii \ref{sec_features}.
+Ako bolo spomenuté v~kapitole \ref{kap_artmc}, nástroj ARTMC má obmedzenú sadu príkazov a~preto nie je možné preložiť ľubovoľné konštrukcie. Avšak prekladač bol navrhnutý tak, aby nebolo nutné program príliš upravovať. Je to dosiahnuté tým, že príkazy, ktoré nemenia používané premenné sú preskočené. Viac o~tejto vlastnosti je v~podsekcii \ref{sec_features_jump}.
 
 Z~významných konštrukcií nie sú podporované:
 \begin{itemize}
@@ -632,91 +625,101 @@ Z~významných konštrukcií nie sú podporované:
 Medzi významné nepodporované konštrukcie patrí aj obmedzenie prác s~dátami. Tomuto obmedzeniu sa venuje sekcia \ref{sec_data}.
 
 \subsection{Neštandardné podporované konštrukcie}
-Okrem validných konštrukcií pre jazyk C boli implementované aj rozšírenia, ktoré sú potrebné pre nástroj ARTMC. Jedná sa hlavne o~podporu nedeterministického rozhodovania. V~jazyku C je túto konštrukciu možné zapísať ako \texttt{if(*)} alebo \texttt{if(any)}. Obe tieto konštrukcie sa preložia na príkaz \texttt{if*}.
+Okrem validných konštrukcií pre jazyk C boli implementované aj rozšírenia, ktoré sú potrebné pre nástroj ARTMC. Jedná sa hlavne o~podporu nedeterministického rozhodovania. V~jazyku C je túto konštrukciu možné zapísať ako \texttt{if(*)} alebo \texttt{if(any)}. Obe tieto konštrukcie sú preložené na príkaz \texttt{if*}.
 
-Bola implementovaná podpora aj pre kľúčové slovo \texttt{ERROR}, ktoré sa môže vyskytnúť vrámci vrámci príkazu \texttt{return}. Tento príkaz sa preloží na príkaz \texttt{goto}. Ako miesto skoku je riadok vyskytujúci sa v~\texttt{env} \texttt{err\_line}. Príkaz \texttt{return ERROR} sa môže chápať ako ukončenie s~chybou, napríklad po neúspešnom mallokovaní pamäte.
+Bola implementovaná aj podpora pre kľúčové slovo \texttt{ERROR}, ktoré sa môže vyskytnúť vrámci vrámci príkazu \texttt{return}. Tento príkaz sa preloží na príkaz \texttt{goto}. Ako miesto skoku je riadok vyskytujúci sa v~prostredí \texttt{env} \texttt{err\_line}. Príkaz \texttt{return ERROR} sa môže chápať ako ukončenie s~chybou, napríklad po neúspešnom allokovaní pamäte.
 
 Posledná neštandardná vlastnosť pre implementovaný prekladač je podpora funkcie \texttt{random\_alloc(void)}. Táto funkcia sa preloží na príkaz \texttt{random\_position}. Využitím tejto funkcie je možné prinútiť nástroj ARTMC vybrať náhodný alokovaný uzol.
 
 \subsection{Povinné položky}
-Nástroj ARTMC defaultne predpokladá existenciu akejsi špecifickej štruktúry. Avšak počas návrhu prekladača bolo rozhodnuté, že prekladač nebude implicitne predpokladať existenciu žiadnej dátovej štruktúry a~bude vyžadovať, aby vždy bola presne zadaná pre každý program. Preto vstupný program musí obsahovať presne definovanú štruktúru. Príkladom môže byť štruktúra v~schéme \ref{fig:struct}. Za povšimnutie stojí existencia iba jednej neukazateľovej položky. Viac ako jedna dátová položka totižto nie je podporovaná zo strany nástroja ARTMC a~teda takúto štruktúru prekladač odmietne.
-
+Nástroj ARTMC implicitne predpokladá existenciu špecifickej štruktúry. Avšak počas návrhu prekladača bolo rozhodnuté, že prekladač nebude implicitne predpokladať existenciu žiadnej dátovej štruktúry a~bude vyžadovať, aby vždy bola presne zadaná pre každý program. Preto vstupný program musí obsahovať presne definovanú štruktúru. Príkladom môže byť štruktúra v~schéme \ref{fig:struct}. Za povšimnutie stojí existencia iba jednej neukazateľovej položky. Viac ako jedna dátová položka totižto nie je podporovaná zo strany nástroja ARTMC a~teda takúto štruktúru prekladač odmietne.
 \begin{center}
-\begin{figure}
-\texttt{
+\begin{figure}[H]
+\code{%
 typedef struct T1 \{\\                                                            
 \tab struct T1* next;\\                                                            
 \tab struct T1* prev;\\                                                          
 \tab int data;\\                                                                   
 \}* T;
 }
-
 \label{fig:struct}
 \caption{Vzorový príklad štruktúry vo vstupnom programe}
 \end{figure}
 \end{center}
 
 \subsection{Nepovinné položky}
-Prekladač nepodporuje direktívu preprocesoru \texttt{\#include}. Avšak takéto riadky sú pri preklade ignorované, takže je možné ich tam nechať. Preto je riadok \texttt{\#include <xxxxxx.h>} nepovinný aj napriek tomu, že v~zdrojovom kóde sa môžu vyskytovať kľúčové slová a~funkcie ktorú sú touto knižnicou podporované. V~tabuľke \ref{table:kniz} je výpis knižníc a~príkazov, ktoré z~nich sú podporované.
+Prekladač nepodporuje direktívu preprocesoru \texttt{\#include}. Avšak takéto riadky sú pri preklade ignorované, takže je možné ich tam ponechať. Preto je riadok \texttt{\#include <xxxxxx.h>} nepovinný aj napriek tomu, že v~zdrojovom kóde sa môžu vyskytovať kľúčové slová a~funkcie ktorú sú touto knižnicou podporované. V~tabuľke \ref{table:kniz} je výpis knižníc a~príkazov, ktoré z~nich sú podporované.
 
-\begin{table}[]
+\begin{table}[H]
 \centering
+\begin{tabular}{c|l}
+\textbf{Knižnica} & \textbf{Kľúčové slová a~funkcie} \\ \hline
+stdlib.h          & NULL, malloc                      \\
+assert.h          & assert                            \\
+stdbool.h         & true, false                       \\
+\end{tabular}
 \caption{Implicitne podporované príkazy}
 \label{table:kniz}
-\begin{tabular}{|c|l|}
-\hline
-\textbf{Knižnica} & \textbf{Kľúčové slová a~funkcie} \\ \hline
-stdlib.h          & NULL, malloc                      \\ \hline
-assert.h          & assert                            \\ \hline
-stdbool.h         & true, false                       \\ \hline
-\end{tabular}
 \end{table}
 
 
 \section{Práca s~dátami}
 \label{sec_data}
-Vo vstupnom súbore nie sú podporované operácie nad dátovými premennými okrem priradenia a~porovnania. Je možné len jedno priradenie a~následne nie je možné hodnotu meniť. Na takúto situáciu prekladač upozorní. Avšak je možné preložiť aj takýto program za pomoci ignorovania práce s~dátami.
+Vo vstupnom súbore nie sú podporované operácie nad dátovými premennými okrem priradenia a~porovnania. Je možné len priame priradenie a~nie je možné hodnotu meniť aritmetickými a~reťazcovými operáciami. Na takúto situáciu prekladač upozorní. Viď tabuľku \ref{table:working_not} pre lepšie porozumenie. Avšak je možné preložiť aj takýto program za pomoci ignorovania práce s~dátami.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{l|l}
+\textbf{Príkaz} & \textbf{Podpora v~prekladači} \\ \hline
+int x;          & OK                            \\
+int x = 5;      & OK                            \\
+x = 9;          & OK                            \\
+x = y;          & OK                            \\
+x = 14*3;       & ERROR                         \\
+x += 2;         & ERROR                 
+\end{tabular}
+\caption{Možnosti práce s~dátami}
+\label{table:working_not}
+\end{table}
 
 \subsection{Ignorovanie dát}
-Počas vývoja a~testovania prekladača sa vyskytol problém pri práci s~dátami. Na vstupe sa mohol objaviť validný program, ktorý mohol by korektne preložený avšak kvôli čo i~len jednému príkazu manipulujúcim s~dátovou premennou nemohol byť tento program preložený. Často sa jednalo o~prácu s~premennou, ktorá nebola nijak potrebná pre analýzu nástrojom ARTMC. Ako príklad uvádzam nasledujúci program:\\
+Počas vývoja a~testovania prekladača sa vyskytol problém pri práci s~dátami. Na vstupe sa objavil validný program, ktorý by mohol byť korektne preložený, avšak kvôli čo i~len jednému príkazu manipulujúcemu s~dátovou premennou nemohol byť tento program preložený. Často sa jednalo o~prácu s~premennou, ktorá nebola nijak potrebná pre analýzu nástrojom ARTMC. Ako príklad uvádzam nasledujúci program:
 
-\noindent
-\texttt{
-\tab x->data = 1;\\
-\tab \dots\\
-\tab x->data *= 2;\\
-\tab \dots \\
-\tab \textit{ manipuluje sa s~x->data }\\
-\tab \dots\\
-\tab if (x->data < 0)\\
-\tab \tab x->next = y;\\
+\code{%
+x->data = 1;\\
+\dots \\
+\textit{ numerické operácie s~hodnotou x->data, napr.  \uv{x->data += 1;} }\\
+\dots\\
+if (x->data < 0)\\
+\tab x->next = y;
 }
 
-V~horeuvedenom programe sa manipuluje s~dátovou položkou štruktúry. Takéto operácie nie sú podporované zo strany nástroja ARTMC a~preto by tento program nemohol byť preložený. Avšak ak používateľ prekladača uzná, že tieto manipulácie a~podmienka nie je kritickým rozhodovacím miestom a~teda vynechanie zmien dátovej položky a~nahradenie podmienky za nedeterministickú je možné, môže použiť prepínač \texttt{-i}, ktorý vynúti neprekladanie všetkých operácií, ktoré manipulujú s~dátami a~všetky podmienky obsahujúce porovnávanie dátové položky sa zmenia na nedeterministickú podmienku \texttt{if*}.
-
-\subsection{Konštanty}
-Okrem podpory priameho priraďovania dát do dátovej položky štruktúry je možné použiť priradenie aj zo štandardnej dátovej položky. Príklad použitia je znázornení na nasledujúcom kuse kódu:\\
-
 \noindent
-\texttt{
-\tab int i~= 0;\\
-\tab x->data = i;\\
+V~horeuvedenom programe sa manipuluje s~dátovou položkou štruktúry. Takéto operácie nie sú podporované zo strany nástroja ARTMC a~preto by tento program nemohol byť preložený. Avšak ak používateľ prekladača uzná, že tieto manipulácie a~podmienka nie sú kritickým rozhodovacím miestom a~teda vynechanie zmien dátovej položky a~nahradenie podmienky za nedeterministickú je možné, môže použiť prepínač \texttt{-i}, ktorý vynúti neprekladanie všetkých operácií, ktoré manipulujú s~dátami a~všetky podmienky obsahujúce porovnávanie dátové položky sa zmenia na nedeterministickú podmienku \texttt{if*}.
+
+\subsection{Využitie štandardných premenných}
+Okrem podpory priameho priraďovania dát do dátovej položky štruktúry je možné použiť priradenie aj zo štandardnej dátovej položky. Príklad použitia je znázornení na nasledujúcom kuse kódu:
+
+\code{%
+int i~= 0;\\
+x->data = i;
 }
 
-Obdobne je možné použiť štandardnú dátovú premennú aj v~podmienke ako je vidieť v~nasledujúcej ukážke:\\
-
 \noindent
-\texttt{
-\tab int i~= 0;\\
-\tab x->data = 1;\\
-\tab if (x->data == i)\\
-\tab \tab return ERROR;\\
+Obdobne je možné použiť štandardnú dátovú premennú aj v~podmienke ako je vidieť v~nasledujúcej ukážke:
+
+\code{%
+int i~= 0;\\
+x->data = 1;\\
+if (x->data == i)\\
+\tab return ERROR;
 }
 
-Avšak rovnako ako pri práci s~dátami priamo, ani v~tomto prípade nie je možné meniť hodnotu premennej. Preto takúto premennú môžme považovať za konštantu.
+\noindent
+Avšak rovnako ako pri práci s~dátami priamo, ani v~tomto prípade nie je možné numericky a~reťazcovo meniť hodnotu premennej (viď tabuľku \ref{table:working_not}).
 
 \section{Použitie aplikácie}
-Prekladač poskytuje viacero prepínačov, ktorými je možné upraviť implicitné správanie.  Nasleduje výpis \texttt{c2artmc.py --help}, ktorý ukazuje možné použitie tohto nástroja.
+Prekladač poskytuje viacero prepínačov, ktorými je možné upraviť implicitné správanie.  Nasleduje výpis \texttt{c2artmc.py -{}-help}, ktorý ukazuje možné použitie tohto nástroja.
 \begin{verbatim}
 usage: c2artmc.py [-h] [-o O] [-d D] [-i] INPUT_FILE
 
@@ -736,51 +739,53 @@ optional arguments:
 \label{sec_features}
 V~tejto kapitole sú popísané vybrané vlastnosti prekladača, ktoré sú navrch zadania a~implementujú užitočné vlastnosti.
 \subsection{Preskakovanie (častí) príkazov}
-Nakoľko nástroj ARTMC neobsahuje žiadnu podporu pre volanie funkcií je nutné byť schopný adekvátne zareagovať na výskyt volania funkcie. Riešením je ohlásiť chybu pri nájdení volania funkcie. Avšak počas testovania sa ukázalo, že výhodnejšie je priamo takéto príkazy preskakovať. Preto bol na to aj prekladač upravený. Momentálne prekladač upozorní na fakt, že sa volanie funkcie preskakuje. Očakáva sa od používateľa, že na tieto varovania zareaguje a~ak niektorá funkcia menila premenné podstatné pre analýzu tak tieto príkazy adekvátne upraví.
+\label{sec_features_jump}
+Nakoľko nástroj ARTMC neobsahuje žiadnu podporu pre volanie funkcií je nutné byť schopný adekvátne zareagovať na výskyt volania funkcie. Riešením je ohlásiť chybu pri nájdení volania funkcie. Avšak počas testovania sa ukázalo, že výhodnejšie je priamo takéto príkazy preskakovať. Preto bol na toto správanie prekladač upravený. Momentálne prekladač upozorní na fakt, že sa volanie funkcie preskakuje. Očakáva sa od používateľa, že na tieto varovania zareaguje a~ak niektorá funkcia menila premenné podstatné pre analýzu tak tieto príkazy adekvátne upraví.
 
 Prekladač rovnako preskakuje aj časti príkazov, ak dopredu vie, že nesledujúcu informáciu nepotrebuje. Jedná sa napríklad o~príkaz \texttt{return}. Ak sa za príkazom \texttt{return} nevyskytuje kľúčové slovo \texttt{ERROR} tak prekladač môže zahodiť zvyšok príkazu. Obdobne to funguje aj pri funkciách \texttt{malloc} a~\texttt{random\_alloc} kde ich argumenty sú neprekladané.
+\newpage
 
 \subsection{Preklad viacnásobných pointrov}
-V~prekladači je implementovaná podpora pre preklad viacnásobného prístupu cez ukazateľ či sa už jedná o~zápis alebo čítanie. Je teda možné preložiť príkaz typu:\\
+V~prekladači je implementovaná podpora pre preklad viacnásobného prístupu cez ukazateľ či sa už jedná o~zápis alebo čítanie. Je teda možné preložiť príkaz typu:
 
-\noindent
-\texttt{
-x->next->next = y->prev->next->prev;\\
+\code{%
+x->next->next = y->prev->next->prev;
 }
 
-Nakoľko nástroj ARTMC nemá podporu pre takýto prístup, je nutné príkaz rozdeliť na viacero jednoduchých prístupov. Vyššie uvedený program by sa teda dal za pomoci pomocných premenných napísať ako:\\
-
 \noindent
-\texttt{
+Nakoľko nástroj ARTMC nemá podporu pre takýto prístup, je nutné príkaz rozdeliť na viacero jednoduchých príkazov. Vyššie uvedený program by sa teda dal za pomoci pomocných premenných napísať ako:
+
+\code{%
 tmp1 = x->next;\\
 tmp2 = y->prev;\\
 tmp3 = tmp2->next;\\
 tmp4 = tmp3->prev;\\
-tmp1->next=tmp4;\\
+tmp1->next=tmp4;
 }
 
+\noindent
 čo už je možné preložiť aj do nástroja ARTMC.
 
 \subsection{Vyhodnocovanie neúplných podmienok}
 V~jazyku C sa ako nepravda v~podmienke považuje číslica \texttt{0} rovnako ako aj ukazateľ \texttt{NULL}. Tento fakt sa často využíva pri zápise podmienok, kde podmienka typu \texttt{if (x)} je totožná s~podmienkou \texttt{if (x != NULL)}. Obdobne sa to dá využiť aj pri číslach a~teda podmienka \texttt{if (!x)} je totožná s~podmienkou \texttt{if (x == 0)}.
 
-Podpora takéhoto zápisu bola implementovaná aj pre vytváraného prekladača. Umožňuje to prekladať väčšiu škálu existujúcich programov v~jazyku C bez ich upravovania.
+Podpora takéhoto zápisu bola implementovaná aj do vytváraného prekladača. Umožňuje to prekladať väčšiu škálu existujúcich programov v~jazyku C bez ich upravovania.
 
 Samotná implementácia využíva možnosť vrátenia prečítaného tokenu späť do zoznamu tokenov. Pri spracovaní podmienky keď je očakávané znamienko rovnosti alebo nerovnosti a~namiesto toho je nájdená pravá zátvorka (znamená koniec podmienky), logický operátor alebo identifikátor tak sa tento prečítaný token vráti späť a~vygeneruje sa podmienka podľa jej prvej časti.
 
 \subsection{Skratové vyhodnocovanie podmienok}
-V~jazyku C je zaužívané využívať skratové vyhodnocovanie podmienok pre jednoduchší zápis. Veľmi často sa tento prístup používa práve pri dynamicky viazaných dátových štruktúrach. Pre lepšie porozumenie uveďme príklad:\\
+V~jazyku C je zaužívané využívať skratové vyhodnocovanie podmienok pre jednoduchší zápis. Veľmi často sa tento prístup používa práve pri dynamicky viazaných dátových štruktúrach. Pre lepšie porozumenie uveďme príklad:
 
-\noindent
-\texttt{
+\code{%
 if (x \&\& x->next)\{\\
 \tab x->next->next = y;\\
-\}\\
+\}
 }
 
-Pri tomto zápise máme istotu, že nepristúpime alebo nezapíšeme do nealokovaného uzla, nakoľko sa najskôr overí, že je  alokované \texttt{x} a~ak je tak potom \texttt{x->next}. A~iba ak oba uzly sú alokované, môžme bezpečne zapísať aj do \texttt{x->next->next}.
+\noindent
+Pri tomto zápise máme istotu, že nepristúpime alebo nezapíšeme do nealokovaného uzla, nakoľko sa najskôr overí, že je  alokované \texttt{x} a~ak je tak potom sa overí aj dostupnosť \texttt{x->next}. A~iba ak oba uzly sú alokované, môžme bezpečne zapísať aj do \texttt{x->next->next}.
 
-Implementovaný prekladač dokáže takéto podmienky preložiť. Je k~tomu použitý relatívne jednoduchý algoritmus, ktorý rozdelí výraz na podvýrazy oddelené skupinami logických operátorov. Následne sa prechádza cez skupiny \texttt{or}-ov a~\texttt{and}-ov. Pre skupinu podvýrazov oddelených \texttt{||} platí, že po úspechu jednotlivých podvýrazov sa pokračuje za posledným podvýrazom v~skupine a~pri neúspechu nasledujúcim. Pri skupine spojenej logickým operátorom \texttt{\&\&} je to presne naopak. Tento algoritmus je znázornený na obrázku \ref{fig:scrat} kde čiarkovane sú označené podvýrazy, bodkovane skupiny, plnou šípkou splnenie podmienky a~čiarkovanou šípkou nesplnenie.
+Implementovaný prekladač dokáže takéto podmienky preložiť. Je k~tomu použitý relatívne jednoduchý algoritmus, ktorý rozdelí výraz na podvýrazy a~podvýrazy zhlukuje do skupín podľa logických operátorov. Následne sa prechádza cez skupiny \texttt{or}-ov a~\texttt{and}-ov. Pre skupinu podvýrazov oddelených \texttt{||} platí, že po úspechu jednotlivých podvýrazov sa pokračuje za posledným podvýrazom v~skupine a~pri neúspechu nasledujúcim. Pri skupine spojenej logickým operátorom \texttt{\&\&} je to presne naopak. Tento algoritmus je znázornený na obrázku \ref{fig:scrat} kde čiarkovane sú označené podvýrazy, bodkovane skupiny, plnou šípkou splnenie podmienky a~čiarkovanou šípkou nesplnenie.
 
 \begin{center}
 \begin{figure}[h]
@@ -791,7 +796,7 @@ Implementovaný prekladač dokáže takéto podmienky preložiť. Je k~tomu pou�
     \node [subexpression, right=of l1] (t2) {p2};
     \node [operand, right=of t2] (l2) {\&\&};
     \node [subexpression, right=of l2] (t3) {p3};
-    \node [draw,dotted, ellipse, inner xsep=-2.25em, fit=(t1) (l1) (t2) (l2) (t3)] {};
+    \node [draw,dotted, ellipse, inner xsep=-2.2em, inner ysep=0.5em, fit=(t1) (l1) (t2) (l2) (t3)] {};
     
 	\draw [->] (t1) to [out=30,in=150] (t2);
 	\draw [->] (t2) to [out=30,in=150] (t3);
@@ -801,7 +806,7 @@ Implementovaný prekladač dokáže takéto podmienky preložiť. Je k~tomu pou�
     \node [subexpression, right=of l3] (t4) {p4};
     \node [operand, right=of t4] (l4) {||};
     \node [subexpression, right=of l4] (t5) {p5};
-    \node [draw,dotted, ellipse, inner xsep=-1.25em, inner ysep=0em, fit=(l3) (t4) (l4) (t5)] {};    
+    \node [draw,dotted, ellipse, inner xsep=-1.4em, inner ysep=0.1em, fit=(l3) (t4) (l4) (t5)] {};    
     \draw [->,dashed] (t3) to [out=30,in=150] (t4);
     \draw [->,dashed] (t1) to [out=45,in=135] (t4);
     \draw [->,dashed] (t2) to [out=45,in=140] (t4);
@@ -810,7 +815,7 @@ Implementovaný prekladač dokáže takéto podmienky preložiť. Je k~tomu pou�
     \node [operand, right=of t5] (l5) {\&\&};
     \node [subexpression, right=of l5] (t6) {p6};
     
-     \node [draw,dotted, ellipse, inner xsep=-0.75em, inner ysep=0em, fit=(l5) (t6)] {}; 
+     \node [draw,dotted, ellipse, inner xsep=-0.85em, inner ysep=0em, fit=(l5) (t6)] {}; 
      \draw [->] (t3) to [out=315,in=240] (t6);
      \draw [->] (t4) to [out=315,in=230] (t6);
      \draw [->,dashed] (t4) to [out=30,in=150] (t5);
@@ -832,24 +837,21 @@ Implementovaný prekladač dokáže takéto podmienky preložiť. Je k~tomu pou�
 \end{center}
 
 \section{Testy}
-Na overenie funkcionality prekladača boli vytvorené testovacie vstupné súbory. Jedná sa o~sadu programov v~jazyku C, ktoré obsahujú rôzne konštrukcie. Cieľom je overiť, že preklad vyprodukuje rovnaký kód, aký je očakávaný. Všetky očakávané programy v~jazyku pre nástroj ARTMC sú taktiež súčasťou testov.
+Na overenie funkcionality prekladača boli vytvorené testovacie vstupné súbory. Jedná sa o~sadu programov v~jazyku C, ktoré obsahujú rôzne konštrukcie. Cieľom je overiť, že preklad vyprodukuje rovnaký kód, aký je očakávaný. Všetky očakávané programy v~jazyku pre nástroj ARTMC sú taktiež súčasťou testov. Zoznam testov je uvedený v~prílohe \ref{priloha:testy}.
 
 Testy boli produkované postupne a~pre každú dôležitú zmenu bol vytvorený test, ktorý testoval tú danú konštrukciu. Zároveň existujúce testy overili, že zmenou kódu neboli zanesené žiadne chyby.
 
 Aby bolo možné testovať prenosieľnosť programu medzi rôznymi verziami Pythonu, bol využitý nástroj tox. Funkcionalita tohoto nástroja je popísaná v~podsekcii \ref{sec_tox}.
 
-\section{Nedostatky a~známe chyby}
-Vo výslednej aplikácií nie sú žiadne známe chyby a~všetky požiadavky boli implementované.
-
 \section{Navrhovaná práca}
-Všetky požadované vlastnosti pre výslednú aplikáciu boli implementované. Avšak je možné, že časom si používanie ARTMC bude vyžadovať ďalšie funkcie, napríklad nové konštrukcie z~jazyka C a~teda bude potrebné daný kód doplniť. 
+Všetky požadované vlastnosti pre výslednú aplikáciu boli implementované. Avšak je možné, že časom si používanie ARTMC bude vyžadovať ďalšie funkcie, napríklad nové konštrukcie z~jazyka C a~teda bude potrebné daný kód doplniť.
 
 \chapter{Záver}
 Cieľom tejto práce bol návrh a~implementácia prekladača z~jazyka C do jazyka pre nástroj ARTMC. Text práce, ako aj samotná práca sa dá rozdeliť do dvoch častí, teoretickej a~praktickej. Vrámci praktickej časti bol naštudovaný nástroj ARTMC hlavne  z~pohľadu používania so zameraním na formát vstupu. Následne boli preštudovaná a~analyzovaná tvorba prekladačov. Po výbere technológií a~postupov pri tvorbe prekladača sa prešlo k~časti praktickej - implementácií samotného prekladača.
 
 Ako implementačný jazyk bol zvolený Python. Program sa vyznačuje objektovo orientovaným prístupom, čistou kódu a~nezávislosťou ako na verzii Pythonu tak na neštandardných balíčkoch. Samotný kód je rozdelený na viacero modulov podľa jednotlivých celkov prekladača (scanner, parser, generátor kódu). Do prekladača bolo implementovaných viacero neštandardných a~pokročilých funkcionalít, ktoré tvoria prekladač ako aj nástroj ARTMC lepšie použiteľným.
 
-Na overenie správnej funkcionality bolo vytvorených 15 komplexných testov. Každý test testuje celý priebeh prekladu. Testy je možné spúšťať naraz. Rovnako je možné spustiť všetky testy pre vybrané verzie Pythonu cez nástroj tox.
+Na overenie správnej funkcionality bolo vytvorených 16 komplexných testov. Každý test testuje celý priebeh prekladu. Testy je možné spúšťať naraz. Rovnako je možné spustiť všetky testy pre vybrané verzie Pythonu cez nástroj Tox.
 
 Aplikácia spĺňa všetky požiadavky zadania a~implementuje aj funkcionalitu navyše. Aplikáciu plánujem aj naďalej udržiavať a~v~prípade chyby alebo potreby pre ďalšiu funkcionalitu tieto zmeny vykonať. Aplikácia je verejne dostupná v~službe GitHub a~preto je možné aby záujemcovi taktiež vykonávali zmeny.
 
