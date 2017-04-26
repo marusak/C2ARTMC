@@ -19,6 +19,7 @@ class Generate:
         self.structure_pointers = {}
         self.mapped_data = {}
         self.variables = {}
+        self.standard_variables = {}
         self.data_name = None
 
         # A counter of unique ids
@@ -60,7 +61,7 @@ class Generate:
 
     def get_constants(self):
         """Return all known constants."""
-        return self.mapped_data.keys()
+        return self.standard_variables.keys()
 
     def get_descr_num(self):
         """Return next descr_num."""
@@ -100,12 +101,19 @@ class Generate:
         self.mapped_data[data] = converted
         return converted
 
-    def add_standard_variable(self, name, line):
-        """Non-changing varaible can be threaded as constant."""
-        if name in self.variables:
-            fatal_error("Redefining variable on line {0}"
-                        .format(line))
-        self.get_artmc_data(name)
+    def add_standard_variable(self, name, data):
+        """Variable that can be threaded as constant."""
+        data = self.get_artmc_data(data)
+        self.standard_variables[name] = data
+
+    def get_standard_val(self, name):
+        """Return value of standard variable."""
+        if name not in self.standard_variables.keys():
+            fatal_error("Unknown variable '{0}'.".format(name))
+        converted = self.standard_variables[name]
+        for key in self.mapped_data:
+            if self.mapped_data[key] == converted:
+                return key
 
     def convert_data(self):
         """Convert internal data to string of 0s and 1s for ARTMC."""

@@ -54,11 +54,14 @@ class Parser:
         """Restart unique context - tmp variables can be reused."""
         self.unique_context = 0
 
-    def verify_token(self, expected_token):
+    def verify_token(self, expected_token, err_message=None):
         """Read next token and compare with expected token."""
         if self.scanner.get_token() != expected_token:
-            fatal_error("Unexpected token on line {0}."
-                        .format(self.scanner.get_current_line()))
+            if err_message:
+                fatal_error(err_message)
+            else:
+                fatal_error("Unexpected token on line {0}."
+                            .format(self.scanner.get_current_line()))
 
     def verify_identifier(self, expected_identifier):
         """Read next token, expect identifier and compare with expected."""
@@ -242,8 +245,9 @@ class Parser:
                         self.gen.new_i_if_star(succ_label, fail_label, abstr)
                         abstr = False
                     else:
+                        value = self.gen.get_standard_val(yname)
                         self.gen.new_i_ifdata(xname,
-                                              yname,
+                                              value,
                                               succ_label,
                                               fail_label,
                                               abstr)
@@ -576,9 +580,11 @@ class Parser:
                     if pointer == self.gen.get_data_name():
                         if not self.ignore:
                             current_line = self.scanner.get_current_line()
+                            yname = self.scanner.get_value()
+                            value = self.gen.get_standard_val(yname)
                             self.gen.new_i_setdata(name,
                                                    pointer,
-                                                   self.scanner.get_value(),
+                                                   value,
                                                    current_line)
                     else:
                         yname = self.scanner.get_value()
@@ -620,14 +626,34 @@ class Parser:
 
         # skip assignment to variables of different types
         if name not in self.gen.get_variables():
-            if name in self.gen.get_constants() and not self.ignore:
-                fatal_error(("Changing value of standard variable on line {0}."
-                             " These operation are not permitted. "
-                             "Use -i to ignore.")
-                            .format(self.scanner.get_current_line()))
-            warning("Skipping command beginning with '{0}' on line {1}."
-                    .format(name, self.scanner.get_current_line()))
-            self.skip_until_semicolon()
+            if name in self.gen.get_constants():
+                if not self.ignore:
+                    # try simple value change, e.g. x = 5; x = 7;
+                    token = self.scanner.get_token()
+                    cur_v = self.scanner.get_value()
+                    if token in TokenGroups.Datas:
+                        self.gen.add_standard_variable(name, cur_v)
+                    elif token == TokenEnum.TIden:
+                        new_v = self.gen.get_standard_val(cur_v)
+                        self.gen.add_standard_variable(name, new_v)
+                    else:
+                        fatal_error(("Only simple changing of values on "
+                                     "standard variables is allowed on line "
+                                     "{0}. Try -i to ignore.")
+                                    .format(self.scanner.get_current_line()))
+                    self.verify_token(TokenEnum.TS,
+                                      ("Only simple changing of values on "
+                                       "standard variables is allowed on line "
+                                       "{0}. Try -i to ignore.")
+                                      .format(self.scanner.get_current_line()))
+                else:
+                    warning("Skipping command beginning with '{0}' on line {1}"
+                            .format(name, self.scanner.get_current_line()))
+                    self.skip_until_semicolon()
+            else:
+                warning("Skipping 2 command beginning with '{0}' on line {1}."
+                        .format(name, self.scanner.get_current_line()))
+                self.skip_until_semicolon()
             return TokenEnum.TS
 
         # command beginning with 'x ='
@@ -694,9 +720,27 @@ class Parser:
         # definition/declaration of the standard types
         elif first_token in TokenGroups.DataTypes:
             self.verify_token(TokenEnum.TIden)
-            self.gen.add_standard_variable(self.scanner.get_value(),
-                                           self.scanner.get_current_line())
-            self.skip_until_semicolon()
+            name = self.scanner.get_value()
+            token = self.scanner.get_token()
+            if token == TokenEnum.TS:
+                self.gen.add_standard_variable(name, 0)
+            elif token == TokenEnum.TAss:
+                token = self.scanner.get_token()
+                if token in TokenGroups.Datas:
+                    self.gen.add_standard_variable(name,
+                                                   self.scanner.get_value())
+                elif token == TokenEnum.TIden:
+                    new_v = self.gen.get_standard_val(self.scanner.get_value())
+                    self.gen.add_standard_variable(name, new_v)
+                else:
+                    fatal_error("Unsupported editing of value on line {0}"
+                                .format(self.scanner.get_current_line()))
+                if self.scanner.get_token() != TokenEnum.TS:
+                    fatal_error("Unsupported editing of value on line {0}"
+                                .format(self.scanner.get_current_line()))
+            else:
+                fatal_error("Unsupported editing of value on line {0}"
+                            .format(self.scanner.get_current_line()))
 
         # a while statement
         elif first_token == TokenEnum.KWWhile:
@@ -750,8 +794,7 @@ class Parser:
             # argument of other types
             elif token in TokenGroups.DataTypes:
                 self.verify_token(TokenEnum.TIden)
-                self.gen.add_standard_variable(self.scanner.get_value(),
-                                               self.scanner.get_current_line())
+                self.gen.add_standard_variable(self.scanner.get_value(), 0)
 
             else:
                 fatal_error("Unknown argument type on line {0}."
@@ -789,18 +832,15 @@ class Parser:
 
                 # variable declaration(s)
                 if (token in [TokenEnum.TC, TokenEnum.TS]):
-                    current_line = self.scanner.get_current_line()
                     if standard:
-                        self.gen.add_standard_variable(name,
-                                                       current_line)
+                        self.gen.add_standard_variable(name, 0)
                     else:
                         self.gen.save_new_variable(name)
                     while token != TokenEnum.TS:
                         self.verify_token(TokenEnum.TIden)
                         name = self.scanner.get_value()
-                        line = self.scanner.get_current_line()
                         if standard:
-                            self.gen.add_standard_variable(name, line)
+                            self.gen.add_standard_variable(name, 0)
                         else:
                             self.gen.save_new_variable(name)
                         token = self.scanner.get_token()
