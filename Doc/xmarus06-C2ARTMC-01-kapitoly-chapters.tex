@@ -25,10 +25,13 @@ najdôležitejší.
 Majme na vstupe nerekurzívny program, ktorý manipuluje s~dynamicky viazanými
 štruktúrami s~viacnásobnými next-ukazateľmi. Snahou nástroja je overiť, že
 nemôžu nastať nedovolené operácie (napr. zápis do null ukazateľa, použitie
-nedefinovaného alebo už zmazaného prvku atď.)\cite{artmc1}.
+nedefinovaného alebo už zmazaného prvku atď.). \cite{artmc1}
 
 Verifikačná metóda, ktorá je použitá v~tomto nástroji je založená na abstraktom
-regulárnom stromovom model checkingu. V~rámci tejto metódy je konfigurácia pamäte programu reprezentovaná stromom nad konečnou abecedou. Nekonečná množina konfigurácií je reprezentovaná stromovými automatmi. Technika následne počíta množinu dosiahnuteľných konfigurácií reprezenotavaných opäť stromovým automatom\cite{artmc2}.
+regulárnom stromovom model checkingu. V~rámci tejto metódy je konfigurácia pamäte programu
+reprezentovaná stromom nad konečnou abecedou. Nekonečná množina konfigurácií je reprezentovaná
+stromovými automatmi. Technika následne počíta množinu dosiahnuteľných konfigurácií
+reprezenotavaných opäť stromovým automatom. \cite{artmc2}
 
 Schéma fungovania nástroja ARTMC je znázornená na obrázku \ref{fig:ARTMC_schema}.
 
@@ -293,7 +296,7 @@ def get\_program()$\colon$\\
 \chapter{Prekladače}
 \label{kap_prekladace}
 Prekladač je nástroj, ktorý číta zdrojový program a~prekladá ho na cieľový program.
-Zdrojový a~cieľový program sú si vzájomne funkčne ekvivalentné\cite{meduna}.
+Zdrojový a~cieľový program sú si vzájomne funkčne ekvivalentné. \cite{meduna}
 Prekladač pozostáva z~viacerých častí. Schéma bežného prekladača je na obrázku \ref{fig:sch}.
 
 \begin{figure}
@@ -341,7 +344,7 @@ Prekladač pozostáva z~viacerých častí. Schéma bežného prekladača je na 
 \label{sec_lex}
 Lexikálny analyzátor, scanner, má na vstupe program zapísaný v~zdrojovom jazyku. Tento program
 je scannerom delený na lexémy - logicky oddelené lexikálne jednotky. Na výstupe je reťazec
-tokenov, pričom token reprezentuje lexémy a~môže obsahovať ďalšie atribúty. \cite{meduna} 
+tokenov, pričom token reprezentuje lexémy a~môže obsahovať ďalšie atribúty. \cite{meduna}
 Tento proces je znázornený na~obrázku \ref{fig:lex}.
 
 \section{Syntaktický analyzátor}
@@ -350,13 +353,19 @@ z~lexikálneho analyzátora. Úlohou je skontrolovať, či
 reťazec tokenov reprezentuje syntakticky správne napísaný program. Táto kontrola
 prebieha za pomoci konštrukcie derivačného stromu. Ak je možné zostrojiť derivačný strom,
 jedná sa o~program validný. Konštrukcia môže prebiehať dvoma spôsobmi a~to zhora
-nadol a~zdola nahor\cite{meduna}. 
+nadol a~zdola nahor. \cite{meduna}
 
 \subsection{Analýza zhora-nadol}
-Metóda zhora-nadol sa snaží skonštruovať derivačný strom od najvyššej úrovne a~postupne prechádza derivačný strom dole za využita formálnych pravidiel gramatiky. To znamená, že derivačný strom sa konštruuje od koreňa smerom k~listom, zľava doprava, poďla ľavej derivácie. Syntaktická analýza zhora-nadol využíva pre svoju prácu LL syntaktické analyzátory\cite{aho}.
+Metóda zhora-nadol sa snaží skonštruovať derivačný strom od najvyššej úrovne a~postupne prechádza
+derivačný strom dole za využita formálnych pravidiel gramatiky. To znamená, že derivačný strom sa
+konštruuje od koreňa smerom k~listom, zľava doprava, poďla ľavej derivácie. Syntaktická analýza
+zhora-nadol využíva pre svoju prácu LL syntaktické analyzátory. \cite{aho}
 
 \subsection{Analýza zdola-nahor}
-Metóda zdola-nahor sa snaží skonštruovať derivačný strom od najnižšej úrovne a~postupne prechádza derivačný strom smerom ku koreňu za využitia formálnych pravidiel gramatiky. To znamená, že sa najskôr identifikujú jednotlivé symboly, z~ktorých sa následne vytvára derivačný strom. Táto metóda využíva precedenčnú tabuľku\cite{aho}.
+Metóda zdola-nahor sa snaží skonštruovať derivačný strom od najnižšej úrovne a~postupne prechádza
+derivačný strom smerom ku koreňu za využitia formálnych pravidiel gramatiky. To znamená, že sa
+najskôr identifikujú jednotlivé symboly, z~ktorých sa následne vytvára derivačný strom. Táto metóda
+využíva precedenčnú tabuľku. \cite{aho}
 
 \begin{center}
 \begin{figure}
@@ -416,7 +425,10 @@ Medzi optimalizácie môžu patriť:
 \end{itemize}
 
 \section{Generátor cieľového kódu}
-Generátor cieľového kódu prevádza vnútornú reprezentáciu programu do funkčne ekvivalentného cieľového programu a~teda ukončuje proces kompilácie. Tento posledný krok je závislý od cieľového jazyka, ale aj konkrétnej platformy, pre ktorú sa preklad vykonáva. Najčastejšie je cieľovým jazykom strojový kód alebo assambler, no je možný preklad aj medzi dvoma vyššími programovacími jazykmi\cite{meduna}. 
+Generátor cieľového kódu prevádza vnútornú reprezentáciu programu do funkčne ekvivalentného
+cieľového programu a~teda ukončuje proces kompilácie. Tento posledný krok je závislý od cieľového
+jazyka, ale aj konkrétnej platformy, pre ktorú sa preklad vykonáva. Najčastejšie je cieľovým jazykom
+strojový kód alebo assambler, no je možný preklad aj medzi dvoma vyššími programovacími jazykmi. \cite{meduna}
 
 \section{Syntaxou riadený preklad}
 \label{sec_synta}
@@ -426,7 +438,7 @@ Jedná sa o~prístup, v ktorom je celý preklad riadený procesom parsovania. Te
     \item Ukladanie informácií napr. do tabuľky symbolov alebo tabuľky návestí
     \item Generovanie kódu
 \end{itemize}
-Prevažne pri využití tejto techniky postačuje jeden priechod cez zdrojový program\cite{aho}.
+Prevažne pri využití tejto techniky postačuje jeden priechod cez zdrojový programi. \cite{aho}
 
 
 \chapter{Súčasný stav prekladača pre ARTMC}
