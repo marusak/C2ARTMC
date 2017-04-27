@@ -1,6 +1,6 @@
 # pointer variables are : elem=2, prev=3, temp=4, x=1
 # next pointers are : next=0
-# data values are : delval="00000001"
+# data values are : 0="00000001"
 def get_program():
     program=[
         ("x=y","00000000",2,1,1,"NOABSTR"),
