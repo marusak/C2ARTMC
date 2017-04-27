@@ -1,6 +1,6 @@
 # pointer variables are : aux=3, n=2, root=1, v0=4
 # next pointers are : left=0, right=1
-# data values are : BLUE="00000010", WHITE="00000001"
+# data values are : 1="00000001", 3="00000010"
 def get_program():
     program=[
         ("new","00000000",1,1,"NOABSTR"),

@@ -183,6 +183,10 @@ def preprocess(file_name):
     for incl in re.findall(r'#include.*?\n', data):
         data = data.replace(incl, '\n')
 
+    # Replace all defines
+    for incl in re.findall(r'#define (.*?) (.*?)\n', data):
+        data = data.replace(incl[0], incl[1])
+
     # Delete all defines
     for incl in re.findall(r'#define.*?\n', data):
         data = data.replace(incl, '\n')
