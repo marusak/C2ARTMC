@@ -17,8 +17,8 @@ ARTMC je nástroj na formálnu verifikáciu programov, ktoré manipulujú
 s~dynamicky viazanými dátovými štruktúrami. Tento nástroj bol vyvinutý na Fakulte
 informačných technológií Vysokého Učení Technického v~Brne v~rámci výskumnej skupiny VeriFIT,
 ktorá sa zaoberá verifikáciou programov. V~tejto kapitole je tento nástroj
-popísaný z~dvoch hľadísk\,--\,najskôr je stručný prehľad funkcionality jazyka
-a~následne je popísaná štruktúra vstupného súboru, ktorý je pre túto prácu
+popísaný z~dvoch hľadísk\,--\,najskôr je stručný prehľad funkcionality nástroja
+a~následne je popísaná štruktúra vstupného formátu, ktorý je pre túto prácu
 najdôležitejší.
 
 \section{Funkcionalita a~použitie ARTMC}
@@ -28,12 +28,12 @@ nemôžu nastať nedovolené operácie (napr. zápis do null ukazateľa, použit
 nedefinovaného alebo už zmazaného prvku atď.). \cite{artmc1}
 
 Verifikačná metóda, ktorá je použitá v~tomto nástroji je založená na abstraktom
-regulárnom stromovom model checkingu. V~rámci tejto metódy je konfigurácia pamäte programu
+regulárnom stromovom model checkingu. \cite{artmc2} V~rámci tejto metódy je konfigurácia pamäte programu
 reprezentovaná stromom nad konečnou abecedou. Nekonečná množina konfigurácií je reprezentovaná
-stromovými automatmi. Technika následne počíta množinu dosiahnuteľných konfigurácií
-reprezenotavaných opäť stromovým automatom. \cite{artmc2}
+stromovými automatmi, ktoré sú zobecnením konečných automatov. Technika následne počíta množinu dosiahnuteľných konfigurácií
+reprezenotavaných opäť stromovým automatom.
 
-Schéma fungovania nástroja ARTMC je znázornená na obrázku \ref{fig:ARTMC_schema}.
+Nástroj má na vstupe dva súbory, ktoré sa za pomoci dvoch skriptov prevedú na desiatky súborov, ktoré reprezentujú automaty. Z týchto súborov sa následne vytvára analýza. Schéma fungovania nástroja ARTMC je znázornená na obrázku \ref{fig:ARTMC_schema}.
 
 
 \begin{figure}[h]
@@ -87,7 +87,7 @@ Schéma fungovania nástroja ARTMC je znázornená na obrázku \ref{fig:ARTMC_sc
 
 
 \section{Formát vstupného súboru}
-Nástroj ARTMC potrebuje pre svoju analýzu dva súbory:\,--\,jedná sa o~súbor \texttt{typedefs}, ktorý obsahuje definíciu množiny počiatočnej konfigurácie a~súbor \texttt{program.py}, obsahujúci definíciu programu vo formáte vytvorenom pre potreby tohto nástroja.
+Nástroj ARTMC potrebuje pre svoju analýzu dva súbory\,--\,jedná sa o~súbor \texttt{typedefs}, ktorý obsahuje definíciu množiny počiatočnej konfigurácie a~súbor \texttt{program.py}, obsahujúci definíciu programu vo formáte vytvorenom pre potreby tohto nástroja.
 
 \subsection{typedefs}
 Tento súbor sa používa na špecifikáciu množiny počiatočnej konfigurácie, ktorá môže byť obecne nekonečná (napr. zoznam ľubovoľnej dĺžky). Súbor obsahuje množinu typov. Následne je pamäť zostavená z~uzlov špecifikovaných typov, ktoré sú prepojené za pomoci selektorov.
@@ -164,7 +164,7 @@ new                 & (``new'',``line\_num'',x,next\_line)\\
         sú číslované od nuly. Ak je použitá prípona \uv{\texttt{\_then}} alebo \uv{\texttt{\_else}}
         jedná sa o~miesto pokračovania v~prípade splnenia alebo nesplnenia podmienky danej inštrukcie.
     \item \textit{Deskriptory 1} - Označené ako \uv{\texttt{descr\_num}}. Jedinečný deskriptor použitý pri vykonávaní danej inštrukcie. Deskriptory sú číslované od 1. Viac o~nastavovaní hodnôt tohto deskriptoru je v~podsekcii \ref{kap_descr}.
-    \item \textit{Deskriptory 2} - Označené ako \uv{\texttt{gen\_descr}}. Využíva sa iba pri príkaze \texttt{x.next=new} a~označuje automatickú generáciu počiatočného deskriptoru. Nadobúda hodnoty 0 (vypnuté) a~1 (zapnuté).
+    \item \textit{Deskriptory 2} - Označené ako \uv{\texttt{gen\_descr}}. Využíva sa iba pri príkaze \texttt{x.next=new} a~označuje automatickú generáciu počiatočného deskriptoru. Nadobúda hodnoty 0 (vypnuté) a~1 (zapnuté). Doporučené nastavenie je 1. Vypnutie sa odporúča iba pokročilým užívateľom so znalosťou práce s~ARTMC.
 \end{itemize}
 
 \subsection{env}
@@ -174,10 +174,10 @@ Význam jednotlivých položiek je nasledovný:
 \begin{itemize}
 \item \texttt{node\_width = pointer\_num + descr\_num + 2 + } šírka dát  
 \item \texttt{pointer\_num} = Počet ukazateľových premenných zvýšený o~1
-\item \texttt{desc\_num} = Počet ukazateľových položiek zvýšený o~1 (viď podsekciu \ref{kap_descr})
+\item \texttt{desc\_num} = Počet ukazateľových deskriptorov zvýšený o~1 (viď podsekciu \ref{kap_descr})
 \item \texttt{next\_num} = Počet next pointerov použitých v~programe
 \item \texttt{err\_line} = Označenie riadku, na ktorý sa skáče v~prípade chyby
-\item \texttt{restrict\_var} = Automatické generovanie automatu, ktorý garantuje iba jeden výskyt programovej premennej v~konfigurácii. Nadobúda hodnoty 0 (vypnuté) a~1 (zapnuté).
+\item \texttt{restrict\_var} = Automatické generovanie automatu, ktorý garantuje iba jeden výskyt programovej premennej v~konfigurácii. Nadobúda hodnoty 0 (vypnuté) a~1 (zapnuté). Doporučené nastavenie je 1.
 \end{itemize}
 
 
@@ -185,8 +185,8 @@ Význam jednotlivých položiek je nasledovný:
 \label{kap_descr}
 Deskriptor pozostáva z~dvoch častí:
 \begin{enumerate}
-\item \textit{Deskriptory v~konfigurácii} - Jedná sa o~deskriptory, ktoré sú použité v~súbore \textit{typedefs}. Tieto deskriptory už nemôžu byť znova použité. Číslo najvyššieho použitého deskriptoru je možné získať zo skriptu \texttt{get\_typedef\_descr.t.sh}, ktorý je súčasťou distribúcie ARTMC.
-\item \textit{Vlastné deskriptory} - Každému príkazu typu \texttt{x.next=y} alebo \texttt{x.next=new} je priradený vlastný deskriptor, ktorý ešte nebol použitý. Nemôže byť použitý ani v~konfigurácii.
+\item \textit{Deskriptory v~počiatočnej konfigurácii} - Jedná sa o~deskriptory, ktoré sú použité v~súbore \textit{typedefs}. Tieto deskriptory už nemôžu byť znova použité. Číslo najvyššieho použitého deskriptoru je možné získať zo skriptu \texttt{get\_typedef\_descr.t.sh}, ktorý je súčasťou distribúcie ARTMC.
+\item \textit{Vlastné deskriptory} - Obvyklý postup je ku každému príkazu typu \texttt{x.next=y} alebo \texttt{x.next=new} priradiť vlastný deskriptor, ktorý ešte nebol použitý. Nemôže byť použitý ani v~konfigurácii\footnote{Iný postup ako tento môže viesť k nesprávnemu fungovaniu nástroja ARTMC a teda sa odporúča len pokročilým užívateľom.}.
 \end{enumerate}
 
 \subsection{Podpora práce s~dátami v~ARTMC}
@@ -528,9 +528,7 @@ Verziovací systém Git umožňuje sledovať vývoj projektu a~v~histórií jedn
 vznikla. Zároveň je jednoduché sa vrátiť do stavu pred chybou.
 Git umožňuje rovnako jednoduchú spoluprácu viacerých autorov. Táto práca je dielom jedného autora, je však možné, že po dokončení práce sa nájde
 chyba, alebo bude treba doplniť funkcionalitu a~to umožní, aby iný autor túto zmenu
-vykonal.
-
-Táto práca využíva GitHub a~je dostupná na \texttt{https://github.com/marusak/C2ARTMC}.
+vykonal.\footnote{Táto práca využíva GitHub a~je dostupná na \texttt{https://github.com/marusak/C2ARTMC}.}
 
 \section{Testovateľnosť}
 Vývoj väčších aplikácii si vyžaduje overovanie správnej funkcionality programu. Overovanie sa vykonáva za pomoci hromadných testov, kde jedným príkazom je vyvolaných viacero testov a~ako výsledok je poskytnuté zhrnutie zo všetkých testov. Táto práca by takéto testy mala obsahovať a~za využitia nástroja Tox by mala overovať správne fungovania aj na rôznych verziách Pythonu.
@@ -566,7 +564,7 @@ V~tejto časti textu je popis implementácie. Jedná sa o~spojenie znalostí z~k
 Ako prvá časť bol implementovaný lexikálny analyzátor. Jedná sa o~samotnú triedu \texttt{Scanner}, ktorá v~inicializácii berie názov súboru z~programom v~jazyku C. Následne je vstupný program načítaný a~predspracovaný. Jedná sa hlavne o~odstránenie komentárov a~nahradenie skupín bielych znakov jednou medzerou. Tieto úpravy následne umožňujú jednoduchšie delenie kódu na tokeny. Trieda lexikálneho analyzátora poskytuje metódu \texttt{get\_token}, ktorá vráti práve jeden token. Na delenie sa nevyužívajú regulárne výrazy, ale podľa prvého neprečítaného znaku sa scanner rozhoduje o~aký token sa môže jednať. Následne po rozpoznaní tokenu, je vrátený token, ktorý je reprezentovaný jedným číslom - jedná sa o~imitáciu \texttt{enum} pre jazyk Python. Konkrétna hodnota tokenu sa nevracia priamo a~je možné ju získať volaním funkcie \texttt{get\_value}. Scanner poskytuje aj metódu \texttt{unget\_token}, ktorá vráti jeden token späť do vstupného reťazca. Nakoľko je ale scanner ako aj celý prekladač jednopriechodový, je táto funkcia implementovaná inštančnou premennou, ktorá drží vrátenú hodnotu. Výhodou je jednoduchá implementácia, teoretickou nevýhodou je schopnosť vrátiť iba jeden token, no v~rámci implementácie tohto prekladača nebolo nikdy potrebné vrátiť viac za sebou idúcich tokenov.
 
 \subsection{Syntaktický analyzátor}
-Následne bol tvorený syntaktický analyzátor, ktorý je implementovaný ako trieda \texttt{Parser}. Jedná sa o~syntaxou riadený preklad a~preto je samotný analyzátor najdlhšia časť kódu. Napriek svojej veľkosti sa jedná o~pomerne jednoduchý program. V~princípe je celá analýza jeden while-cyklus, ktorý čaká až skončí vstupný súbor a~\texttt{scanner} vráti \texttt{EOF}. V~tomto cykle sa prečíta prvý token a~na základe neho sa rozhodne o~aký príkaz sa jedná. V~tejto úrovni sa môže jednať iba o~definíciu alebo deklaráciu funkcie alebo premennej. Spracovanie premennej je priamočiara záležitosť. Spracovanie funkcie obsluhuje funkcia \texttt{parse\_function}, ktorá je podobne jeden while-cyklus, ktorý volá funkciu \texttt{parse\_command} až pokiaľ nenarazí na ukončujúcu zloženú zátvorku. Funkcia \texttt{parse\_command} zavolá 
+Následne bol tvorený syntaktický analyzátor, ktorý je implementovaný ako trieda \texttt{Parser}. Jedná sa o~syntaxou riadený preklad a~preto je samotný analyzátor najdlhšia časť kódu. Napriek svojej veľkosti sa jedná o~pomerne jednoduchý program. V~princípe je celá analýza jeden while-cyklus, ktorý čaká až skončí vstupný súbor a~\texttt{scanner} vráti \texttt{EOF}. V~tomto cykle sa prečíta prvý token a~na základe neho sa rozhodne o~aký príkaz sa jedná. V~tejto úrovni sa môže jednať iba o~definíciu alebo deklaráciu funkcie alebo premennej. Spracovanie premennej je priamočiara záležitosť. Spracovanie funkcie obsluhuje funkcia \texttt{parse\_function}, ktorá je podobne jeden while-cyklus, ktorý volá funkciu \texttt{parse\_command} až pokiaľ nenarazí na ukončujúcu zloženú zátvorku. Je podporované spracovanie iba jednej funkcie a~to prvej v~súbore. Funkcia \texttt{parse\_command} zavolá 
 na základe prvého tokenu funkcie na spracovanie príkazu, napríklad \texttt{parse\_if} alebo \texttt{parse\_assignment}. Ak sa jedná o~príkaz, ktorý vytvára ďalšiu úroveň vnorenia ako napríklad \texttt{if} alebo \texttt{while}, celá úroveň je spracovaná touto funkciou volania  \texttt{parse\_command} na spracovanie jednotlivých príkazov. Hovoríme teda o~rekurzívnom vnáraní.
 
 Ako bolo spomenuté v~sekcii \ref{sec_synta} ohľadom syntaxou riadenom preklade, počas syntaktickej analýzy sa vykonávajú aj ďalšie akcie. Medzi takéto akcie patrí napríklad vloženie premennej do tabuľky symbolov po nájdení novej premennej. Tabuľku symbolov vlastní trieda \texttt{Parser} a~poskytuje sadu inštrukcií na prácu s~ňou. Medzi ďalšie akcie patrí vygenerovanie inštrukcie vo vnútornom kóde po prečítaní celého príkazu. 
