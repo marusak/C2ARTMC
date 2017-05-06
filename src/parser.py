@@ -814,6 +814,7 @@ class Parser:
     def run(self):
         """Parse the file and convert to ARTMC instructions."""
         token = self.scanner.get_token()
+        function_read = False
         while token != TokenEnum.XEOF:
             # a typedef
             if token == TokenEnum.KWTypedef:
@@ -851,8 +852,11 @@ class Parser:
 
                 # a function
                 elif token == TokenEnum.TLZ:
+                    if function_read:
+                        fatal_error(("There is more than one function."
+                                     "Only the first one is parsed."))
                     self.parse_function()
-                    break
+                    function_read = True
 
                 else:
                     fatal_error("Unsupported construction on line {0}."
